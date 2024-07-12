@@ -248,6 +248,19 @@
     </div>
 
     <script>
+        
+        // Password prompt
+        var password = prompt("Please enter the password:");
+
+        // Check if the password is correct
+        if (password === "cotomakassar") {
+            // Show the protected content
+            document.getElementById("protected-content").style.display = "block";
+        } else {
+            // Handle incorrect password
+            document.body.innerHTML = "Access denied. Incorrect password.";
+        }
+
         let grandTotal = 0;
         let items = [];
         let selectedItemIndex = -1;
