@@ -151,10 +151,60 @@
         .edit-buttons button:hover {
             background-color: #0056b3;
         }
+
+        /* Password Prompt styles */
+        .password-prompt {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+        .password-prompt-box {
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        .password-prompt-box label {
+            font-weight: bold;
+        }
+        .password-prompt-box input {
+            padding: 8px;
+            margin: 8px;
+        }
+        .password-prompt-box button {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        .password-prompt-box button:hover {
+            background-color: #0056b3;
+        }
     </style>
 </head>
 <body>
     
+    <!-- Password Prompt -->
+    <div class="password-prompt" id="passwordPrompt">
+        <div class="password-prompt-box">
+            <h2>Password Required</h2>
+            <label for="password">Enter Password:</label>
+            <input type="password" id="password" />
+            <button onclick="checkPassword()">Submit</button>
+        </div>
+    </div>
+
+    <!-- Invoice Content -->
     <div class="input-box" style="border: 1px solid #ccc; background-color: #f9f9f9; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); padding: 20px; border-radius: 8px;">
         <h2 style="margin-bottom: 10px; font-size: 1.5em; display: flex; align-items: center; justify-content: space-between;">
             Kuitansi<br>
@@ -349,7 +399,22 @@
             window.print();
         }
 
-        setDate();
+        function checkPassword() {
+            const password = document.getElementById('password').value;
+            // Replace 'your_password' with your actual password
+            if (password === 'cotomakassar') {
+                document.getElementById('passwordPrompt').style.display = 'none';
+                // Initialize invoice after password verification
+                setDate();
+            } else {
+                alert('Incorrect password. Please try again.');
+            }
+        }
+
+        // Show password prompt initially
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('passwordPrompt').style.display = 'flex';
+        });
     </script>
 </body>
 </html>
