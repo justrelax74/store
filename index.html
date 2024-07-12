@@ -3,30 +3,45 @@
 <head>
     <meta charset="UTF-8">
     <title>Login Page</title>
-    <script>
-        function login() {
-            var username = document.getElementById('megamasmtr').value;
-            var password = document.getElementById('cotomakassar').value;
-
-            // Replace with your username and password validation
-            if (username === 'your_username' && password === 'your_password') {
-                window.location.href = 'invoice.html'; // Redirect to invoice.html on successful login
-            } else {
-                alert('Invalid username or password. Please try again.');
-            }
-        }
-    </script>
 </head>
 <body>
     <h2>Login</h2>
-    <form>
+    <form id="loginForm">
         <label for="username">Username:</label>
         <input type="text" id="username" name="username" required>
         <br><br>
         <label for="password">Password:</label>
         <input type="password" id="password" name="password" required>
         <br><br>
-        <button type="button" onclick="login()">Login</button>
+        <button type="submit">Login</button>
     </form>
+
+    <script>
+        document.getElementById('loginForm').addEventListener('submit', function(event) {
+            event.preventDefault();
+            var username = document.getElementById('username').value;
+            var password = document.getElementById('password').value;
+            fetch('/login', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ username: username, password: password })
+            })
+            .then(response => {
+                if (response.ok) {
+                    return response.json();
+                }
+                throw new Error('Login failed.');
+            })
+            .then(data => {
+                window.location.href = 'invoice.html'; // Redirect to invoice.html on successful login
+            })
+            .catch(error => {
+                console.error('Login error:', error);
+                alert('Invalid username or password. Please try again.');
+            });
+        });
+    </script>
 </body>
 </html>
