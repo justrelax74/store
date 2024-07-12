@@ -155,7 +155,6 @@
 </head>
 <body>
     
-
     <div class="input-box" style="border: 1px solid #ccc; background-color: #f9f9f9; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); padding: 20px; border-radius: 8px;">
         <h2 style="margin-bottom: 10px; font-size: 1.5em; display: flex; align-items: center; justify-content: space-between;">
             Kuitansi<br>
@@ -176,9 +175,6 @@
         <button onclick="addItem()" style="padding: 12px 24px; font-size: 14px; background-color: #007bff; color: #fff; border: none; border-radius: 4px; cursor: pointer; display: block; margin-left: auto; margin-right: auto;">Tambah Item</button>
     </div>
     
-    
-    
-
     <div class="invoice-box" id="invoice">
         <table cellpadding="0" cellspacing="0">
             <tr class="top">
@@ -227,39 +223,27 @@
     </div>
 
     <script>
-           // Password prompt
-           var password = prompt("Please enter the password:");
-
-// Check if the password is correct
-if (password === "cotomakassar") {
-    // Show the protected content
-    document.getElementById("protected-content").style.display = "block";
-} else {
-    // Handle incorrect password
-    document.body.innerHTML = "Access denied. Incorrect password.";
-}
         let grandTotal = 0;
         let items = [];
         let selectedItemIndex = -1;
 
         function setDate() {
-    const now = new Date();
+            const now = new Date();
     
-    // Format date part
-    const optionsDate = { year: 'numeric', month: 'short', day: '2-digit' };
-    const formattedDate = now.toLocaleDateString('id-ID', optionsDate);
+            // Format date part
+            const optionsDate = { year: 'numeric', month: 'short', day: '2-digit' };
+            const formattedDate = now.toLocaleDateString('id-ID', optionsDate);
     
-    // Format time part
-    const hours = String(now.getHours()).padStart(2, '0');
-    const minutes = String(now.getMinutes()).padStart(2, '0');
-    const seconds = String(now.getSeconds()).padStart(2, '0');
-    const formattedTime = `${hours}:${minutes}:${seconds}`;
+            // Format time part
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            const formattedTime = `${hours}:${minutes}:${seconds}`;
     
-    // Display formatted date and time
-    const fullFormattedDate = `${formattedDate}, ${formattedTime}`;
-    document.getElementById('invoiceDate').textContent = fullFormattedDate;
-}
-
+            // Display formatted date and time
+            const fullFormattedDate = `${formattedDate}, ${formattedTime}`;
+            document.getElementById('invoiceDate').textContent = fullFormattedDate;
+        }
 
         function formatNumber(number) {
             return number.toLocaleString('id-ID');
