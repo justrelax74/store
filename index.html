@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MEGA MAS MOTOR | Kuitansi</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+        }
+        .invoice-box {
+            width: 80mm;
+            padding: 10px;
+            border: 1px solid #eee;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.15);
+            font-size: 14px;
+            line-height: 1.5;
+            margin: 0 auto;
+            position: relative;
+        }
+        .invoice-box table {
+            width: 100%;
+            line-height: inherit;
+            text-align: left;
+            border-collapse: collapse;
+        }
+        .invoice-box table td {
+            padding: 0;
+            vertical-align: top;
+        }
+        .invoice-box table tr.top table td {
+            padding: 0;
+        }
+        .invoice-box table tr.top table td.title {
+            font-size: 20px;
+            line-height: 24px;
+            color: #333;
+            padding-bottom: 0;
+            font-weight: bold;
+        }
+        .invoice-box table tr.information table td {
+            padding: 0;
+            text-align: center;
+            font-size: 12px;
+        }
+        .invoice-box table tr.line {
+            border-bottom: 1px dashed #000;
+        }
+        .invoice-box table tr.heading td {
+            font-weight: bold;
+            font-size: 16px;
+        }
+        .invoice-box table tr.item td {
+            border-bottom: none;
+            padding: 5px;
+            cursor: pointer;
+            position: relative;
+        }
+        .invoice-box table tr.item td:hover {
+            background-color: #f0f0f0;
+        }
+        .invoice-box table tr.total {
+            border-top: 2px dashed #000;
+            border-bottom: 2px dashed #000;
+        }
+        .total-amount {
+            font-weight: bold;
+            font-size: 16px;
+            padding: 5px;
+            text-align: left;
+        }
+        .total-value {
+            font-weight: bold;
+            font-size: 16px;
+            padding: 5px;
+            text-align: right;
+        }
+        .input-box {
+            margin-bottom: 20px;
+        }
+        .input-box input, .input-box button {
+            padding: 6px;
+            margin: 3px;
+        }
+        .separator-line {
+            border-bottom: 1px dashed #000;
+            margin: 5px 0;
+        }
+        .logo-container {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .logo-container img {
+            max-width: 100%;
+            height: auto;
+        }
+        .print-button {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .print-button button {
+            padding: 10px 20px;
+            font-size: 14px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+        }
+        .print-button button:hover {
+            background-color: #0056b3;
+        }
+
+        /* Hide elements for printing */
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            .invoice-box, .invoice-box * {
+                visibility: visible;
+            }
+            .invoice-box {
+                position: absolute;
+                left: 0;
+                top: 0;
+            }
+            .edit-buttons {
+                display: none !important;
+            }
+        }
+
+        /* Edit and remove buttons */
+        .edit-buttons {
+            position: absolute;
+            bottom: 5px;
+            left: 5px;
+            display: none;
+        }
+        .item:hover .edit-buttons {
+            display: block;
+        }
+        .edit-buttons button {
+            padding: 6px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            cursor: pointer;
+            margin-right: 5px;
+        }
+        .edit-buttons button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body>
+    
+
+    <div class="input-box" style="border: 1px solid #ccc; background-color: #f9f9f9; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); padding: 20px; border-radius: 8px;">
+        <h2 style="margin-bottom: 10px; font-size: 1.5em; display: flex; align-items: center; justify-content: space-between;">
+            Kuitansi<br>
+            <img src="receipt.jpg" alt="Receipt Icon" style="max-width: 50px; height: auto;">
+        </h2>
+        <div style="margin-bottom: 15px;">
+            <label for="productName" style="display: block; margin-bottom: 5px; font-weight: bold;">Nama Item</label>
+            <input type="text" id="productName" style="padding: 10px; width: calc(100% - 20px); border: 1px solid #ccc; border-radius: 4px;">
+        </div>
+        <div style="margin-bottom: 15px;">
+            <label for="qty" style="display: block; margin-bottom: 5px; font-weight: bold;">Kuantiti:</label>
+            <input type="number" id="qty" style="padding: 10px; width: calc(100% - 20px); border: 1px solid #ccc; border-radius: 4px;">
+        </div>
+        <div style="margin-bottom: 15px;">
+            <label for="price" style="display: block; margin-bottom: 5px; font-weight: bold;">Harga/Item:</label>
+            <input type="number" id="price" style="padding: 10px; width: calc(100% - 20px); border: 1px solid #ccc; border-radius: 4px;">
+        </div>
+        <button onclick="addItem()" style="padding: 12px 24px; font-size: 14px; background-color: #007bff; color: #fff; border: none; border-radius: 4px; cursor: pointer; display: block; margin-left: auto; margin-right: auto;">Tambah Item</button>
+    </div>
+    
+    
+    
+
+    <div class="invoice-box" id="invoice">
+        <table cellpadding="0" cellspacing="0">
+            <tr class="top">
+                <td colspan="3">
+                    <table class="logo-container">
+                        <tr>
+                            <td class="title" style="text-align: center;" colspan="3">
+                                <img src="logo.png">
+                            </td>
+                        </tr>
+                        <tr class="information line">
+                            <td colspan="3" style="border-bottom: 2px dashed #000; text-align: center;">
+                                <span id="invoiceDate" style="font-size: 12px;"></span><br>
+                                <span style="font-size: 12px;">MEGA MAS MOTOR</span><br>
+                                <span style="font-size: 12px;">Jl. Kelapa No. 25, Palopo, Sulawesi Selatan</span><br>
+                                <span style="font-size: 12px;">0821-8713-8889</span>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+            <tr class="heading">
+                <td style="font-weight: bold; text-align: left; font-size: 16px;">Qty</td>
+                <td style="font-weight: bold; text-align: left; font-size: 16px;">Product Name</td>
+                <td style="font-weight: bold; text-align: right; font-size: 16px;">Total Price</td>
+            </tr>
+            <tbody id="invoiceItems">
+                <!-- Items will be added dynamically here -->
+            </tbody>
+            <tr class="total">
+                <td colspan="2" class="total-amount" style="font-size: 16px; padding: 5px;">Grand Total:</td>
+                <td class="total-value" id="grandTotal" style="font-size: 16px; padding: 5px; text-align: right;">0</td>
+            </tr>
+        </table>
+        <div style="text-align:center; margin-top: 10px; font-size: 12px;">Terima Kasih</div>
+    </div>
+
+    <!-- Edit and remove buttons -->
+    <div class="edit-buttons" id="editButtons">
+        <button id="editItemButton" onclick="editItem()">Edit</button>
+        <button id="removeItemButton" onclick="removeItem()">Hapus</button>
+    </div>
+
+    <div class="print-button">
+        <button onclick="printInvoice()">Print Kuitansi</button>
+    </div>
+
+    <script>
+        let grandTotal = 0;
+        let items = [];
+        let selectedItemIndex = -1;
+
+        function setDate() {
+    const now = new Date();
+    
+    // Format date part
+    const optionsDate = { year: 'numeric', month: 'short', day: '2-digit' };
+    const formattedDate = now.toLocaleDateString('id-ID', optionsDate);
+    
+    // Format time part
+    const hours = String(now.getHours()).padStart(2, '0');
+    const minutes = String(now.getMinutes()).padStart(2, '0');
+    const seconds = String(now.getSeconds()).padStart(2, '0');
+    const formattedTime = `${hours}:${minutes}:${seconds}`;
+    
+    // Display formatted date and time
+    const fullFormattedDate = `${formattedDate}, ${formattedTime}`;
+    document.getElementById('invoiceDate').textContent = fullFormattedDate;
+}
+
+
+        function formatNumber(number) {
+            return number.toLocaleString('id-ID');
+        }
+
+        function addItem() {
+            const productName = document.getElementById('productName').value.trim();
+            const qty = parseInt(document.getElementById('qty').value);
+            const price = parseFloat(document.getElementById('price').value);
+
+            if (productName && qty && price) {
+                const totalPrice = qty * price;
+                grandTotal += totalPrice;
+
+                const item = {
+                    productName: productName.toUpperCase(),
+                    qty: qty,
+                    price: price,
+                    totalPrice: totalPrice
+                };
+
+                items.push(item);
+                updateInvoiceItems();
+                document.getElementById('grandTotal').textContent = formatNumber(grandTotal);
+
+                setDate();
+
+                document.getElementById('productName').value = '';
+                document.getElementById('qty').value = '';
+                document.getElementById('price').value = '';
+            } else {
+                alert('Please fill out all fields.');
+            }
+        }
+
+        function updateInvoiceItems() {
+            const invoiceItemsElement = document.getElementById('invoiceItems');
+            invoiceItemsElement.innerHTML = '';
+
+            items.forEach((item, index) => {
+                const itemRow = document.createElement('tr');
+                itemRow.className = 'item';
+                itemRow.innerHTML = `
+                    <td style="text-align: left; font-size: 16px; padding: 5px;">${item.qty}</td>
+                    <td style="text-align: left; font-size: 16px; padding: 5px;">${item.productName}</td>
+                    <td style="text-align: right; font-size: 16px; padding: 5px;">${formatNumber(item.totalPrice)}
+                        <div class="edit-buttons">
+                            <button onclick="editItem(${index})">Edit</button>
+                            <button onclick="removeItem(${index})">Remove</button>
+                        </div>
+                    </td>
+                `;
+
+                itemRow.addEventListener('mouseover', () => {
+                    showEditButtons(itemRow);
+                });
+
+                itemRow.addEventListener('mouseout', () => {
+                    hideEditButtons();
+                });
+
+                invoiceItemsElement.appendChild(itemRow);
+            });
+        }
+
+        function showEditButtons(itemRow) {
+            const editButtons = itemRow.querySelector('.edit-buttons');
+            editButtons.style.display = 'block';
+        }
+
+        function hideEditButtons() {
+            const editButtons = document.querySelectorAll('.edit-buttons');
+            editButtons.forEach(buttons => {
+                buttons.style.display = 'none';
+            });
+        }
+
+        function editItem(index) {
+            const item = items[index];
+            document.getElementById('productName').value = item.productName.toLowerCase();
+            document.getElementById('qty').value = item.qty;
+            document.getElementById('price').value = item.price;
+
+            items.splice(index, 1);
+            grandTotal -= item.totalPrice;
+            updateInvoiceItems();
+            document.getElementById('grandTotal').textContent = formatNumber(grandTotal);
+            selectedItemIndex = -1;
+            hideEditButtons();
+        }
+
+        function removeItem(index) {
+            const item = items[index];
+            items.splice(index, 1);
+            grandTotal -= item.totalPrice;
+            updateInvoiceItems();
+            document.getElementById('grandTotal').textContent = formatNumber(grandTotal);
+            selectedItemIndex = -1;
+            hideEditButtons();
+        }
+
+        function printInvoice() {
+            window.print();
+        }
+
+        setDate();
+    </script>
+</body>
+</html>

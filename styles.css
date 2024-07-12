@@ -1,0 +1,156 @@
+/* Existing styles */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #f0f0f0;
+}
+
+.container {
+    display: flex;
+    justify-content: space-between;
+    max-width: 1000px;
+    margin: 20px auto;
+    padding: 20px;
+    background-color: #fff;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+.input-section, .preview-section {
+    width: 48%;
+    padding: 20px;
+}
+
+.input-section {
+    border-right: 1px solid #ccc;
+}
+
+.preview-section {
+    overflow-y: auto;
+}
+
+h2 {
+    margin-bottom: 10px;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+}
+
+label {
+    margin-bottom: 5px;
+}
+
+input, button {
+    margin-bottom: 10px;
+    padding: 8px;
+    font-size: 14px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+button {
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+/* Invoice styles */
+.invoice-box {
+    width: 100%;
+    max-width: 800px; /* Adjust max-width for invoice */
+    margin: 20px auto;
+    padding: 20px;
+    background-color: #fff;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    font-family: Arial, sans-serif;
+    font-size: 16px;
+    line-height: 24px;
+    color: #555;
+}
+
+.invoice-box table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+}
+
+.invoice-box table td, .invoice-box table th {
+    padding: 10px;
+    border: 1px solid #ccc;
+    text-align: left;
+}
+
+.invoice-box table th {
+    background-color: #f2f2f2;
+}
+
+.invoice-box table tr:first-child th {
+    background-color: #e0e0e0;
+}
+
+.invoice-box table tr:last-child td {
+    font-weight: bold;
+}
+
+.total-amount {
+    text-align: right;
+}
+
+.total-value {
+    font-weight: bold;
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .container {
+        flex-direction: column;
+    }
+    
+    .input-section, .preview-section, .invoice-box {
+        width: 100%;
+        border: none;
+        margin-bottom: 20px;
+    }
+    @media print {
+        body * {
+            visibility: hidden;
+        }
+        #printArea, #printArea * {
+            visibility: visible;
+        }
+        #printArea {
+            width: 40mm;
+            margin: 0;
+            padding: 0;
+            box-shadow: none;
+            border: none;
+        }
+    }
+    @media print {
+        body * {
+            visibility: hidden;
+        }
+        #printArea, #printArea * {
+            visibility: visible;
+        }
+        #printArea {
+            width: 40mm;
+            margin: 0;
+            padding: 0;
+            box-shadow: none;
+            border: none;
+        }
+    }
+    
+    }
