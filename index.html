@@ -2,67 +2,21 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Login Page</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            background-color: #f0f0f0;
-            text-align: center;
-            padding: 50px;
-        }
-        .login-container {
-            max-width: 300px;
-            margin: 0 auto;
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 5px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-        }
-        .login-container h2 {
-            margin-bottom: 20px;
-            color: #333;
-        }
-        .login-container label {
-            display: block;
-            margin-bottom: 10px;
-            color: #666;
-        }
-        .login-container input[type="text"], .login-container input[type="password"] {
-            width: 100%;
-            padding: 10px;
-            margin-bottom: 15px;
-            border: 1px solid #ccc;
-            border-radius: 3px;
-            box-sizing: border-box;
-        }
-        .login-container button {
-            width: 100%;
-            padding: 10px;
-            background-color: #4CAF50;
-            color: white;
-            border: none;
-            border-radius: 3px;
-            cursor: pointer;
-        }
-        .login-container button:hover {
-            background-color: #45a049;
-        }
-    </style>
+    <title>Login with GitHub</title>
 </head>
 <body>
-    <div class="login-container">
-        <h2>Login</h2>
-        <!-- Form for login -->
-        <form action="index.html" method="post">
-            <label for="username">Username:</label>
-            <input type="text" id="username" name="username" required>
-            <br>
-            <label for="password">Password:</label>
-            <input type="password" id="password" name="password" required>
-            <br>
-            <button type="submit">Login</button>
-        </form>
-    </div>
+    <h2>Login with GitHub</h2>
+    <button onclick="loginWithGitHub()">Login with GitHub</button>
+
+    <script>
+        function loginWithGitHub() {
+            // Replace with your GitHub OAuth Client ID and callback URL
+            const clientId = 'YOUR_CLIENT_ID';
+            const redirectUri = 'https://<yourusername>.github.io/callback';
+
+            // Redirect to GitHub for OAuth authentication
+            window.location.href = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectUri}`;
+        }
+    </script>
 </body>
 </html>
