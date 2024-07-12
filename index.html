@@ -10,11 +10,9 @@
 
     <script>
         function loginWithGitHub() {
-            // Replace with your GitHub OAuth Client ID and callback URL
             const clientId = 'YOUR_CLIENT_ID';
-            const redirectUri = 'https://<yourusername>.github.io/callback';
+            const redirectUri = 'https://justrelax74.github.io/tutor/callback';
 
-            // Redirect to GitHub for OAuth authentication
             window.location.href = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${redirectUri}`;
         }
     </script>
