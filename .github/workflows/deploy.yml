@@ -18,9 +18,10 @@ jobs:
 
       - name: Copy Files for Deployment
         run: |
-          cp invoice.html $GITHUB_WORKSPACE
-          cp .htaccess $GITHUB_WORKSPACE
-          cp .htpasswd $GITHUB_WORKSPACE
+          # Copy only if the file is not already in $GITHUB_WORKSPACE
+          [[ ! -f "$GITHUB_WORKSPACE/invoice.html" ]] && cp invoice.html $GITHUB_WORKSPACE
+          [[ ! -f "$GITHUB_WORKSPACE/.htaccess" ]] && cp .htaccess $GITHUB_WORKSPACE
+          [[ ! -f "$GITHUB_WORKSPACE/.htpasswd" ]] && cp .htpasswd $GITHUB_WORKSPACE
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
