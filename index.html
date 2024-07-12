@@ -78,11 +78,37 @@
             text-align: right;
         }
         .input-box {
+            border: 1px solid #ccc;
+            background-color: #f9f9f9;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            padding: 20px;
+            border-radius: 8px;
             margin-bottom: 20px;
+            width: 80mm;
+            margin: 0 auto;
         }
-        .input-box input, .input-box button {
-            padding: 6px;
-            margin: 3px;
+        .input-box label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        .input-box input {
+            padding: 10px;
+            width: calc(100% - 20px);
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-bottom: 15px;
+        }
+        .input-box button {
+            padding: 12px 24px;
+            font-size: 14px;
+            background-color: #007bff;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            display: block;
+            margin: 0 auto;
         }
         .separator-line {
             border-bottom: 1px dashed #000;
@@ -154,72 +180,67 @@
     </style>
 </head>
 <body>
-    
-
-    <div class="input-box" style="border: 1px solid #ccc; background-color: #f9f9f9; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); padding: 20px; border-radius: 8px;">
+    <div class="input-box">
         <h2 style="margin-bottom: 10px; font-size: 1.5em; display: flex; align-items: center; justify-content: space-between;">
-            Kuitansi<br>
+            Kuitansi
             <img src="receipt.jpg" alt="Receipt Icon" style="max-width: 50px; height: auto;">
         </h2>
-        <div style="margin-bottom: 15px;">
-            <label for="productName" style="display: block; margin-bottom: 5px; font-weight: bold;">Nama Item</label>
-            <input type="text" id="productName" style="padding: 10px; width: calc(100% - 20px); border: 1px solid #ccc; border-radius: 4px;">
+        <div>
+            <label for="productName">Nama Item</label>
+            <input type="text" id="productName" placeholder="Masukkan nama item" required>
         </div>
-        <div style="margin-bottom: 15px;">
-            <label for="qty" style="display: block; margin-bottom: 5px; font-weight: bold;">Kuantiti:</label>
-            <input type="number" id="qty" style="padding: 10px; width: calc(100% - 20px); border: 1px solid #ccc; border-radius: 4px;">
+        <div>
+            <label for="qty">Kuantiti:</label>
+            <input type="number" id="qty" placeholder="Masukkan kuantiti" required>
         </div>
-        <div style="margin-bottom: 15px;">
-            <label for="price" style="display: block; margin-bottom: 5px; font-weight: bold;">Harga/Item:</label>
-            <input type="number" id="price" style="padding: 10px; width: calc(100% - 20px); border: 1px solid #ccc; border-radius: 4px;">
+        <div>
+            <label for="price">Harga/Item:</label>
+            <input type="number" id="price" placeholder="Masukkan harga per item" required>
         </div>
-        <button onclick="addItem()" style="padding: 12px 24px; font-size: 14px; background-color: #007bff; color: #fff; border: none; border-radius: 4px; cursor: pointer; display: block; margin-left: auto; margin-right: auto;">Tambah Item</button>
+        <button onclick="addItem()">Tambah Item</button>
     </div>
-    
-    
-    
 
     <div class="invoice-box" id="invoice">
-        <table cellpadding="0" cellspacing="0">
+        <table>
             <tr class="top">
                 <td colspan="3">
                     <table class="logo-container">
                         <tr>
-                            <td class="title" style="text-align: center;" colspan="3">
-                                <img src="logo.png">
+                            <td class="title" colspan="3">
+                                <img src="logo.png" alt="Logo" style="max-width: 100%;">
                             </td>
                         </tr>
                         <tr class="information line">
-                            <td colspan="3" style="border-bottom: 2px dashed #000; text-align: center;">
-                                <span id="invoiceDate" style="font-size: 12px;"></span><br>
-                                <span style="font-size: 12px;">MEGA MAS MOTOR</span><br>
-                                <span style="font-size: 12px;">Jl. Kelapa No. 25, Palopo, Sulawesi Selatan</span><br>
-                                <span style="font-size: 12px;">0821-8713-8889</span>
+                            <td colspan="3">
+                                <span id="invoiceDate"></span><br>
+                                <span>MEGA MAS MOTOR</span><br>
+                                <span>Jl. Kelapa No. 25, Palopo, Sulawesi Selatan</span><br>
+                                <span>0821-8713-8889</span>
                             </td>
                         </tr>
                     </table>
                 </td>
             </tr>
             <tr class="heading">
-                <td style="font-weight: bold; text-align: left; font-size: 16px;">Qty</td>
-                <td style="font-weight: bold; text-align: left; font-size: 16px;">Product Name</td>
-                <td style="font-weight: bold; text-align: right; font-size: 16px;">Total Price</td>
+                <td>Qty</td>
+                <td>Product Name</td>
+                <td style="text-align: right;">Total Price</td>
             </tr>
             <tbody id="invoiceItems">
                 <!-- Items will be added dynamically here -->
             </tbody>
             <tr class="total">
-                <td colspan="2" class="total-amount" style="font-size: 16px; padding: 5px;">Grand Total:</td>
-                <td class="total-value" id="grandTotal" style="font-size: 16px; padding: 5px; text-align: right;">0</td>
+                <td colspan="2" class="total-amount">Grand Total:</td>
+                <td id="grandTotal" class="total-value">0</td>
             </tr>
         </table>
-        <div style="text-align:center; margin-top: 10px; font-size: 12px;">Terima Kasih</div>
+        <div style="text-align: center; margin-top: 10px; font-size: 12px;">Terima Kasih</div>
     </div>
 
     <!-- Edit and remove buttons -->
     <div class="edit-buttons" id="editButtons">
-        <button id="editItemButton" onclick="editItem()">Edit</button>
-        <button id="removeItemButton" onclick="removeItem()">Hapus</button>
+        <button onclick="editItem()">Edit</button>
+        <button onclick="removeItem()">Remove</button>
     </div>
 
     <div class="print-button">
@@ -232,23 +253,16 @@
         let selectedItemIndex = -1;
 
         function setDate() {
-    const now = new Date();
-    
-    // Format date part
-    const optionsDate = { year: 'numeric', month: 'short', day: '2-digit' };
-    const formattedDate = now.toLocaleDateString('id-ID', optionsDate);
-    
-    // Format time part
-    const hours = String(now.getHours()).padStart(2, '0');
-    const minutes = String(now.getMinutes()).padStart(2, '0');
-    const seconds = String(now.getSeconds()).padStart(2, '0');
-    const formattedTime = `${hours}:${minutes}:${seconds}`;
-    
-    // Display formatted date and time
-    const fullFormattedDate = `${formattedDate}, ${formattedTime}`;
-    document.getElementById('invoiceDate').textContent = fullFormattedDate;
-}
-
+            const now = new Date();
+            const optionsDate = { year: 'numeric', month: 'short', day: '2-digit' };
+            const formattedDate = now.toLocaleDateString('id-ID', optionsDate);
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            const formattedTime = `${hours}:${minutes}:${seconds}`;
+            const fullFormattedDate = `${formattedDate}, ${formattedTime}`;
+            document.getElementById('invoiceDate').textContent = fullFormattedDate;
+        }
 
         function formatNumber(number) {
             return number.toLocaleString('id-ID');
@@ -292,9 +306,9 @@
                 const itemRow = document.createElement('tr');
                 itemRow.className = 'item';
                 itemRow.innerHTML = `
-                    <td style="text-align: left; font-size: 16px; padding: 5px;">${item.qty}</td>
-                    <td style="text-align: left; font-size: 16px; padding: 5px;">${item.productName}</td>
-                    <td style="text-align: right; font-size: 16px; padding: 5px;">${formatNumber(item.totalPrice)}
+                    <td>${item.qty}</td>
+                    <td>${item.productName}</td>
+                    <td style="text-align: right;">${formatNumber(item.totalPrice)}
                         <div class="edit-buttons">
                             <button onclick="editItem(${index})">Edit</button>
                             <button onclick="removeItem(${index})">Remove</button>
