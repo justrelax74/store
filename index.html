@@ -159,7 +159,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background-color: rgba(0, 0, 0, 0.5);
+            background-color: rgba(0, 0, 0, 0.7); /* Darker background */
             display: flex;
             justify-content: center;
             align-items: center;
@@ -190,6 +190,17 @@
         .password-prompt-box button:hover {
             background-color: #0056b3;
         }
+
+        /* Hide content behind password prompt */
+        #content {
+            display: none;
+        }
+        .password-prompt.hide {
+            display: none;
+        }
+        #content.show {
+            display: block;
+        }
     </style>
 </head>
 <body>
@@ -204,72 +215,75 @@
         </div>
     </div>
 
-    <!-- Invoice Content -->
-    <div class="input-box" style="border: 1px solid #ccc; background-color: #f9f9f9; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); padding: 20px; border-radius: 8px;">
-        <h2 style="margin-bottom: 10px; font-size: 1.5em; display: flex; align-items: center; justify-content: space-between;">
-            Kuitansi<br>
-            <img src="receipt.jpg" alt="Receipt Icon" style="max-width: 50px; height: auto;">
-        </h2>
-        <div style="margin-bottom: 15px;">
-            <label for="productName" style="display: block; margin-bottom: 5px; font-weight: bold;">Nama Item</label>
-            <input type="text" id="productName" style="padding: 10px; width: calc(100% - 20px); border: 1px solid #ccc; border-radius: 4px;">
+    <!-- Main Content -->
+    <div id="content">
+        <!-- Invoice Content -->
+        <div class="input-box" style="border: 1px solid #ccc; background-color: #f9f9f9; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); padding: 20px; border-radius: 8px;">
+            <h2 style="margin-bottom: 10px; font-size: 1.5em; display: flex; align-items: center; justify-content: space-between;">
+                Kuitansi<br>
+                <img src="receipt.jpg" alt="Receipt Icon" style="max-width: 50px; height: auto;">
+            </h2>
+            <div style="margin-bottom: 15px;">
+                <label for="productName" style="display: block; margin-bottom: 5px; font-weight: bold;">Nama Item</label>
+                <input type="text" id="productName" style="padding: 10px; width: calc(100% - 20px); border: 1px solid #ccc; border-radius: 4px;">
+            </div>
+            <div style="margin-bottom: 15px;">
+                <label for="qty" style="display: block; margin-bottom: 5px; font-weight: bold;">Kuantiti:</label>
+                <input type="number" id="qty" style="padding: 10px; width: calc(100% - 20px); border: 1px solid #ccc; border-radius: 4px;">
+            </div>
+            <div style="margin-bottom: 15px;">
+                <label for="price" style="display: block; margin-bottom: 5px; font-weight: bold;">Harga/Item:</label>
+                <input type="number" id="price" style="padding: 10px; width: calc(100% - 20px); border: 1px solid #ccc; border-radius: 4px;">
+            </div>
+            <button onclick="addItem()" style="padding: 12px 24px; font-size: 14px; background-color: #007bff; color: #fff; border: none; border-radius: 4px; cursor: pointer; display: block; margin-left: auto; margin-right: auto;">Tambah Item</button>
         </div>
-        <div style="margin-bottom: 15px;">
-            <label for="qty" style="display: block; margin-bottom: 5px; font-weight: bold;">Kuantiti:</label>
-            <input type="number" id="qty" style="padding: 10px; width: calc(100% - 20px); border: 1px solid #ccc; border-radius: 4px;">
+        
+        <div class="invoice-box" id="invoice">
+            <table cellpadding="0" cellspacing="0">
+                <tr class="top">
+                    <td colspan="3">
+                        <table class="logo-container">
+                            <tr>
+                                <td class="title" style="text-align: center;" colspan="3">
+                                    <img src="logo.png">
+                                </td>
+                            </tr>
+                            <tr class="information line">
+                                <td colspan="3" style="border-bottom: 2px dashed #000; text-align: center;">
+                                    <span id="invoiceDate" style="font-size: 12px;"></span><br>
+                                    <span style="font-size: 12px;">MEGA MAS MOTOR</span><br>
+                                    <span style="font-size: 12px;">Jl. Kelapa No. 25, Palopo, Sulawesi Selatan</span><br>
+                                    <span style="font-size: 12px;">0821-8713-8889</span>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+                <tr class="heading">
+                    <td style="font-weight: bold; text-align: left; font-size: 16px;">Qty</td>
+                    <td style="font-weight: bold; text-align: left; font-size: 16px;">Product Name</td>
+                    <td style="font-weight: bold; text-align: right; font-size: 16px;">Total Price</td>
+                </tr>
+                <tbody id="invoiceItems">
+                    <!-- Items will be added dynamically here -->
+                </tbody>
+                <tr class="total">
+                    <td colspan="2" class="total-amount" style="font-size: 16px; padding: 5px;">Grand Total:</td>
+                    <td class="total-value" id="grandTotal" style="font-size: 16px; padding: 5px; text-align: right;">0</td>
+                </tr>
+            </table>
+            <div style="text-align:center; margin-top: 10px; font-size: 12px;">Terima Kasih</div>
         </div>
-        <div style="margin-bottom: 15px;">
-            <label for="price" style="display: block; margin-bottom: 5px; font-weight: bold;">Harga/Item:</label>
-            <input type="number" id="price" style="padding: 10px; width: calc(100% - 20px); border: 1px solid #ccc; border-radius: 4px;">
-        </div>
-        <button onclick="addItem()" style="padding: 12px 24px; font-size: 14px; background-color: #007bff; color: #fff; border: none; border-radius: 4px; cursor: pointer; display: block; margin-left: auto; margin-right: auto;">Tambah Item</button>
-    </div>
-    
-    <div class="invoice-box" id="invoice">
-        <table cellpadding="0" cellspacing="0">
-            <tr class="top">
-                <td colspan="3">
-                    <table class="logo-container">
-                        <tr>
-                            <td class="title" style="text-align: center;" colspan="3">
-                                <img src="logo.png">
-                            </td>
-                        </tr>
-                        <tr class="information line">
-                            <td colspan="3" style="border-bottom: 2px dashed #000; text-align: center;">
-                                <span id="invoiceDate" style="font-size: 12px;"></span><br>
-                                <span style="font-size: 12px;">MEGA MAS MOTOR</span><br>
-                                <span style="font-size: 12px;">Jl. Kelapa No. 25, Palopo, Sulawesi Selatan</span><br>
-                                <span style="font-size: 12px;">0821-8713-8889</span>
-                            </td>
-                        </tr>
-                    </table>
-                </td>
-            </tr>
-            <tr class="heading">
-                <td style="font-weight: bold; text-align: left; font-size: 16px;">Qty</td>
-                <td style="font-weight: bold; text-align: left; font-size: 16px;">Product Name</td>
-                <td style="font-weight: bold; text-align: right; font-size: 16px;">Total Price</td>
-            </tr>
-            <tbody id="invoiceItems">
-                <!-- Items will be added dynamically here -->
-            </tbody>
-            <tr class="total">
-                <td colspan="2" class="total-amount" style="font-size: 16px; padding: 5px;">Grand Total:</td>
-                <td class="total-value" id="grandTotal" style="font-size: 16px; padding: 5px; text-align: right;">0</td>
-            </tr>
-        </table>
-        <div style="text-align:center; margin-top: 10px; font-size: 12px;">Terima Kasih</div>
-    </div>
 
-    <!-- Edit and remove buttons -->
-    <div class="edit-buttons" id="editButtons">
-        <button id="editItemButton" onclick="editItem()">Edit</button>
-        <button id="removeItemButton" onclick="removeItem()">Hapus</button>
-    </div>
+        <!-- Edit and remove buttons -->
+        <div class="edit-buttons" id="editButtons">
+            <button id="editItemButton" onclick="editItem()">Edit</button>
+            <button id="removeItemButton" onclick="removeItem()">Hapus</button>
+        </div>
 
-    <div class="print-button">
-        <button onclick="printInvoice()">Print Kuitansi</button>
+        <div class="print-button">
+            <button onclick="printInvoice()">Print Kuitansi</button>
+        </div>
     </div>
 
     <script>
@@ -403,7 +417,8 @@
             const password = document.getElementById('password').value;
             // Replace 'your_password' with your actual password
             if (password === 'cotomakassar') {
-                document.getElementById('passwordPrompt').style.display = 'none';
+                document.getElementById('passwordPrompt').classList.add('hide');
+                document.getElementById('content').classList.add('show');
                 // Initialize invoice after password verification
                 setDate();
             } else {
@@ -413,7 +428,8 @@
 
         // Show password prompt initially
         document.addEventListener('DOMContentLoaded', () => {
-            document.getElementById('passwordPrompt').style.display = 'flex';
+            document.getElementById('passwordPrompt').classList.remove('hide');
+            document.getElementById('content').classList.remove('show');
         });
     </script>
 </body>
