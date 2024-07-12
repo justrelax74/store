@@ -18,7 +18,6 @@ jobs:
 
       - name: Copy Files for Deployment
         run: |
-          cp index.html $GITHUB_WORKSPACE
           cp invoice.html $GITHUB_WORKSPACE
           cp .htaccess $GITHUB_WORKSPACE
           cp .htpasswd $GITHUB_WORKSPACE
