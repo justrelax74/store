@@ -4,14 +4,65 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login Page</title>
-    <link rel="stylesheet" href="styles.css"> <!-- Link to your CSS file for styling -->
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f0f0f0;
+            text-align: center;
+            padding: 50px;
+        }
+        .login-container {
+            max-width: 300px;
+            margin: 0 auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+        .login-container h2 {
+            margin-bottom: 20px;
+            color: #333;
+        }
+        .login-container label {
+            display: block;
+            margin-bottom: 10px;
+            color: #666;
+        }
+        .login-container input[type="text"], .login-container input[type="password"] {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            box-sizing: border-box;
+        }
+        .login-container button {
+            width: 100%;
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+        .login-container button:hover {
+            background-color: #45a049;
+        }
+    </style>
 </head>
 <body>
     <div class="login-container">
         <h2>Login</h2>
-        <!-- No form needed here, as authentication is handled by .htpasswd and .htaccess -->
+        <!-- Form for login -->
+        <form action="index.html" method="post">
+            <label for="username">Username:</label>
+            <input type="text" id="username" name="username" required>
+            <br>
+            <label for="password">Password:</label>
+            <input type="password" id="password" name="password" required>
+            <br>
+            <button type="submit">Login</button>
+        </form>
     </div>
-
-    <script src="script.js"></script> <!-- Link to your JavaScript file -->
 </body>
 </html>
