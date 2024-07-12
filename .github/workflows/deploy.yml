@@ -15,6 +15,7 @@ jobs:
 
       - name: Copy Files for Deployment
         run: |
+          ls -la   # Use ls -la to list the contents and verify files are present
           cp index.html $GITHUB_WORKSPACE
           cp invoice.html $GITHUB_WORKSPACE
           cp .htaccess $GITHUB_WORKSPACE
