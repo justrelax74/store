@@ -13,24 +13,15 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v2
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v2
-        with:
-          node-version: '14'
-
-      - name: Install Dependencies
-        run: npm install
-
-      - name: Build Project
-        run: npm run build
+      - name: Copy Files for Deployment
+        run: |
+          cp index.html $GITHUB_WORKSPACE
+          cp invoice.html $GITHUB_WORKSPACE
+          cp .htaccess $GITHUB_WORKSPACE
+          cp .htpasswd $GITHUB_WORKSPACE
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./public
-
-      - name: Copy .htaccess and .htpasswd
-        run: |
-          cp .htaccess public/.htaccess
-          cp .htpasswd public/.htpasswd
+          publish_dir: $GITHUB_WORKSPACE
