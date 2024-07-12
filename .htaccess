@@ -1,5 +1,5 @@
 
 AuthType Basic
 AuthName "Restricted Area"
-AuthUserFile /.htpasswd
+AuthUserFile https://justrelax74.github.io/tutor/.htpasswd
 Require valid-user
