@@ -18,10 +18,26 @@ jobs:
 
       - name: Copy Files for Deployment
         run: |
-          # Copy only if the file is not already in $GITHUB_WORKSPACE
-          [[ ! -f "$GITHUB_WORKSPACE/invoice.html" ]] && cp invoice.html $GITHUB_WORKSPACE
-          [[ ! -f "$GITHUB_WORKSPACE/.htaccess" ]] && cp .htaccess $GITHUB_WORKSPACE
-          [[ ! -f "$GITHUB_WORKSPACE/.htpasswd" ]] && cp .htpasswd $GITHUB_WORKSPACE
+          if [[ ! -f "$GITHUB_WORKSPACE/invoice.html" ]]; then
+            echo "Copying invoice.html"
+            cp invoice.html $GITHUB_WORKSPACE
+          else
+            echo "invoice.html already exists in $GITHUB_WORKSPACE"
+          fi
+
+          if [[ ! -f "$GITHUB_WORKSPACE/.htaccess" ]]; then
+            echo "Copying .htaccess"
+            cp .htaccess $GITHUB_WORKSPACE
+          else
+            echo ".htaccess already exists in $GITHUB_WORKSPACE"
+          fi
+
+          if [[ ! -f "$GITHUB_WORKSPACE/.htpasswd" ]]; then
+            echo "Copying .htpasswd"
+            cp .htpasswd $GITHUB_WORKSPACE
+          else
+            echo ".htpasswd already exists in $GITHUB_WORKSPACE"
+          fi
 
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
