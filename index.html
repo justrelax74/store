@@ -21,21 +21,19 @@
             event.preventDefault();
             var username = document.getElementById('username').value;
             var password = document.getElementById('password').value;
-            fetch('/login', {
+            fetch('https://your-backend-url/login', { // Replace with your actual backend URL
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify({ username: username, password: password })
             })
-            .then(response => {
-                if (response.ok) {
-                    return response.json();
-                }
-                throw new Error('Login failed.');
-            })
+            .then(response => response.json())
             .then(data => {
-                window.location.href = 'invoice.html'; // Redirect to invoice.html on successful login
+                alert(data.message); // Show message from server
+                if (data.message === 'Login successful.') {
+                    window.location.href = 'invoice.html'; // Redirect to invoice.html on successful login
+                }
             })
             .catch(error => {
                 console.error('Login error:', error);
