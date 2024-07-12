@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>GitHub OAuth Callback</title>
+</head>
+<body>
+    <h2>Processing OAuth...</h2>
+    <p>This page will handle the OAuth callback.</p>
+
+    <script>
+        // Function to parse URL parameters
+        function getParameterByName(name, url) {
+            if (!url) url = window.location.href;
+            name = name.replace(/[\[\]]/g, '\\$&');
+            var regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)'),
+                results = regex.exec(url);
+            if (!results) return null;
+            if (!results[2]) return '';
+            return decodeURIComponent(results[2].replace(/\+/g, ' '));
+        }
+
+        // Get access token from URL parameters
+        const accessToken = getParameterByName('code');
+
+        // Store access token in localStorage (you can modify this to securely store tokens)
+        localStorage.setItem('accessToken', accessToken);
+
+        // Redirect to secure area or authenticated page (replace with your logic)
+        window.location.href = 'https://<yourusername>.github.io/invoice.html';
+    </script>
+</body>
+</html>
