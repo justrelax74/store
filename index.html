@@ -9,7 +9,7 @@
 <body>
     <div class="login-container">
         <h2>Login</h2>
-        <form id="loginForm" action="authenticate.php" method="post">
+        <form id="loginForm" onsubmit="return validateForm()">
             <label for="username">Username:</label>
             <input type="text" id="username" name="username" required>
             <br><br>
@@ -20,6 +20,24 @@
         </form>
     </div>
 
-    <script src="script.js"></script> <!-- Link to your JavaScript file -->
+    <script>
+    function validateForm() {
+        var username = document.getElementById("username").value;
+        var password = document.getElementById("password").value;
+
+        // Example validation (replace with your actual validation logic)
+        if (username === "your_username" && password === "your_password") {
+            // Store username in localStorage (for demo purposes)
+            localStorage.setItem('username', username);
+            
+            // Redirect to invoice.html or any other page
+            window.location.href = "invoice.html";
+            return false; // Prevent form submission (optional)
+        } else {
+            alert("Invalid username or password. Please try again.");
+            return false; // Prevent form submission (optional)
+        }
+    }
+    </script>
 </body>
 </html>
