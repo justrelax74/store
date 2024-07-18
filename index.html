@@ -202,7 +202,33 @@
             display: block;
         }
     </style>
+    
+     <script type="module">
+  // Import the functions you need from the SDKs you need
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-app.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-analytics.js";
+  // TODO: Add SDKs for Firebase products that you want to use
+  // https://firebase.google.com/docs/web/setup#available-libraries
+
+  // Your web app's Firebase configuration
+  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
+  const firebaseConfig = {
+    apiKey: "AIzaSyAFm1LudM4zhKOtVKrG4fceVTa3l8nB6C0",
+    authDomain: "receiptmegamas.firebaseapp.com",
+    projectId: "receiptmegamas",
+    storageBucket: "receiptmegamas.appspot.com",
+    messagingSenderId: "619429137563",
+    appId: "1:619429137563:web:0955af016f855b919d4a3e",
+    measurementId: "G-VT2CP7G7XV"
+  };
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const analytics = getAnalytics(app);
+</script>
+
 </head>
+    
 <body>
     
     <!-- Password Prompt -->
@@ -286,29 +312,7 @@
         </div>
     </div>
 
- <script type="module">
-  // Import the functions you need from the SDKs you need
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-app.js";
-  import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-analytics.js";
-  // TODO: Add SDKs for Firebase products that you want to use
-  // https://firebase.google.com/docs/web/setup#available-libraries
 
-  // Your web app's Firebase configuration
-  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-  const firebaseConfig = {
-    apiKey: "AIzaSyAFm1LudM4zhKOtVKrG4fceVTa3l8nB6C0",
-    authDomain: "receiptmegamas.firebaseapp.com",
-    projectId: "receiptmegamas",
-    storageBucket: "receiptmegamas.appspot.com",
-    messagingSenderId: "619429137563",
-    appId: "1:619429137563:web:0955af016f855b919d4a3e",
-    measurementId: "G-VT2CP7G7XV"
-  };
-
-  // Initialize Firebase
-  const app = initializeApp(firebaseConfig);
-  const analytics = getAnalytics(app);
-</script>
 
 
     
@@ -458,5 +462,43 @@
             document.getElementById('content').classList.remove('show');
         });
     </script>
+    <script>
+    async function addItem() {
+        const productName = document.getElementById('productName').value.trim();
+        const qty = parseInt(document.getElementById('qty').value);
+        const price = parseFloat(document.getElementById('price').value);
+
+        if (productName && qty && price) {
+            const totalPrice = qty * price;
+            grandTotal += totalPrice;
+
+            const item = {
+                productName: productName.toUpperCase(),
+                qty: qty,
+                price: price,
+                totalPrice: totalPrice,
+                timestamp: new Date()
+            };
+
+            try {
+                await db.collection('invoices').add(item);
+                items.push(item);
+                updateInvoiceItems();
+                document.getElementById('grandTotal').textContent = formatNumber(grandTotal);
+
+                setDate();
+
+                document.getElementById('productName').value = '';
+                document.getElementById('qty').value = '';
+                document.getElementById('price').value = '';
+            } catch (error) {
+                console.error('Error adding document: ', error);
+            }
+        } else {
+            alert('Please fill out all fields.');
+        }
+    }
+</script>
+
 </body>
 </html>
