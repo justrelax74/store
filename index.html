@@ -203,245 +203,32 @@
         }
     </style>
     
-     <script type="module">
-  // Import the functions you need from the SDKs you need
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-app.js";
-  import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-analytics.js";
-  // TODO: Add SDKs for Firebase products that you want to use
-  // https://firebase.google.com/docs/web/setup#available-libraries
+    <script type="module">
+        // Import the functions you need from the SDKs you need
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-analytics.js";
+        import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-firestore.js";
 
-  // Your web app's Firebase configuration
-  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-  const firebaseConfig = {
-    apiKey: "AIzaSyAFm1LudM4zhKOtVKrG4fceVTa3l8nB6C0",
-    authDomain: "receiptmegamas.firebaseapp.com",
-    projectId: "receiptmegamas",
-    storageBucket: "receiptmegamas.appspot.com",
-    messagingSenderId: "619429137563",
-    appId: "1:619429137563:web:0955af016f855b919d4a3e",
-    measurementId: "G-VT2CP7G7XV"
-  };
+        // Your web app's Firebase configuration
+        const firebaseConfig = {
+            apiKey: "AIzaSyAFm1LudM4zhKOtVKrG4fceVTa3l8nB6C0",
+            authDomain: "receiptmegamas.firebaseapp.com",
+            projectId: "receiptmegamas",
+            storageBucket: "receiptmegamas.appspot.com",
+            messagingSenderId: "619429137563",
+            appId: "1:619429137563:web:0955af016f855b919d4a3e",
+            measurementId: "G-VT2CP7G7XV"
+        };
 
-  // Initialize Firebase
-  const app = initializeApp(firebaseConfig);
-  const analytics = getAnalytics(app);
-</script>
+        // Initialize Firebase
+        const app = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(app);
+        const db = getFirestore(app);
 
-</head>
-    
-<body>
-    
-    <!-- Password Prompt -->
-    <div class="password-prompt" id="passwordPrompt">
-        <div class="password-prompt-box">
-            <h2>Password Required</h2>
-            <label for="password">Enter Password:</label>
-            <input type="password" id="password" />
-            <button onclick="checkPassword()">Submit</button>
-        </div>
-    </div>
-
-    <!-- Main Content -->
-    <div id="content">
-        <!-- Invoice Content -->
-        <div class="input-box" style="border: 1px solid #ccc; background-color: #f9f9f9; box-shadow: 0 0 10px rgba(0, 0, 0, 0.1); padding: 20px; border-radius: 8px;">
-            <h2 style="margin-bottom: 10px; font-size: 1.5em; display: flex; align-items: center; justify-content: space-between;">
-                Kuitansi<br>
-                <img src="receipt.jpg" alt="Receipt Icon" style="max-width: 50px; height: auto;">
-            </h2>
-            <div style="margin-bottom: 15px;">
-                <label for="productName" style="display: block; margin-bottom: 5px; font-weight: bold;">Nama Item</label>
-                <input type="text" id="productName" style="padding: 10px; width: calc(100% - 20px); border: 1px solid #ccc; border-radius: 4px;">
-            </div>
-            <div style="margin-bottom: 15px;">
-                <label for="qty" style="display: block; margin-bottom: 5px; font-weight: bold;">Kuantiti:</label>
-                <input type="number" id="qty" style="padding: 10px; width: calc(100% - 20px); border: 1px solid #ccc; border-radius: 4px;">
-            </div>
-            <div style="margin-bottom: 15px;">
-                <label for="price" style="display: block; margin-bottom: 5px; font-weight: bold;">Harga/Item:</label>
-                <input type="number" id="price" style="padding: 10px; width: calc(100% - 20px); border: 1px solid #ccc; border-radius: 4px;">
-            </div>
-            <button onclick="addItem()" style="padding: 12px 24px; font-size: 14px; background-color: #007bff; color: #fff; border: none; border-radius: 4px; cursor: pointer; display: block; margin-left: auto; margin-right: auto;">Tambah Item</button>
-        </div>
-        
-        <div class="invoice-box" id="invoice">
-            <table cellpadding="0" cellspacing="0">
-                <tr class="top">
-                    <td colspan="3">
-                        <table class="logo-container">
-                            <tr>
-                                <td class="title" style="text-align: center;" colspan="3">
-                                    <img src="logo.png">
-                                </td>
-                            </tr>
-                            <tr class="information line">
-                                <td colspan="3" style="border-bottom: 2px dashed #000; text-align: center;">
-                                    <span id="invoiceDate" style="font-size: 12px;"></span><br>
-                                    <span style="font-size: 12px;">MEGA MAS MOTOR</span><br>
-                                    <span style="font-size: 12px;">Jl. Kelapa No. 25, Palopo, Sulawesi Selatan</span><br>
-                                    <span style="font-size: 12px;">0821-8713-8889</span>
-                                </td>
-                            </tr>
-                        </table>
-                    </td>
-                </tr>
-                <tr class="heading">
-                    <td style="font-weight: bold; text-align: left; font-size: 16px;">Qty</td>
-                    <td style="font-weight: bold; text-align: left; font-size: 16px;">Product Name</td>
-                    <td style="font-weight: bold; text-align: right; font-size: 16px;">Total Price</td>
-                </tr>
-                <tbody id="invoiceItems">
-                    <!-- Items will be added dynamically here -->
-                </tbody>
-                <tr class="total">
-                    <td colspan="2" class="total-amount" style="font-size: 16px; padding: 5px;">Grand Total:</td>
-                    <td class="total-value" id="grandTotal" style="font-size: 16px; padding: 5px; text-align: right;">0</td>
-                </tr>
-            </table>
-            <div style="text-align:center; margin-top: 10px; font-size: 12px;">Terima Kasih</div>
-        </div>
-
-        <!-- Edit and remove buttons -->
-        <div class="edit-buttons" id="editButtons">
-            <button id="editItemButton" onclick="editItem()">Edit</button>
-            <button id="removeItemButton" onclick="removeItem()">Hapus</button>
-        </div>
-
-        <div class="print-button">
-            <button onclick="printInvoice()">Print Kuitansi</button>
-        </div>
-    </div>
-
-
-
-
-    
-    <script>
-        let grandTotal = 0;
-        let items = [];
-        let selectedItemIndex = -1;
-
-        function setDate() {
-            const now = new Date();
-    
-            // Format date part
-            const optionsDate = { year: 'numeric', month: 'short', day: '2-digit' };
-            const formattedDate = now.toLocaleDateString('id-ID', optionsDate);
-    
-            // Format time part
-            const hours = String(now.getHours()).padStart(2, '0');
-            const minutes = String(now.getMinutes()).padStart(2, '0');
-            const seconds = String(now.getSeconds()).padStart(2, '0');
-            const formattedTime = `${hours}:${minutes}:${seconds}`;
-    
-            // Display formatted date and time
-            const fullFormattedDate = `${formattedDate}, ${formattedTime}`;
-            document.getElementById('invoiceDate').textContent = fullFormattedDate;
-        }
-
-        function formatNumber(number) {
-            return number.toLocaleString('id-ID');
-        }
-
-        function addItem() {
-            const productName = document.getElementById('productName').value.trim();
-            const qty = parseInt(document.getElementById('qty').value);
-            const price = parseFloat(document.getElementById('price').value);
-
-            if (productName && qty && price) {
-                const totalPrice = qty * price;
-                grandTotal += totalPrice;
-
-                const item = {
-                    productName: productName.toUpperCase(),
-                    qty: qty,
-                    price: price,
-                    totalPrice: totalPrice
-                };
-
-                items.push(item);
-                updateInvoiceItems();
-                document.getElementById('grandTotal').textContent = formatNumber(grandTotal);
-
-                setDate();
-
-                document.getElementById('productName').value = '';
-                document.getElementById('qty').value = '';
-                document.getElementById('price').value = '';
-            } else {
-                alert('Please fill out all fields.');
-            }
-        }
-
-        function updateInvoiceItems() {
-            const invoiceItemsElement = document.getElementById('invoiceItems');
-            invoiceItemsElement.innerHTML = '';
-
-            items.forEach((item, index) => {
-                const itemRow = document.createElement('tr');
-                itemRow.className = 'item';
-                itemRow.innerHTML = `
-                    <td style="text-align: left; font-size: 16px; padding: 5px;">${item.qty}</td>
-                    <td style="text-align: left; font-size: 16px; padding: 5px;">${item.productName}</td>
-                    <td style="text-align: right; font-size: 16px; padding: 5px;">${formatNumber(item.totalPrice)}
-                        <div class="edit-buttons">
-                            <button onclick="editItem(${index})">Edit</button>
-                            <button onclick="removeItem(${index})">Remove</button>
-                        </div>
-                    </td>
-                `;
-
-                itemRow.addEventListener('mouseover', () => {
-                    showEditButtons(itemRow);
-                });
-
-                itemRow.addEventListener('mouseout', () => {
-                    hideEditButtons();
-                });
-
-                invoiceItemsElement.appendChild(itemRow);
-            });
-        }
-
-        function showEditButtons(itemRow) {
-            const editButtons = itemRow.querySelector('.edit-buttons');
-            editButtons.style.display = 'block';
-        }
-
-        function hideEditButtons() {
-            const editButtons = document.querySelectorAll('.edit-buttons');
-            editButtons.forEach(buttons => {
-                buttons.style.display = 'none';
-            });
-        }
-
-        function editItem(index) {
-            const item = items[index];
-            document.getElementById('productName').value = item.productName.toLowerCase();
-            document.getElementById('qty').value = item.qty;
-            document.getElementById('price').value = item.price;
-
-            items.splice(index, 1);
-            grandTotal -= item.totalPrice;
-            updateInvoiceItems();
-            document.getElementById('grandTotal').textContent = formatNumber(grandTotal);
-            selectedItemIndex = -1;
-            hideEditButtons();
-        }
-
-        function removeItem(index) {
-            const item = items[index];
-            items.splice(index, 1);
-            grandTotal -= item.totalPrice;
-            updateInvoiceItems();
-            document.getElementById('grandTotal').textContent = formatNumber(grandTotal);
-            selectedItemIndex = -1;
-            hideEditButtons();
-        }
-
-        function printInvoice() {
-            window.print();
-        }
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('passwordPrompt').classList.remove('hide');
+            document.getElementById('content').classList.remove('show');
+        });
 
         function checkPassword() {
             const password = document.getElementById('password').value;
@@ -456,49 +243,164 @@
             }
         }
 
-        // Show password prompt initially
-        document.addEventListener('DOMContentLoaded', () => {
-            document.getElementById('passwordPrompt').classList.remove('hide');
-            document.getElementById('content').classList.remove('show');
-        });
-    </script>
-    <script>
-    async function addItem() {
-        const productName = document.getElementById('productName').value.trim();
-        const qty = parseInt(document.getElementById('qty').value);
-        const price = parseFloat(document.getElementById('price').value);
+        let grandTotal = 0;
+        let items = [];
+        let selectedItemIndex = -1;
 
-        if (productName && qty && price) {
-            const totalPrice = qty * price;
-            grandTotal += totalPrice;
+        function setDate() {
+            const now = new Date();
+            const optionsDate = { year: 'numeric', month: 'short', day: '2-digit' };
+            const formattedDate = now.toLocaleDateString('id-ID', optionsDate);
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            const formattedTime = `${hours}:${minutes}:${seconds}`;
+            const fullFormattedDate = `${formattedDate}, ${formattedTime}`;
+            document.getElementById('invoiceDate').textContent = fullFormattedDate;
+        }
 
-            const item = {
-                productName: productName.toUpperCase(),
-                qty: qty,
-                price: price,
-                totalPrice: totalPrice,
-                timestamp: new Date()
+        function formatNumber(number) {
+            return number.toLocaleString('id-ID');
+        }
+
+        async function addItem() {
+            const productName = document.getElementById('productName').value.trim();
+            const qty = parseInt(document.getElementById('qty').value);
+            const price = parseFloat(document.getElementById('price').value);
+
+            if (productName && qty && price) {
+                const totalPrice = qty * price;
+                grandTotal += totalPrice;
+
+                const item = {
+                    productName: productName.toUpperCase(),
+                    qty: qty,
+                    price: price,
+                    total: totalPrice
+                };
+
+                if (selectedItemIndex >= 0) {
+                    grandTotal -= items[selectedItemIndex].total; // Adjust grandTotal for edited item
+                    items[selectedItemIndex] = item; // Update the item
+                    selectedItemIndex = -1;
+                } else {
+                    items.push(item);
+                }
+
+                updateItems();
+                clearInputs();
+            } else {
+                alert('Please enter product name, quantity, and price.');
+            }
+        }
+
+        function updateItems() {
+            const itemList = document.getElementById('itemList');
+            itemList.innerHTML = '';
+
+            items.forEach((item, index) => {
+                const itemRow = document.createElement('tr');
+                itemRow.classList.add('item');
+                itemRow.innerHTML = `
+                    <td>${item.productName}</td>
+                    <td>${item.qty}</td>
+                    <td>${formatNumber(item.price)}</td>
+                    <td>${formatNumber(item.total)}</td>
+                    <td class="edit-buttons">
+                        <button onclick="editItem(${index})">Edit</button>
+                        <button onclick="removeItem(${index})">Remove</button>
+                    </td>
+                `;
+                itemList.appendChild(itemRow);
+            });
+
+            document.getElementById('total').textContent = `Rp ${formatNumber(grandTotal)}`;
+        }
+
+        function clearInputs() {
+            document.getElementById('productName').value = '';
+            document.getElementById('qty').value = '';
+            document.getElementById('price').value = '';
+        }
+
+        function editItem(index) {
+            const item = items[index];
+            document.getElementById('productName').value = item.productName;
+            document.getElementById('qty').value = item.qty;
+            document.getElementById('price').value = item.price;
+            selectedItemIndex = index;
+        }
+
+        function removeItem(index) {
+            const item = items[index];
+            grandTotal -= item.total;
+            items.splice(index, 1);
+            updateItems();
+        }
+
+        function printInvoice() {
+            window.print();
+        }
+
+        async function saveInvoice() {
+            const invoiceDate = document.getElementById('invoiceDate').textContent;
+            const invoiceData = {
+                date: invoiceDate,
+                items: items,
+                grandTotal: grandTotal
             };
 
             try {
-                await db.collection('invoices').add(item);
-                items.push(item);
-                updateInvoiceItems();
-                document.getElementById('grandTotal').textContent = formatNumber(grandTotal);
-
-                setDate();
-
-                document.getElementById('productName').value = '';
-                document.getElementById('qty').value = '';
-                document.getElementById('price').value = '';
-            } catch (error) {
-                console.error('Error adding document: ', error);
+                const docRef = await addDoc(collection(db, "invoices"), invoiceData);
+                alert("Invoice saved with ID: " + docRef.id);
+            } catch (e) {
+                console.error("Error adding document: ", e);
+                alert("Failed to save invoice. Please try again.");
             }
-        } else {
-            alert('Please fill out all fields.');
         }
-    }
-</script>
+    </script>
+</head>
+<body>
+    <div id="passwordPrompt" class="password-prompt">
+        <div class="password-prompt-box">
+            <label for="password">Enter Password:</label>
+            <input type="password" id="password" name="password">
+            <button onclick="checkPassword()">Submit</button>
+        </div>
+    </div>
 
+    <div id="content" class="invoice-box">
+        <div class="logo-container">
+            <img src="images/megamasmotor.png" alt="Logo">
+        </div>
+        <table>
+            <tr class="information">
+                <td>
+                    <span id="invoiceDate"></span><br>
+                    MEGA MAS MOTOR
+                    Jl. Kelapa No.25, Palopo, Sulawesi Selatan<br>
+                    Tlp. 0821-8713-8889
+                </td>
+            </tr>
+        </table>
+        <div class="separator-line"></div>
+        <table>
+            <tbody id="itemList"></tbody>
+            <tr class="total">
+                <td class="total-amount">Total:</td>
+                <td class="total-value" id="total">Rp 0</td>
+            </tr>
+        </table>
+        <div class="input-box">
+            <input type="text" id="productName" placeholder="Product Name">
+            <input type="number" id="qty" placeholder="Qty">
+            <input type="number" id="price" placeholder="Price">
+            <button onclick="addItem()">Add Item</button>
+            <button onclick="saveInvoice()">Save Invoice</button>
+        </div>
+        <div class="print-button">
+            <button onclick="printInvoice()">Print Invoice</button>
+        </div>
+    </div>
 </body>
 </html>
