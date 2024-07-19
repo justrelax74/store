@@ -4,403 +4,133 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MEGA MAS MOTOR | Kuitansi</title>
-    <style>
-        body {
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 20px;
-        }
-        .invoice-box {
-            width: 80mm;
-            padding: 10px;
-            border: 1px solid #eee;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.15);
-            font-size: 14px;
-            line-height: 1.5;
-            margin: 0 auto;
-            position: relative;
-        }
-        .invoice-box table {
-            width: 100%;
-            line-height: inherit;
-            text-align: left;
-            border-collapse: collapse;
-        }
-        .invoice-box table td {
-            padding: 0;
-            vertical-align: top;
-        }
-        .invoice-box table tr.top table td {
-            padding: 0;
-        }
-        .invoice-box table tr.top table td.title {
-            font-size: 20px;
-            line-height: 24px;
-            color: #333;
-            padding-bottom: 0;
-            font-weight: bold;
-        }
-        .invoice-box table tr.information table td {
-            padding: 0;
-            text-align: center;
-            font-size: 12px;
-        }
-        .invoice-box table tr.line {
-            border-bottom: 1px dashed #000;
-        }
-        .invoice-box table tr.heading td {
-            font-weight: bold;
-            font-size: 16px;
-        }
-        .invoice-box table tr.item td {
-            border-bottom: none;
-            padding: 5px;
-            cursor: pointer;
-            position: relative;
-        }
-        .invoice-box table tr.item td:hover {
-            background-color: #f0f0f0;
-        }
-        .invoice-box table tr.total {
-            border-top: 2px dashed #000;
-            border-bottom: 2px dashed #000;
-        }
-        .total-amount {
-            font-weight: bold;
-            font-size: 16px;
-            padding: 5px;
-            text-align: left;
-        }
-        .total-value {
-            font-weight: bold;
-            font-size: 16px;
-            padding: 5px;
-            text-align: right;
-        }
-        .input-box {
-            margin-bottom: 20px;
-        }
-        .input-box input, .input-box button {
-            padding: 6px;
-            margin: 3px;
-        }
-        .separator-line {
-            border-bottom: 1px dashed #000;
-            margin: 5px 0;
-        }
-        .logo-container {
-            text-align: center;
-            margin-bottom: 10px;
-        }
-        .logo-container img {
-            max-width: 100%;
-            height: auto;
-        }
-        .print-button {
-            text-align: center;
-            margin-top: 20px;
-        }
-        .print-button button {
-            padding: 10px 20px;
-            font-size: 14px;
-            background-color: #007bff;
-            color: #fff;
-            border: none;
-            cursor: pointer;
-        }
-        .print-button button:hover {
-            background-color: #0056b3;
-        }
-
-        /* Hide elements for printing */
-        @media print {
-            body * {
-                visibility: hidden;
-            }
-            .invoice-box, .invoice-box * {
-                visibility: visible;
-            }
-            .invoice-box {
-                position: absolute;
-                left: 0;
-                top: 0;
-            }
-            .edit-buttons {
-                display: none !important;
-            }
-        }
-
-        /* Edit and remove buttons */
-        .edit-buttons {
-            position: absolute;
-            bottom: 5px;
-            left: 5px;
-            display: none;
-        }
-        .item:hover .edit-buttons {
-            display: block;
-        }
-        .edit-buttons button {
-            padding: 6px;
-            background-color: #007bff;
-            color: #fff;
-            border: none;
-            cursor: pointer;
-            margin-right: 5px;
-        }
-        .edit-buttons button:hover {
-            background-color: #0056b3;
-        }
-
-        /* Password Prompt styles */
-        .password-prompt {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background-color: rgba(0, 0, 0, 0.7); /* Darker background */
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            z-index: 1000;
-        }
-        .password-prompt-box {
-            background-color: #fff;
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            text-align: center;
-        }
-        .password-prompt-box label {
-            font-weight: bold;
-        }
-        .password-prompt-box input {
-            padding: 8px;
-            margin: 8px;
-        }
-        .password-prompt-box button {
-            padding: 10px 20px;
-            background-color: #007bff;
-            color: #fff;
-            border: none;
-            cursor: pointer;
-            margin-top: 10px;
-        }
-        .password-prompt-box button:hover {
-            background-color: #0056b3;
-        }
-
-        /* Hide content behind password prompt */
-        #content {
-            display: none;
-        }
-        .password-prompt.hide {
-            display: none;
-        }
-        #content.show {
-            display: block;
-        }
-    </style>
-    
-    <script type="module">
-        // Import the functions you need from the SDKs you need
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-app.js";
-        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-analytics.js";
-        import { getFirestore, collection, addDoc } from "https://www.gstatic.com/firebasejs/10.12.3/firebase-firestore.js";
-
-        // Your web app's Firebase configuration
-        const firebaseConfig = {
-            apiKey: "AIzaSyAFm1LudM4zhKOtVKrG4fceVTa3l8nB6C0",
-            authDomain: "receiptmegamas.firebaseapp.com",
-            projectId: "receiptmegamas",
-            storageBucket: "receiptmegamas.appspot.com",
-            messagingSenderId: "619429137563",
-            appId: "1:619429137563:web:0955af016f855b919d4a3e",
-            measurementId: "G-VT2CP7G7XV"
-        };
-
-        // Initialize Firebase
-        const app = initializeApp(firebaseConfig);
-        const analytics = getAnalytics(app);
-        const db = getFirestore(app);
-
-        document.addEventListener('DOMContentLoaded', () => {
-            document.getElementById('passwordPrompt').classList.remove('hide');
-            document.getElementById('content').classList.remove('show');
-        });
-
-        function checkPassword() {
-            const password = document.getElementById('password').value;
-            // Replace 'your_password' with your actual password
-            if (password === 'cotomakassar') {
-                document.getElementById('passwordPrompt').classList.add('hide');
-                document.getElementById('content').classList.add('show');
-                // Initialize invoice after password verification
-                setDate();
-            } else {
-                alert('Incorrect password. Please try again.');
-            }
-        }
-
-        let grandTotal = 0;
-        let items = [];
-        let selectedItemIndex = -1;
-
-        function setDate() {
-            const now = new Date();
-            const optionsDate = { year: 'numeric', month: 'short', day: '2-digit' };
-            const formattedDate = now.toLocaleDateString('id-ID', optionsDate);
-            const hours = String(now.getHours()).padStart(2, '0');
-            const minutes = String(now.getMinutes()).padStart(2, '0');
-            const seconds = String(now.getSeconds()).padStart(2, '0');
-            const formattedTime = `${hours}:${minutes}:${seconds}`;
-            const fullFormattedDate = `${formattedDate}, ${formattedTime}`;
-            document.getElementById('invoiceDate').textContent = fullFormattedDate;
-        }
-
-        function formatNumber(number) {
-            return number.toLocaleString('id-ID');
-        }
-
-        async function addItem() {
-            const productName = document.getElementById('productName').value.trim();
-            const qty = parseInt(document.getElementById('qty').value);
-            const price = parseFloat(document.getElementById('price').value);
-
-            if (productName && qty && price) {
-                const totalPrice = qty * price;
-                grandTotal += totalPrice;
-
-                const item = {
-                    productName: productName.toUpperCase(),
-                    qty: qty,
-                    price: price,
-                    total: totalPrice
-                };
-
-                if (selectedItemIndex >= 0) {
-                    grandTotal -= items[selectedItemIndex].total; // Adjust grandTotal for edited item
-                    items[selectedItemIndex] = item; // Update the item
-                    selectedItemIndex = -1;
-                } else {
-                    items.push(item);
-                }
-
-                updateItems();
-                clearInputs();
-            } else {
-                alert('Please enter product name, quantity, and price.');
-            }
-        }
-
-        function updateItems() {
-            const itemList = document.getElementById('itemList');
-            itemList.innerHTML = '';
-
-            items.forEach((item, index) => {
-                const itemRow = document.createElement('tr');
-                itemRow.classList.add('item');
-                itemRow.innerHTML = `
-                    <td>${item.productName}</td>
-                    <td>${item.qty}</td>
-                    <td>${formatNumber(item.price)}</td>
-                    <td>${formatNumber(item.total)}</td>
-                    <td class="edit-buttons">
-                        <button onclick="editItem(${index})">Edit</button>
-                        <button onclick="removeItem(${index})">Remove</button>
-                    </td>
-                `;
-                itemList.appendChild(itemRow);
-            });
-
-            document.getElementById('total').textContent = `Rp ${formatNumber(grandTotal)}`;
-        }
-
-        function clearInputs() {
-            document.getElementById('productName').value = '';
-            document.getElementById('qty').value = '';
-            document.getElementById('price').value = '';
-        }
-
-        function editItem(index) {
-            const item = items[index];
-            document.getElementById('productName').value = item.productName;
-            document.getElementById('qty').value = item.qty;
-            document.getElementById('price').value = item.price;
-            selectedItemIndex = index;
-        }
-
-        function removeItem(index) {
-            const item = items[index];
-            grandTotal -= item.total;
-            items.splice(index, 1);
-            updateItems();
-        }
-
-        function printInvoice() {
-            window.print();
-        }
-
-        async function saveInvoice() {
-            const invoiceDate = document.getElementById('invoiceDate').textContent;
-            const invoiceData = {
-                date: invoiceDate,
-                items: items,
-                grandTotal: grandTotal
-            };
-
-            try {
-                const docRef = await addDoc(collection(db, "invoices"), invoiceData);
-                alert("Invoice saved with ID: " + docRef.id);
-            } catch (e) {
-                console.error("Error adding document: ", e);
-                alert("Failed to save invoice. Please try again.");
-            }
-        }
-    </script>
+    <link rel="stylesheet" href="styles.css"> <!-- Link to your styles.css -->
 </head>
 <body>
-    <div id="passwordPrompt" class="password-prompt">
-        <div class="password-prompt-box">
-            <label for="password">Enter Password:</label>
-            <input type="password" id="password" name="password">
-            <button onclick="checkPassword()">Submit</button>
-        </div>
-    </div>
 
-    <div id="content" class="invoice-box">
-        <div class="logo-container">
-            <img src="images/megamasmotor.png" alt="Logo">
-        </div>
-        <table>
-            <tr class="information">
-                <td>
-                    <span id="invoiceDate"></span><br>
-                    MEGA MAS MOTOR
-                    Jl. Kelapa No.25, Palopo, Sulawesi Selatan<br>
-                    Tlp. 0821-8713-8889
+<!-- Password Prompt -->
+<div class="password-prompt" id="passwordPrompt">
+    <div class="password-prompt-box">
+        <h2>Password Required</h2>
+        <label for="password">Enter Password:</label>
+        <input type="password" id="password" />
+        <button onclick="checkPassword()">Submit</button>
+    </div>
+</div>
+
+<!-- Main Content -->
+<div id="content" class="hide"> <!-- Initially hidden, shown after password verification -->
+
+    <!-- Invoice Content -->
+    <div class="invoice-box">
+        <table cellpadding="0" cellspacing="0">
+            <tr class="top">
+                <td colspan="3">
+                    <table class="logo-container">
+                        <tr>
+                            <td class="title">
+                                <img src="logo.png" alt="Logo">
+                            </td>
+                        </tr>
+                        <tr class="information line">
+                            <td colspan="3">
+                    
+                                   <span id="invoiceDate"></span> 
+                                   <input type="text" id="invoiceNumber" placeholder="Enter Invoice Number" list="invoiceNumbers" onchange="loadInvoiceDetails()">
+                                   <datalist id="invoiceNumbers"></datalist>
+                               </div>
+                              
+                         
+                               <br>
+                                <span>MEGA MAS MOTOR</span><br>
+                                <span>Jl. Kelapa No. 25, Palopo, Sulawesi Selatan</span><br>
+                                <span>0821-8713-8889</span>
+                            </td>
+                        </tr>
+                    </table>
                 </td>
             </tr>
-        </table>
-        <div class="separator-line"></div>
-        <table>
-            <tbody id="itemList"></tbody>
+            <tr class="heading">
+                <td>Qty</td>
+                <td>Product Name</td>
+                <td>Total Price</td>
+            </tr>
+            <tbody id="invoiceItems">
+                <!-- Items will be added dynamically here -->
+            </tbody>
             <tr class="total">
-                <td class="total-amount">Total:</td>
-                <td class="total-value" id="total">Rp 0</td>
+                <td colspan="2" class="total-amount">Grand Total:</td>
+                <td class="total-value" id="grandTotal">0</td>
             </tr>
         </table>
-        <div class="input-box">
-            <input type="text" id="productName" placeholder="Product Name">
-            <input type="number" id="qty" placeholder="Qty">
-            <input type="number" id="price" placeholder="Price">
-            <button onclick="addItem()">Add Item</button>
-            <button onclick="saveInvoice()">Save Invoice</button>
-        </div>
-        <div class="print-button">
-            <button onclick="printInvoice()">Print Invoice</button>
-        </div>
+        <div style="text-align:center; margin-top: 10px; font-size: 12px;">Terima Kasih</div>
     </div>
+
+    <!-- Input Box for Adding Items -->
+    <div class="input-box">
+        <h2>Kuitansi</h2>
+        <img src="receipt.jpg" alt="Receipt Icon" class="receipt-icon">
+        
+        <!-- New Invoice Number Generator -->
+        <div class="form-group">
+          <label for="newInvoiceNumber">New Invoice Number:</label>
+          <input type="text" id="newInvoiceNumber" readonly>
+          <button id="addInvoiceNumberButton" onclick="addNewInvoiceNumber()">Add Invoice Number</button>
+      </div>
+      
+      
+
+    
+        <div class="form-group">
+            <label for="productName">Nama Item</label>
+            <input type="text" id="productName" class="input-field" placeholder="Enter product name">
+        </div>
+        <div class="form-group">
+            <label for="qty">Kuantiti:</label>
+            <input type="number" id="qty" class="input-field" placeholder="Enter quantity">
+        </div>
+        <div class="form-group">
+            <label for="price">Harga/Item:</label>
+            <input type="number" id="price" class="input-field" placeholder="Enter price">
+        </div>
+        <button onclick="addItem()" class="add-button">Add Item</button>
+    </div>
+
+    <!-- Print Button -->
+    <div class="actions">
+        <button onclick="printInvoice()">Print Invoice</button>
+    </div>
+</div>
+
+<!-- Firebase SDK and Initialization -->
+<script src="https://www.gstatic.com/firebasejs/9.9.3/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.9.3/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.9.3/firebase-analytics-compat.js"></script>
+
+<!-- Your Firebase Configuration and Initialization -->
+<script>
+  // Your web app's Firebase configuration
+  const firebaseConfig = {
+    apiKey: "AIzaSyANCk_iM4XtSX0VW6iETK-tJdWHGAWMbS0",
+    authDomain: "megamasmotor-4008c.firebaseapp.com",
+    projectId: "megamasmotor-4008c",
+    storageBucket: "megamasmotor-4008c.appspot.com",
+    messagingSenderId: "874673615212",
+    appId: "1:874673615212:web:7f0ecdeee47fed60aa0349",
+    measurementId: "G-LF6NB7ZKLE"
+  };
+
+  // Initialize Firebase
+  const app = firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+  const analytics = firebase.analytics();
+</script>
+
+<!-- Password Prompt Script -->
+<script src="password.js"></script>
+
+<!-- Main Script -->
+<script src="script.js"></script>
+
 </body>
 </html>
