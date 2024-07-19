@@ -1,156 +1,372 @@
-/* Existing styles */
-* {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-}
-
 body {
-    font-family: Arial, sans-serif;
-    background-color: #f0f0f0;
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 20px;
 }
 
-.container {
-    display: flex;
-    justify-content: space-between;
-    max-width: 1000px;
-    margin: 20px auto;
-    padding: 20px;
-    background-color: #fff;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-}
-
-.input-section, .preview-section {
-    width: 48%;
-    padding: 20px;
-}
-
-.input-section {
-    border-right: 1px solid #ccc;
-}
-
-.preview-section {
-    overflow-y: auto;
-}
-
-h2 {
-    margin-bottom: 10px;
-}
-
-form {
-    display: flex;
-    flex-direction: column;
-}
-
-label {
-    margin-bottom: 5px;
-}
-
-input, button {
-    margin-bottom: 10px;
-    padding: 8px;
-    font-size: 14px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-}
-
-button {
-    background-color: #007bff;
-    color: #fff;
-    border: none;
-    cursor: pointer;
-}
-
-button:hover {
-    background-color: #0056b3;
-}
-
-/* Invoice styles */
 .invoice-box {
-    width: 100%;
-    max-width: 800px; /* Adjust max-width for invoice */
-    margin: 20px auto;
-    padding: 20px;
-    background-color: #fff;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    font-family: Arial, sans-serif;
-    font-size: 16px;
-    line-height: 24px;
-    color: #555;
+  width: 80mm;
+  padding: 10px;
+  border: 1px solid #eee;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.15);
+  font-size: 14px;
+  line-height: 1.5;
+  margin: 0 auto;
+  position: relative;
 }
 
 .invoice-box table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-bottom: 20px;
+  width: 100%;
+  line-height: inherit;
+
+  text-align: left;
+  border-collapse: collapse;
+  border: none; /* Hide the table border */
+}
+#invoiceDate {
+  flex: 1;
+  text-align: left;
 }
 
-.invoice-box table td, .invoice-box table th {
-    padding: 10px;
-    border: 1px solid #ccc;
-    text-align: left;
+.invoice-box table td {
+  padding: 0;
+  vertical-align: top;
+  border: none; /* Hide the cell borders */
 }
 
-.invoice-box table th {
-    background-color: #f2f2f2;
+.invoice-box table tr.top table td {
+  padding: 0;
 }
 
-.invoice-box table tr:first-child th {
-    background-color: #e0e0e0;
+.invoice-box table tr.top table td.title {
+  font-size: 20px;
+  line-height: 24px;
+  color: #333;
+  padding-bottom: 0;
+  font-weight: bold;
 }
 
-.invoice-box table tr:last-child td {
-    font-weight: bold;
+.invoice-box table tr.information table td {
+  padding: 0;
+  text-align: center;
+  font-size: 12px;
 }
 
+.invoice-box table tr.line {
+  border-bottom: 2px dashed #000;
+}
+
+.invoice-box table tr.heading td {
+  font-weight: bold;
+  font-size: 16px;
+}
+
+.invoice-box table tr.item td {
+  border-bottom: none;
+  padding: 5px;
+  cursor: pointer;
+  position: relative;
+}
+
+.invoice-box table tr.item td:hover {
+  background-color: #f0f0f0;
+}
+
+.invoice-box table tr.total {
+  border-top: 2px dashed #000;
+  border-bottom: 2px dashed #000;
+}
+
+.total-amount, .total-value {
+  font-weight: bold;
+  font-size: 16px;
+  padding: 5px;
+  text-align: right;  /* Align right */
+}
+
+.input-box {
+  border: 1px solid #ccc;
+  background-color: #f9f9f9;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  border-radius: 8px;
+  width: 400px;
+  margin: 0 auto;
+}
+
+.input-box h2 {
+  font-size: 1.5em;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.receipt-icon {
+  max-width: 50px;
+  height: auto;
+}
+
+.form-group {
+  margin-bottom: 15px;
+}
+
+.label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+
+.input-field {
+  padding: 10px;
+  width: calc(100% - 20px);
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 14px;
+}
+
+.input-field:focus {
+  outline: none;
+  border-color: #007bff;
+  box-shadow: 0 0 5px rgba(0, 123, 255, 0.5);
+}
+
+.separator-line {
+  border-bottom: 1px dashed #000;
+  margin: 5px 0;
+}
+
+.logo-container {
+  text-align: center;
+  margin-bottom: 10px;
+}
+
+.logo-container img {
+  width: 302.35px;
+  height: 55.73px;
+}
+
+.print-button {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.print-button button {
+  padding: 10px 20px;
+  font-size: 14px;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+}
+
+.print-button button:hover {
+  background-color: #0056b3;
+}
+
+.receipt {
+  width: 72mm; /* Width of the thermal paper */
+  margin: 0 auto; /* Center the receipt */
+  font-family: Arial, sans-serif; /* Use a readable font */
+  font-size: 12px; /* Font size suitable for thermal paper */
+  line-height: 1.5; /* Line height for readability */
+  text-align: left; /* Left-align text */
+}
+
+.receipt-header, .receipt-footer {
+  text-align: center; /* Center align header and footer */
+}
+
+.receipt-items {
+  margin-top: 10px;
+}
+
+.receipt-items td {
+  padding: 0 5px; /* Padding for item details */
+  font-size: 12px; /* Ensure font size is readable */
+}
+
+/* Hide elements for printing */
+@media print {
+  body * {
+      visibility: hidden;
+  }
+  .invoice-box, .invoice-box * {
+      visibility: visible;
+  }
+  .invoice-box {
+      position: absolute;
+      width: 100%;
+      left: 0;
+      top: 0;
+  }
+  .edit-buttons {
+      display: none !important;
+  }
+}
+
+/* Edit and remove buttons */
+.edit-buttons {
+  position: absolute;
+  bottom: 5px;
+  left: 5px;
+  display: none;
+}
+
+.item:hover .edit-buttons {
+  display: block;
+}
+
+.edit-buttons button {
+  padding: 6px;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  margin-right: 5px;
+}
+
+.edit-buttons button:hover {
+  background-color: #0056b3;
+}
+
+/* Password Prompt styles */
+.password-prompt {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7); /* Darker background */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.password-prompt-box {
+  background-color: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  text-align: center;
+}
+
+.password-prompt-box label {
+  font-weight: bold;
+}
+
+.password-prompt-box input {
+  padding: 8px;
+  margin: 8px;
+}
+
+.password-prompt-box button {
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+.password-prompt-box button:hover {
+  background-color: #0056b3;
+}
+
+/* Hide content behind password prompt */
+#content {
+  display: none;
+}
+
+.password-prompt.hide {
+  display: none;
+}
+
+#content.show {
+  display: block;
+}
+
+
+#invoiceNumber:focus {
+  border-color: transparent; /* Ensures border stays invisible on focus */
+}
+
+
+/* General styles for the invoice items table */
+#invoiceItems {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+}
+
+/* Table cell styles */
+#invoiceItems td {
+  padding: 3px;
+  
+  border: none;
+}
+
+/* Aligning total price and grand total values to the right */
+#invoiceItems td.price{
+text-align: right;
+}
+#grandTotal {
+  text-align: right;
+  font-size: 14px;
+  padding: 3px;
+}
+
+/* Aligning grand total label to the left and value to the right */
+#grandTotal {
+  text-align: right; /* Aligning the grand total value to the right */
+}
+
+/* Hide buttons for print view */
+@media print {
+  button {
+      display: none;
+  }
+}
+
+.invoice-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width:100%
+}
+
+/* Style for invoice number box to make border invisible */
+#invoiceNumber {
+
+  text-align: right;
+  max-width: 162px;
+  border: none; /* Remove border */
+  background: transparent; /* Make background transparent */
+  outline: none; /* Remove focus outline */
+  padding: 0px; /* Adjust padding if needed */
+  font-size: 16px; /* Adjust font size if needed */
+  flex: 0;
+  margin-left: auto; 
+}
+
+/* Add these styles to your style.css */
+
+/* Ensure the total-amount class aligns text to the left */
 .total-amount {
-    text-align: right;
+  text-align: left;
 }
 
+/* Ensure the total-value class aligns text to the right */
 .total-value {
-    font-weight: bold;
+  text-align: right;
 }
 
-/* Responsive design */
-@media (max-width: 768px) {
-    .container {
-        flex-direction: column;
-    }
-    
-    .input-section, .preview-section, .invoice-box {
-        width: 100%;
-        border: none;
-        margin-bottom: 20px;
-    }
-    @media print {
-        body * {
-            visibility: hidden;
-        }
-        #printArea, #printArea * {
-            visibility: visible;
-        }
-        #printArea {
-            width: 40mm;
-            margin: 0;
-            padding: 0;
-            box-shadow: none;
-            border: none;
-        }
-    }
-    @media print {
-        body * {
-            visibility: hidden;
-        }
-        #printArea, #printArea * {
-            visibility: visible;
-        }
-        #printArea {
-            width: 40mm;
-            margin: 0;
-            padding: 0;
-            box-shadow: none;
-            border: none;
-        }
-    }
-    
-    }
+/* Ensure the cell spans correctly and contents are aligned as desired */
+.total {
+  width: 100%;
+}
+/* Ensure total price values align to the right */
+.total-price {
+  text-align: right;
+}
