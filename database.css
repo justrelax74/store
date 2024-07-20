@@ -1,0 +1,81 @@
+@font-face {
+    font-family: "ubuntu";
+    src: url(Ubuntu/Ubuntu-Regular.ttf);
+}
+
+body {
+    font-family: "ubuntu"   ;
+    background: #0f0e10;
+    margin: 0;
+    padding: 0;
+}
+
+h1 {
+    color: #fff;
+    font-size: 64px;
+    letter-spacing: 2px;
+    margin-top: 60px;
+    text-align: center;
+}
+
+.content {
+    background: #fff;
+    max-width: 960px;
+    margin: 40px auto;
+    padding: 30px;
+    border-radius: 12px 12px 12px 12px;
+    box-shadow: 1px 3px 8px rgba(0, 0, 0, 0.2);
+}
+
+#invoice-list-container {
+    overflow-x: auto; /* Allow horizontal scrolling if needed */
+}
+
+#invoice-list {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+}
+
+#invoice-list th, #invoice-list td {
+    border: 1px solid #ddd;
+    padding: 15px 20px;
+    text-align: left;
+}
+
+#invoice-list th {
+    background-color: #f4f4f4;
+    font-weight: bold;
+    font-size: 18px;
+}
+
+#invoice-list td {
+    font-size: 16px;
+    line-height: 1.6;
+}
+
+#invoice-list .delete {
+    cursor: pointer;
+    color: red;
+    font-weight: bold;
+    font-size: 16px;
+    text-align: center;
+}
+
+/* Optional: style for the invoice numbers column */
+.invoice-number {
+    font-weight: bold;
+    text-align: center;
+}
+
+/* Optional: style for the items column */
+.item-name {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Optional: style for the grand total column */
+.item-details {
+    text-align: right;
+}

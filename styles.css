@@ -2,27 +2,38 @@ body {
   font-family: Arial, sans-serif;
   margin: 0;
   padding: 20px;
+  background-color: #f0f0f0; /* Light grey background */
 }
 
-.invoice-box {
-  width: 80mm;
-  padding: 10px;
+.container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center; /* Center the container */
+  align-items: center;
+  padding: 20px;
+  max-width: 1200px;
+  margin: 0 auto; /* Center the container */
+  gap: 20px; /* Add space between the boxes */
+}
+
+.input-box, .invoice-box {
+  width: 100%; /* Make full width on mobile */
+  max-width: 45%; /* Limit width on larger screens */
+  padding: 20px;
   border: 1px solid #eee;
+  background-color: #fff;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.15);
-  font-size: 14px;
-  line-height: 1.5;
-  margin: 0 auto;
-  position: relative;
+  border-radius: 8px;
 }
 
 .invoice-box table {
   width: 100%;
   line-height: inherit;
-
   text-align: left;
   border-collapse: collapse;
   border: none; /* Hide the table border */
 }
+
 #invoiceDate {
   flex: 1;
   text-align: left;
@@ -30,7 +41,6 @@ body {
 
 .invoice-box table td {
   padding: 0;
-  vertical-align: top;
   border: none; /* Hide the cell borders */
 }
 
@@ -84,16 +94,6 @@ body {
   text-align: right;  /* Align right */
 }
 
-.input-box {
-  border: 1px solid #ccc;
-  background-color: #f9f9f9;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-  padding: 20px;
-  border-radius: 8px;
-  width: 400px;
-  margin: 0 auto;
-}
-
 .input-box h2 {
   font-size: 1.5em;
   margin-bottom: 10px;
@@ -102,6 +102,20 @@ body {
   justify-content: space-between;
 }
 
+/* Style for the h2 and img container to align items in a row */
+.input-box-header {
+  display: flex;
+  justify-content: space-between; /* Align items to opposite ends */
+  align-items: center; /* Center items vertically */
+}
+
+/* Style for the h2 element */
+.input-box-header h2 {
+  font-size: 1.5em;
+  margin: 0; /* Remove default margin */
+}
+
+/* Style for the img element */
 .receipt-icon {
   max-width: 50px;
   height: auto;
@@ -118,11 +132,10 @@ body {
 }
 
 .input-field {
+  width: 100%;
   padding: 10px;
-  width: calc(100% - 20px);
-  border: 1px solid #ccc;
-  border-radius: 4px;
-  font-size: 14px;
+  margin: 10px 0;
+  box-sizing: border-box;
 }
 
 .input-field:focus {
@@ -142,16 +155,21 @@ body {
 }
 
 .logo-container img {
-  width: 302.35px;
-  height: 55.73px;
+  width: 90%;
+  height: auto;
 }
 
-.print-button {
-  text-align: center;
-  margin-top: 20px;
+/* Style for the Print container to center its content */
+.Print {
+  display: flex;
+  justify-content: center; /* Center horizontally */
+  align-items: center; /* Center vertically */
+  height: 100%; /* Adjust as needed */
+  margin-top: 20px; /* Optional: Add some space above */
 }
 
-.print-button button {
+/* Style for the button */
+.Print button {
   padding: 10px 20px;
   font-size: 14px;
   background-color: #007bff;
@@ -160,12 +178,12 @@ body {
   cursor: pointer;
 }
 
-.print-button button:hover {
+.Print button:hover {
   background-color: #0056b3;
 }
 
 .receipt {
-  width: 72mm; /* Width of the thermal paper */
+  width: 100mm; /* Width of the thermal paper */
   margin: 0 auto; /* Center the receipt */
   font-family: Arial, sans-serif; /* Use a readable font */
   font-size: 12px; /* Font size suitable for thermal paper */
@@ -189,45 +207,17 @@ body {
 /* Hide elements for printing */
 @media print {
   body * {
-      visibility: hidden;
+    visibility: hidden;
   }
   .invoice-box, .invoice-box * {
-      visibility: visible;
+    visibility: visible;
   }
   .invoice-box {
-      position: absolute;
-      width: 100%;
-      left: 0;
-      top: 0;
+    position: absolute;
+    width: 100%;
+    left: 0;
+    top: 0;
   }
-  .edit-buttons {
-      display: none !important;
-  }
-}
-
-/* Edit and remove buttons */
-.edit-buttons {
-  position: absolute;
-  bottom: 5px;
-  left: 5px;
-  display: none;
-}
-
-.item:hover .edit-buttons {
-  display: block;
-}
-
-.edit-buttons button {
-  padding: 6px;
-  background-color: #007bff;
-  color: #fff;
-  border: none;
-  cursor: pointer;
-  margin-right: 5px;
-}
-
-.edit-buttons button:hover {
-  background-color: #0056b3;
 }
 
 /* Password Prompt styles */
@@ -287,11 +277,9 @@ body {
   display: block;
 }
 
-
 #invoiceNumber:focus {
   border-color: transparent; /* Ensures border stays invisible on focus */
 }
-
 
 /* General styles for the invoice items table */
 #invoiceItems {
@@ -303,29 +291,24 @@ body {
 /* Table cell styles */
 #invoiceItems td {
   padding: 3px;
-  
   border: none;
 }
 
 /* Aligning total price and grand total values to the right */
-#invoiceItems td.price{
-text-align: right;
-}
-#grandTotal {
+#invoiceItems td.price {
   text-align: right;
-  font-size: 14px;
-  padding: 3px;
 }
 
-/* Aligning grand total label to the left and value to the right */
 #grandTotal {
-  text-align: right; /* Aligning the grand total value to the right */
+  text-align: center;
+  font-size: 14px;
+  padding: 3px;
 }
 
 /* Hide buttons for print view */
 @media print {
   button {
-      display: none;
+    display: none;
   }
 }
 
@@ -333,21 +316,20 @@ text-align: right;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  width:100%
+  width: 100%;
 }
 
 /* Style for invoice number box to make border invisible */
 #invoiceNumber {
-
   text-align: right;
-  max-width: 162px;
+  width: 232px;
   border: none; /* Remove border */
   background: transparent; /* Make background transparent */
   outline: none; /* Remove focus outline */
   padding: 0px; /* Adjust padding if needed */
   font-size: 16px; /* Adjust font size if needed */
   flex: 0;
-  margin-left: auto; 
+  margin-left: auto;
 }
 
 /* Add these styles to your style.css */
@@ -355,18 +337,131 @@ text-align: right;
 /* Ensure the total-amount class aligns text to the left */
 .total-amount {
   text-align: left;
+  padding: 3px;
 }
 
 /* Ensure the total-value class aligns text to the right */
 .total-value {
-  text-align: right;
+  text-align: center;
 }
 
 /* Ensure the cell spans correctly and contents are aligned as desired */
 .total {
   width: 100%;
 }
+
 /* Ensure total price values align to the right */
 .total-price {
-  text-align: right;
+  text-align: center;
+}
+
+.add-invoice-button button {
+  padding: 8px 16px;
+  background-color: #007bff;
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  margin-top: 10px;
+}
+
+.add-invoice-button button:hover {
+  background-color: #0056b3;
+}
+
+@media (max-width: 768px) {
+  .input-box, .invoice-box {
+    max-width: 100%;
+  }
+}
+
+
+/* Navigation Bar Styles */
+.navbar {
+  background-color: #333; /* Dark background for the navbar */
+  padding: 10px 0;
+  position: fixed; /* Make the navbar fixed at the top */
+  top: 0; /* Align it to the top */
+  left: 0; /* Align it to the left */
+  width: 100%; /* Make it full width */
+  z-index: 1000; /* Ensure it's above other content */
+}
+
+.navbar-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 15px;
+}
+
+.navbar-logo h1 {
+  color: white;
+  margin: 0;
+  font-size: 20px;
+}
+
+.navbar-toggle {
+  display: none; /* Hidden by default, shown on mobile */
+  background: none;
+  border: none;
+  color: white;
+  font-size: 24px;
+  cursor: pointer;
+}
+
+.navbar-menu {
+  display: flex;
+  justify-content: center;
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
+
+.navbar-item {
+  margin: 0 15px;
+}
+
+.navbar-item a {
+  color: white; /* White text color */
+  text-decoration: none; /* Remove underline */
+  font-size: 16px;
+  font-weight: bold;
+  padding: 8px 16px;
+  display: block;
+}
+
+.navbar-item a:hover {
+  background-color: #575757; /* Darker background on hover */
+  border-radius: 4px; /* Rounded corners for hover effect */
+}
+
+/* Mobile Styles */
+@media (max-width: 768px) {
+  .navbar-menu {
+      display: none; /* Hide menu by default on mobile */
+      flex-direction: column;
+      width: 100%;
+      position: absolute;
+      top: 60px; /* Adjust based on the height of your navbar */
+      left: 0;
+      background-color: #333;
+      z-index: 1;
+  }
+
+  .navbar-menu.show {
+      display: flex; /* Show menu when toggled */
+  }
+
+  .navbar-item {
+      margin: 0;
+      text-align: center;
+  }
+
+  .navbar-item a {
+      padding: 15px;
+      border-bottom: 1px solid #575757; /* Divider between items */
+  }
+
+  .navbar-toggle {
+      display: block; /* Show menu button on mobile */
+  }
 }

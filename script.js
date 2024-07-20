@@ -21,12 +21,6 @@ function formatNumber(number) {
     return number.toLocaleString('id-ID');
 }
 
-function updateInvoiceNumberDisplay() {
-    const invoiceNumber = document.getElementById('invoiceNumber').value.trim();
-    if (invoiceNumber) {
-        document.getElementById('invoiceNumberDisplay').textContent = `Invoice Number: ${invoiceNumber}`;
-    }
-}
 
 function fetchInvoiceNumbers() {
     const datalist = document.getElementById('invoiceNumbers');
@@ -55,7 +49,7 @@ function loadInvoiceDetails() {
 
                 updateInvoiceItems();
                 document.getElementById('grandTotal').textContent = formatNumber(grandTotal);
-                updateInvoiceNumberDisplay();
+     
             } else {
                 alert('Invoice not found.');
             }
@@ -73,27 +67,36 @@ function saveEditedItem() {
     const price = parseFloat(document.getElementById('price').value);
     const invoiceNumber = document.getElementById('invoiceNumber').value.trim();
 
-    // Validate qty and price
     if (productName && !isNaN(qty) && !isNaN(price) && selectedItemIndex >= 0) {
         const item = items[selectedItemIndex];
         const totalPrice = qty * price;
-        grandTotal += totalPrice - item.totalPrice;
+        grandTotal += totalPrice - item.totalPrice; // Update grandTotal
 
-        item.productName = productName.toUpperCase();
-        item.qty = qty;
-        item.price = price;
-        item.totalPrice = totalPrice;
+        // Remove the item being edited
+        items.splice(selectedItemIndex, 1);
 
+        // Create a new item object with updated details
+        const updatedItem = {
+            productName: productName.toUpperCase(),
+            qty: qty,
+            price: price,
+            totalPrice: totalPrice
+        };
+
+        // Add the updated item back to the items array
+        items.push(updatedItem);
+
+        // Update display and Firestore
         updateInvoiceItems();
         document.getElementById('grandTotal').textContent = formatNumber(grandTotal);
 
         setDate();
-        updateInvoiceNumberDisplay();
+
 
         document.getElementById('productName').value = '';
         document.getElementById('qty').value = '';
         document.getElementById('price').value = '';
-        selectedItemIndex = -1;
+        selectedItemIndex = -1; // Reset index
 
         // Save to Firestore
         db.collection('invoices').doc(invoiceNumber).set({
@@ -109,16 +112,17 @@ function saveEditedItem() {
     }
 }
 
+
 function updateInvoiceItems() {
     const invoiceItems = document.getElementById('invoiceItems');
-    invoiceItems.innerHTML = '';
+    invoiceItems.innerHTML = ''; // Clear existing items
 
     items.forEach((item, index) => {
         const row = document.createElement('tr');
         row.innerHTML = `
             <td>${item.qty}</td>
             <td>${item.productName}</td>
-           <td class="total-price">${formatNumber(item.totalPrice)}</td>
+            <td class="total-price">${formatNumber(item.totalPrice)}</td>
             <td><button onclick="editItem(${index})">Edit</button></td>
             <td><button onclick="deleteItem(${index})">Delete</button></td>
         `;
@@ -126,12 +130,43 @@ function updateInvoiceItems() {
     });
 }
 
+function printInvoice() {
+    window.print();
+}
+
+
 function editItem(index) {
+    // Get the item to be edited
     const item = items[index];
+
+    // Remove the item from the array
+    items.splice(index, 1);
+
+    // Update display to remove the item
+    updateInvoiceItems();
+
+    // Set input fields with item details
     document.getElementById('productName').value = item.productName;
     document.getElementById('qty').value = item.qty;
     document.getElementById('price').value = item.price;
+
+    // Set selectedItemIndex to manage the update process
     selectedItemIndex = index;
+
+    // Recalculate grandTotal
+    grandTotal -= item.totalPrice;
+    document.getElementById('grandTotal').textContent = formatNumber(grandTotal);
+
+    // Save changes to Firestore
+    const invoiceNumber = document.getElementById('invoiceNumber').value.trim();
+    db.collection('invoices').doc(invoiceNumber).set({
+        items: items,
+        grandTotal: grandTotal
+    }).then(() => {
+        console.log("Invoice updated successfully!");
+    }).catch((error) => {
+        console.error("Error updating invoice: ", error);
+    });
 }
 
 function deleteItem(index) {
@@ -156,25 +191,6 @@ function deleteItem(index) {
     }
 }
 
-function addItemToInvoiceBox(name, qty, totalPrice) {
-    const invoiceItems = document.getElementById('invoiceItems');
-    const row = document.createElement('tr');
-
-    const qtyCell = document.createElement('td');
-    qtyCell.innerText = qty;
-    row.appendChild(qtyCell);
-
-    const nameCell = document.createElement('td');
-    nameCell.innerText = name;
-    row.appendChild(nameCell);
-
-    const priceCell = document.createElement('td');
-    priceCell.innerText = formatNumber(totalPrice); // Use totalPrice here
-    row.appendChild(priceCell);
-
-    invoiceItems.appendChild(row);
-}
-
 async function addItem() {
     const invoiceNumber = document.getElementById('invoiceNumber').value.trim();
     const productName = document.getElementById('productName').value.trim();
@@ -196,7 +212,7 @@ async function addItem() {
         invoiceData = {
             date: new Date().toLocaleDateString(),
             items: [],
-            grandTotal: 0 // Initialize grandTotal
+            grandTotal: 0
         };
     }
 
@@ -205,16 +221,29 @@ async function addItem() {
         productName: productName.toUpperCase(),
         qty: qty,
         price: price,
-        totalPrice: itemTotalPrice // Calculate and store the total price for the item
+        totalPrice: itemTotalPrice
     };
 
-    invoiceData.items.push(item);
-    invoiceData.grandTotal += itemTotalPrice; // Update grandTotal with item total price
+    if (selectedItemIndex >= 0) {
+        // Update existing item
+        invoiceData.items[selectedItemIndex] = item;
+        selectedItemIndex = -1; // Reset index after update
+    } else {
+        // Add new item
+        invoiceData.items.push(item);
+    }
 
+    // Update grandTotal
+    invoiceData.grandTotal = invoiceData.items.reduce((total, item) => total + item.totalPrice, 0);
+
+    // Save to Firestore
     await invoiceDocRef.set(invoiceData);
 
-    addItemToInvoiceBox(productName, qty, itemTotalPrice); // Pass the total price to the function
-    document.getElementById('grandTotal').innerText = formatNumber(invoiceData.grandTotal);
+    // Update the display immediately
+    items = invoiceData.items; // Update local items array
+    grandTotal = invoiceData.grandTotal; // Update local grandTotal
+    updateInvoiceItems(); // Refresh the invoice items display
+    document.getElementById('grandTotal').innerText = formatNumber(grandTotal);
 
     // Clear input fields
     document.getElementById('productName').value = '';
@@ -222,16 +251,15 @@ async function addItem() {
     document.getElementById('price').value = '';
 }
 
-function printInvoice() {
-    window.print();
-}
+
 
 document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('passwordPrompt').classList.remove('hide');
     document.getElementById('content').classList.remove('show');
-    updateInvoiceNumberDisplay();
+
     fetchInvoiceNumbers(); // Fetch existing invoice numbers on load
 });
+
 
 async function generateNewInvoiceNumber() {
   try {
@@ -255,27 +283,31 @@ async function generateNewInvoiceNumber() {
 }
 
 async function addNewInvoiceNumber() {
-  const newInvoiceNumber = await generateNewInvoiceNumber();
-  if (newInvoiceNumber !== null) {
-      document.getElementById('newInvoiceNumber').value = newInvoiceNumber;
+    const newInvoiceNumber = await generateNewInvoiceNumber();
+    if (newInvoiceNumber !== null) {
+        // Set the new invoice number in the input field
+        document.getElementById('invoiceNumber').value = newInvoiceNumber;
 
-      try {
-          await db.collection('invoices').doc(newInvoiceNumber.toString()).set({
-              date: new Date().toLocaleDateString(),
-              items: [],
-              grandTotal: 0
-          });
-          alert("New invoice number added successfully!");
-      } catch (error) {
-          console.error("Error adding new invoice number: ", error);
-          alert("Error adding new invoice number.");
-      }
-  }
+        try {
+            // Add the new invoice number to Firestore
+            await db.collection('invoices').doc(newInvoiceNumber.toString()).set({
+                date: new Date().toLocaleDateString(),
+                items: [],
+                grandTotal: 0
+            });
+            alert("New invoice number added successfully!");
+        } catch (error) {
+            console.error("Error adding new invoice number: ", error);
+            alert("Error adding new invoice number.");
+        }
+    }
 }
+// Add event listener for the button
+document.getElementById('addInvoiceNumberButton').addEventListener('click', addNewInvoiceNumber);
 
-// Ensure you have Firebase initialization code here or somewhere in your script.js
 
-document.addEventListener('DOMContentLoaded', () => {
-  fetchInvoiceNumbers(); // Fetch existing invoice numbers on load
-  generateNewInvoiceNumber(); // Generate a new invoice number on load
-});
+// Function to toggle the mobile menu
+function toggleMenu() {
+    const menu = document.getElementById('navbarMenu');
+    menu.classList.toggle('show');
+}
