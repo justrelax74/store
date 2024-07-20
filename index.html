@@ -3,157 +3,83 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MEGA MAS MOTOR | Kuitansi</title>
-    <link rel="stylesheet" href="styles.css"> <!-- Link to your styles.css -->
+    <title>Megamas Motor</title>
+    <link rel="stylesheet" href="index.css">
 </head>
 <body>
-
-<!-- Password Prompt -->
-<div class="password-prompt" id="passwordPrompt">
-    <div class="password-prompt-box">
-        <h2>Password Required</h2>
-        <label for="password">Enter Password:</label>
-        <input type="password" id="password" />
-        <button onclick="checkPassword()">Submit</button>
-    </div>
-</div>
-
-<!-- Main Content -->
-<div id="content" class="hide"> <!-- Initially hidden, shown after password verification -->
 <!-- Navigation Bar -->
 <nav class="navbar">
     <div class="navbar-container">
-        <div class="navbar-logo">
+        <a href="index.html" class="navbar-logo">
             <h1>MEGA MAS MOTOR</h1>
-        </div>
+        </a>
         <button class="navbar-toggle" onclick="toggleMenu()">
             &#9776; <!-- Hamburger Icon -->
         </button>
         <ul class="navbar-menu" id="navbarMenu">
-            <li class="navbar-item"><a href="#buatKuitansi">Buat Kuitansi</a></li>
-            <li class="navbar-item"><a href="#database">Database</a></li>
-            <li class="navbar-item"><a href="#sales">Sales</a></li>
+            <li class="navbar-item"><a href="kuitansi.html">Buat Kuitansi</a></li>
+            <li class="navbar-item"><a href="database.html">Database</a></li>
+            <li class="navbar-item"><a href="sales.html">Sales</a></li>
         </ul>
     </div>
 </nav>
 
+    </header>
     
-  <div class="container"> <!-- Add a container for flexbox layout -->
+    <main class="container">
+        <!-- Hero Section -->
+        <section class="hero">
+            <h1>Welcome to Megamas Motor</h1>
+            <p>Your trusted partner for automotive spare parts and services in Palopo. We are an official TireZone!</p>
+            <a href="#learn-more" class="button">Learn More</a>
+        </section>
+        
+        <!-- About Us Section -->
+        <section id="learn-more" class="content-section">
+            <h2>About Us</h2>
+            <p>We provide high-quality automotive spare parts and professional services to keep your vehicle running smoothly. As an official TireZone, we offer a wide range of tires to meet your needs.</p>
+        </section>
+        
+        <!-- Services Section -->
+        <section class="content-section">
+            <h2>Our Services</h2>
+            <div class="services">
+                <div class="service">
+                    <h3>Spare Parts</h3>
+                    <p>We offer a comprehensive selection of automotive spare parts for various makes and models.</p>
+                </div>
+                <div class="service">
+                    <h3>Vehicle Service</h3>
+                    <p>Our expert technicians provide top-notch maintenance and repair services to keep your vehicle in prime condition.</p>
+                </div>
+                <div class="service">
+                    <h3>Tire Services</h3>
+                    <p>As an official TireZone, we offer a wide range of tires and tire-related services to ensure your safety on the road.</p>
+                </div>
+            </div>
+        </section>
 
-    <!-- Invoice Content -->
-    <div class="invoice-box">
-        <table cellpadding="0" cellspacing="0">
-            <tr class="top">
-                <td colspan="3">
-                    <table class="logo-container">
-                        <tr>
-                            <td class="title">
-                                <img src="logo.png" alt="Logo">
-                            </td>
-                        </tr>
-                        <tr class="information line">
-                            <td colspan="3">
-                    
-                                   <span id="invoiceDate"></span> 
-                                   <input type="text" id="invoiceNumber" placeholder="Enter Invoice Number" list="invoiceNumbers" onchange="loadInvoiceDetails()">
-                                   <datalist id="invoiceNumbers"></datalist>
-                               </div>
-                              
-                         
-                               <br>
-                                <span>MEGA MAS MOTOR</span><br>
-                                <span>Jl. Kelapa No. 25, Palopo, Sulawesi Selatan</span><br>
-                                <span>0821-8713-8889</span>
-                            </td>
-                        </tr>
-                    </table>
-                </td>
-            </tr>
-            <tr class="heading">
-                <td>Qty</td>
-                <td>Product Name</td>
-                <td style="text-align: center;">Total Price</td>
+        <!-- Contact Us Section -->
+        <section class="content-section">
+            <h2>Contact Us</h2>
+            <p>Visit us or connect with us online:</p>
+            <ul>
+                <li><a href="https://maps.app.goo.gl/8VxEm9bFQdQczECK9" target="_blank">Our Location on Google Maps</a></li>
+                <li><a href="https://www.instagram.com/megamasmtr/" target="_blank">Follow us on Instagram</a></li>
+                <li><a href="https://wa.me/6282187138889" class="whatsapp-link" target="_blank">Chat with us on WhatsApp</a></li>
+            </ul>
+        </section>
+    </main>
+    
+    <footer>
+        <p>&copy; 2024 Megamas Motor. All rights reserved.</p>
+    </footer>
 
-            </tr>
-            <tbody id="invoiceItems">
-                <!-- Items will be added dynamically here -->
-            </tbody>
-            <tr class="total">
-                <td colspan="2" class="total-amount">Grand Total:</td>
-                <td class="total-value" id="grandTotal">0</td>
-            </tr>
-        </table>
-        <div style="text-align:center; margin-top: 10px; font-size: 12px;">Terima Kasih</div>
-    </div>
-
-    <!-- Input Box for Adding Items -->
-    <div class="input-box">
-        <div class="input-box-header">
-            <h2>Kuitansi</h2>
-            <img src="receipt.jpg" alt="Receipt Icon" class="receipt-icon">
-        </div>
-        <!-- New Invoice Number Generator -->
-        <div class="form-group">
-          <br>
-     
-          <div class="add-invoice-button">
-              <button id="addInvoiceNumberButton" onclick="addNewInvoiceNumber()">+ Nomor Baru</button>
-          </div>
-          <br>
-          <div class="form-group">
-              <label for="productName">Nama Item</label>
-              <input type="text" id="productName" class="input-field" placeholder="Enter product name">
-          </div>
-          <div class="form-group">
-              <label for="qty">Kuantiti:</label>
-              <input type="number" id="qty" class="input-field" placeholder="Enter quantity">
-          </div>
-          <div class="form-group">
-              <label for="price">Harga/Item:</label>
-              <input type="number" id="price" class="input-field" placeholder="Enter price">
-          </div>
-          <button onclick="addItem()" class="add-button">Add Item</button>
-      </div>
-
-      <!-- Print Button -->
-      <div class="Print">
-          <button onclick="printInvoice()">Print Invoice</button>
-      </div>
-    </div>
-
-  </div> <!-- Close container div -->
-  
-</div>
-
-<!-- Firebase SDK and Initialization -->
-<script src="https://www.gstatic.com/firebasejs/9.9.3/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.9.3/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.9.3/firebase-analytics-compat.js"></script>
-
-<!-- Your Firebase Configuration and Initialization -->
-<script>
-  // Your web app's Firebase configuration
-  const firebaseConfig = {
-    apiKey: "AIzaSyANCk_iM4XtSX0VW6iETK-tJdWHGAWMbS0",
-    authDomain: "megamasmotor-4008c.firebaseapp.com",
-    projectId: "megamasmotor-4008c",
-    storageBucket: "megamasmotor-4008c.appspot.com",
-    messagingSenderId: "874673615212",
-    appId: "1:874673615212:web:7f0ecdeee47fed60aa0349",
-    measurementId: "G-LF6NB7ZKLE"
-  };
-
-  // Initialize Firebase
-  const app = firebase.initializeApp(firebaseConfig);
-  const db = firebase.firestore();
-  const analytics = firebase.analytics();
-</script>
-
-<!-- Password Prompt Script -->
-<script src="password.js"></script>
-
-<!-- Main Script -->
-<script src="script.js"></script>
-
+    <script>
+        function toggleMenu() {
+            const navbarMenu = document.getElementById('navbar-menu');
+            navbarMenu.classList.toggle('show');
+        }
+    </script>
 </body>
 </html>
