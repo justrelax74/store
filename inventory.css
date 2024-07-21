@@ -1,0 +1,223 @@
+@font-face {
+  font-family: "Avant";
+  src: url("Fonts/Fonts/Avant/Avant1.ttf");
+}
+
+/* General styles */
+body {
+  font-family: "Avant";
+  background-color: #000000;
+  margin: 0;
+  padding: 0;
+  color: #333;
+}
+
+.container {
+  width: 80%;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+  text-align: center;
+  color: #333;
+}
+
+form {
+  margin-bottom: 20px;
+}
+
+label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: bold;
+}
+
+input[type="text"],
+input[type="number"] {
+  width: calc(100% - 20px);
+  padding: 10px;
+  margin-bottom: 10px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+button {
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 16px;
+  margin: 4px 2px;
+  cursor: pointer;
+  border-radius: 4px;
+}
+
+button:hover {
+  background-color: #45a049;
+}
+
+#inventory-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 20px;
+}
+
+#inventory-table th,
+#inventory-table td {
+  border: 1px solid #ddd;
+  padding: 10px;
+  text-align: left;
+}
+
+#inventory-table th {
+  background-color: #f2f2f2;
+  font-weight: bold;
+}
+
+#inventory-table td.editable {
+  cursor: pointer;
+}
+
+#inventory-table td.editable:hover {
+  background-color: #f0f0f0;
+}
+
+#inventory-table td input {
+  width: 100%;
+  border: none;
+  padding: 8px;
+  box-sizing: border-box;
+}
+
+#edit-mode-btn {
+  background-color: #2196F3;
+}
+
+#edit-mode-btn:hover {
+  background-color: #0b7dda;
+}
+
+/* Hidden by default, shown when toggled */
+#edit-mode {
+  display: none;
+}
+.collection-dropdown {
+  display: none;
+  position: absolute;
+  background-color: white;
+  border: 1px solid #ccc;
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 1000;
+}
+
+.collection-option {
+  padding: 8px;
+  cursor: pointer;
+}
+
+.collection-option:hover {
+  background-color: #f0f0f0;
+}
+
+/* Navigation Bar Styles */
+.navbar {
+  background-color: #333; /* Dark background for the navbar */
+  padding: 10px 0;
+  position: fixed; /* Make the navbar fixed at the top */
+  top: 0; /* Align it to the top */
+  left: 0; /* Align it to the left */
+  width: 100%; /* Make it full width */
+  z-index: 1000; /* Ensure it's above other content */
+}
+
+.navbar-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 15px;
+}
+
+.navbar-logo h1 {
+  color: white;
+  margin: 0;
+  font-size: 20px;
+}
+
+.navbar-logo {
+  text-decoration: none; /* Remove underline from the link */
+}
+
+.navbar-toggle {
+  display: none; /* Hidden by default, shown on mobile */
+  background: none;
+  border: none;
+  color: white;
+  font-size: 24px;
+  cursor: pointer;
+}
+
+.navbar-menu {
+  display: flex;
+  justify-content: center;
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
+}
+
+.navbar-item {
+  margin: 0 15px;
+}
+
+.navbar-item a {
+  color: white; /* White text color */
+  text-decoration: none; /* Remove underline */
+  font-size: 16px;
+  font-weight: bold;
+  padding: 8px 16px;
+  display: block;
+}
+
+.navbar-item a:hover {
+  background-color: #575757; /* Darker background on hover */
+  border-radius: 4px; /* Rounded corners for hover effect */
+}
+
+/* Mobile Styles */
+@media (max-width: 768px) {
+  .navbar-menu {
+      display: none; /* Hide menu by default on mobile */
+      flex-direction: column;
+      width: 100%;
+      position: absolute;
+      top: 60px; /* Adjust based on the height of your navbar */
+      left: 0;
+      background-color: #333;
+      z-index: 1;
+  }
+
+  .navbar-menu.show {
+      display: flex; /* Show menu when toggled */
+  }
+
+  .navbar-item {
+      margin: 0;
+      text-align: center;
+  }
+
+  .navbar-item a {
+      padding: 15px;
+      border-bottom: 1px solid #575757; /* Divider between items */
+  }
+
+  .navbar-toggle {
+      display: block; /* Show menu button on mobile */
+  }
+}

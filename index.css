@@ -1,14 +1,14 @@
 @font-face {
-  font-family: "ubuntu";
-  src: url(Ubuntu/Ubuntu-Regular.ttf);
+  font-family: "Avant";
+  src: url("Fonts/Fonts/Avant/Avant1.ttf");
 }
 
 /* General Styles */
 body {
-  font-family: "ubuntu";
+  font-family: "Avant";
   margin: 0;
   padding: 0;
-  background-color: #f0f0f0; /* Light grey background */
+  background-color: #000000; /* Light grey background */
 }
 
 .container {
@@ -120,7 +120,7 @@ body {
 .hero {
   text-align: center;
   padding: 100px 20px 50px;
-  background-color: #007bff; /* Primary color background */
+  background-color: #000000; /* Primary color background */
   color: white; /* White text color */
 }
 h1 {
@@ -143,7 +143,7 @@ h1 {
 
 .hero .button {
   padding: 15px 30px;
-  background-color: #0056b3; /* Darker shade of primary color */
+  background-color: #ff0404; /* Darker shade of primary color */
   color: white;
   text-decoration: none;
   font-size: 1em;

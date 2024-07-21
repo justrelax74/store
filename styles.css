@@ -1,13 +1,13 @@
 @font-face {
-  font-family: "ubuntu";
-  src: url(Ubuntu/Ubuntu-Regular.ttf);
+  font-family: "Avant";
+  src: url("Fonts/Fonts/Avant/Avant1.ttf");
 }
 
 body {
-  font-family: "ubuntu";
+  font-family: "Avant";
   margin: 0;
   padding: 20px;
-  background-color: #f0f0f0; /* Light grey background */
+  background-color: #000000; /* Light grey background */
 }
 
 .container {

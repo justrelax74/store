@@ -21,7 +21,6 @@ function formatNumber(number) {
     return number.toLocaleString('id-ID');
 }
 
-
 function fetchInvoiceNumbers() {
     const datalist = document.getElementById('invoiceNumbers');
     db.collection('invoices').get().then((querySnapshot) => {
@@ -92,7 +91,6 @@ function saveEditedItem() {
 
         setDate();
 
-
         document.getElementById('productName').value = '';
         document.getElementById('qty').value = '';
         document.getElementById('price').value = '';
@@ -111,7 +109,6 @@ function saveEditedItem() {
         alert('Please fill out all fields with valid values.');
     }
 }
-
 
 function updateInvoiceItems() {
     const invoiceItems = document.getElementById('invoiceItems');
@@ -133,7 +130,6 @@ function updateInvoiceItems() {
 function printInvoice() {
     window.print();
 }
-
 
 function editItem(index) {
     // Get the item to be edited
@@ -251,8 +247,6 @@ async function addItem() {
     document.getElementById('price').value = '';
 }
 
-
-
 document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('passwordPrompt').classList.remove('hide');
     document.getElementById('content').classList.remove('show');
@@ -260,26 +254,25 @@ document.addEventListener('DOMContentLoaded', () => {
     fetchInvoiceNumbers(); // Fetch existing invoice numbers on load
 });
 
-
 async function generateNewInvoiceNumber() {
-  try {
-      const snapshot = await db.collection('invoices').get();
-      let maxInvoiceNumber = 0;
+    try {
+        const snapshot = await db.collection('invoices').get();
+        let maxInvoiceNumber = 0;
 
-      snapshot.forEach(doc => {
-          const invoiceNumber = parseInt(doc.id, 10); // Ensure invoiceNumber is parsed as an integer
-          if (invoiceNumber > maxInvoiceNumber) {
-              maxInvoiceNumber = invoiceNumber;
-          }
-      });
+        snapshot.forEach(doc => {
+            const invoiceNumber = parseInt(doc.id, 10); // Ensure invoiceNumber is parsed as an integer
+            if (invoiceNumber > maxInvoiceNumber) {
+                maxInvoiceNumber = invoiceNumber;
+            }
+        });
 
-      const newInvoiceNumber = maxInvoiceNumber + 1; // Increment the max invoice number by 1
-      return newInvoiceNumber;
+        const newInvoiceNumber = maxInvoiceNumber + 1; // Increment the max invoice number by 1
+        return newInvoiceNumber;
 
-  } catch (error) {
-      console.error("Error fetching invoice numbers: ", error);
-      return null;
-  }
+    } catch (error) {
+        console.error("Error fetching invoice numbers: ", error);
+        return null;
+    }
 }
 
 async function addNewInvoiceNumber() {
@@ -302,12 +295,70 @@ async function addNewInvoiceNumber() {
         }
     }
 }
+
 // Add event listener for the button
 document.getElementById('addInvoiceNumberButton').addEventListener('click', addNewInvoiceNumber);
-
 
 // Function to toggle the mobile menu
 function toggleMenu() {
     const menu = document.getElementById('navbarMenu');
     menu.classList.toggle('show');
 }
+
+// Function to fetch and display product suggestions
+async function autocompleteProductName() {
+    const input = document.getElementById('productName');
+    const datalist = document.getElementById('productSuggestions');
+
+    // Clear previous suggestions
+    datalist.innerHTML = '';
+
+    try {
+        const querySnapshot = await db.collection('inventory').get();
+        console.log('Fetched product data:');
+
+        querySnapshot.forEach((doc) => {
+            const productName = doc.id; // Document ID is the product name
+            const sellingPrice = doc.data()['Selling Price']; // Fetch the Selling Price
+
+            console.log(`Product: ${productName}, Selling Price: ${sellingPrice}`);
+
+            // Create an option for each product name
+            const option = document.createElement('option');
+            option.value = productName;
+            option.dataset.price = sellingPrice; // Store Selling Price as a data attribute
+            datalist.appendChild(option);
+        });
+
+    } catch (error) {
+        console.error('Error fetching product names:', error);
+    }
+}
+
+document.getElementById('productName').addEventListener('input', function() {
+    console.log('Input event triggered');
+    autocompleteProductName();
+});
+
+document.getElementById('productName').addEventListener('change', function() {
+    const input = this.value;
+    console.log('Change event triggered, input:', input);
+    
+    const options = document.getElementById('productSuggestions').options;
+    let price = '';
+
+    for (let i = 0; i < options.length; i++) {
+        if (options[i].value === input) {
+            price = options[i].dataset.price;
+            console.log('Price found:', price);
+            break;
+        }
+    }
+
+    if (price) {
+        document.getElementById('price').value = price;
+    } else {
+        document.getElementById('price').value = ''; // Clear price if no match
+        console.log('Price not found, cleared input');
+    }
+});

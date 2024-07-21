@@ -3,23 +3,16 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MEGA MAS MOTOR | Kuitansi</title>
+    <title>Mega Mas Motor | Kuitansi</title>
     <link rel="stylesheet" href="styles.css"> <!-- Link to your styles.css -->
 </head>
 <body>
 
 <!-- Password Prompt -->
-<div class="password-prompt" id="passwordPrompt">
-    <div class="password-prompt-box">
-        <h2>Password Required</h2>
-        <label for="password">Enter Password:</label>
-        <input type="password" id="password" />
-        <button onclick="checkPassword()">Submit</button>
-    </div>
-</div>
+
 
 <!-- Main Content -->
-<div id="content" class="hide"> <!-- Initially hidden, shown after password verification -->
+
 <!-- Navigation Bar -->
 <nav class="navbar">
     <div class="navbar-container">
@@ -31,11 +24,13 @@
         </button>
         <ul class="navbar-menu" id="navbarMenu">
             <li class="navbar-item"><a href="kuitansi.html">Buat Kuitansi</a></li>
-            <li class="navbar-item"><a href="database.html">Database</a></li>
+            <li class="navbar-item"><a href="inventory.html">Inventory</a></li>
+            <li class="navbar-item"><a href="order.html">Order</a></li>
             <li class="navbar-item"><a href="sales.html">Sales</a></li>
         </ul>
     </div>
 </nav>
+
 
 
     
@@ -102,9 +97,10 @@
           </div>
           <br>
           <div class="form-group">
-              <label for="productName">Nama Item</label>
-              <input type="text" id="productName" class="input-field" placeholder="Enter product name">
-          </div>
+            <label for="productName">Nama Item</label>
+            <input type="text" id="productName" class="input-field" placeholder="Enter product name" list="productSuggestions">
+            <datalist id="productSuggestions"></datalist> <!-- Updated ID to match script -->
+        </div>
           <div class="form-group">
               <label for="qty">Kuantiti:</label>
               <input type="number" id="qty" class="input-field" placeholder="Enter quantity">
@@ -151,6 +147,7 @@
 </script>
 
 <!-- Password Prompt Script -->
+
 <script src="password.js"></script>
 
 <!-- Main Script -->
