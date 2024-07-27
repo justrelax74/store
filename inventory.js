@@ -44,14 +44,14 @@ function handleInlineEdit(event) {
 }
 
 let isEditMode = false; // Flag to track whether edit mode is active
-let currentCollection = 'inventory'; // Default collection
+let currentCollection = 'Inventory'; // Default collection
 
 document.addEventListener('DOMContentLoaded', async () => {
     const tableBody = document.querySelector('#inventory-table tbody');
     const collectionSelect = document.getElementById('collection-select');
     const collectionDropdown = document.getElementById('collection-dropdown');
 
-    const collections = ["Ban", "Oli", "Air Radiator", "Shock Breaker", "Aki", "Lampu Stop", "Kampas Kopling", 
+    const collections = ["Inventory", "Ban", "Oli", "Air Radiator", "Shock Breaker", "Aki", "Lampu Stop", "Kampas Kopling", 
         "Tutup Kampas", "Busi", "Fender Liner", "Kampas Cakram Depan", 
         "Kampas Cakram Belakang", "Karet Pintu", "Tie Rod", "Rack End", "Lampu Depan", "Lain Lain"];
 
