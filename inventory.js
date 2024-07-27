@@ -51,7 +51,9 @@ document.addEventListener('DOMContentLoaded', async () => {
     const collectionSelect = document.getElementById('collection-select');
     const collectionDropdown = document.getElementById('collection-dropdown');
 
-    const collections = ['inventory', 'Ban'];
+    const collections = ["Ban", "Oli", "Air Radiator", "Shock Breaker", "Aki", "Lampu Stop", "Kampas Kopling", 
+        "Tutup Kampas", "Busi", "Fender Liner", "Kampas Cakram Depan", 
+        "Kampas Cakram Belakang", "Karet Pintu", "Tie Rod", "Rack End", "Lampu Depan", "Lain Lain"];
 
     // Populate the collection dropdown
     collections.forEach((collection) => {

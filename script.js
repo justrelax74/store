@@ -2,6 +2,11 @@ let grandTotal = 0;
 let items = [];
 let selectedItemIndex = -1;
 
+document.addEventListener('DOMContentLoaded', () => {
+    setDate();
+    fetchInvoiceNumbers(); // Fetch existing invoice numbers on load
+});
+
 function setDate() {
     const now = new Date();
 
@@ -16,6 +21,7 @@ function setDate() {
     const fullFormattedDate = `${formattedDate}, ${formattedTime}`;
     document.getElementById('invoiceDate').textContent = fullFormattedDate;
 }
+
 
 function formatNumber(number) {
     return number.toLocaleString('id-ID');
@@ -127,44 +133,26 @@ function updateInvoiceItems() {
     });
 }
 
+
 function printInvoice() {
     window.print();
 }
 
 function editItem(index) {
-    // Get the item to be edited
     const item = items[index];
+    items.splice(index, 1); // Remove the item from the array
+    updateInvoiceItems(); // Update display to remove the item
 
-    // Remove the item from the array
-    items.splice(index, 1);
-
-    // Update display to remove the item
-    updateInvoiceItems();
-
-    // Set input fields with item details
-    document.getElementById('productName').value = item.productName;
+    document.getElementById('product').value = item.productName;
     document.getElementById('qty').value = item.qty;
     document.getElementById('price').value = item.price;
 
-    // Set selectedItemIndex to manage the update process
-    selectedItemIndex = index;
+    selectedItemIndex = index; // Set selectedItemIndex for update
+    isUpdating = true; // Set flag to true as we're editing an item
 
-    // Recalculate grandTotal
-    grandTotal -= item.totalPrice;
+    grandTotal -= item.totalPrice; // Update grandTotal
     document.getElementById('grandTotal').textContent = formatNumber(grandTotal);
-
-    // Save changes to Firestore
-    const invoiceNumber = document.getElementById('invoiceNumber').value.trim();
-    db.collection('invoices').doc(invoiceNumber).set({
-        items: items,
-        grandTotal: grandTotal
-    }).then(() => {
-        console.log("Invoice updated successfully!");
-    }).catch((error) => {
-        console.error("Error updating invoice: ", error);
-    });
 }
-
 function deleteItem(index) {
     const item = items[index];
     grandTotal -= item.totalPrice;
@@ -187,14 +175,22 @@ function deleteItem(index) {
     }
 }
 
+
+
+
 async function addItem() {
     const invoiceNumber = document.getElementById('invoiceNumber').value.trim();
-    const productName = document.getElementById('productName').value.trim();
+    const productName = document.getElementById('product').value.trim();
     const qty = parseInt(document.getElementById('qty').value, 10);
     const price = parseFloat(document.getElementById('price').value);
 
     if (!invoiceNumber) {
         alert('Please enter an invoice number.');
+        return;
+    }
+
+    if (!productName || isNaN(qty) || isNaN(price)) {
+        alert('Please fill out all fields with valid values.');
         return;
     }
 
@@ -213,7 +209,7 @@ async function addItem() {
     }
 
     const itemTotalPrice = qty * price;
-    const item = {
+    const updatedItem = {
         productName: productName.toUpperCase(),
         qty: qty,
         price: price,
@@ -221,19 +217,32 @@ async function addItem() {
     };
 
     if (selectedItemIndex >= 0) {
+        // Remove the old item if updating
+        invoiceData.items.splice(selectedItemIndex, 1);
+        selectedItemIndex = -1; // Reset index after removal
+    }
+
+    // Check if the item already exists in the invoice
+    const existingItemIndex = invoiceData.items.findIndex(item => item.productName === updatedItem.productName);
+    
+    if (existingItemIndex >= 0) {
         // Update existing item
-        invoiceData.items[selectedItemIndex] = item;
-        selectedItemIndex = -1; // Reset index after update
+        invoiceData.items[existingItemIndex] = updatedItem;
     } else {
         // Add new item
-        invoiceData.items.push(item);
+        invoiceData.items.push(updatedItem);
     }
 
     // Update grandTotal
     invoiceData.grandTotal = invoiceData.items.reduce((total, item) => total + item.totalPrice, 0);
 
-    // Save to Firestore
-    await invoiceDocRef.set(invoiceData);
+    try {
+        // Save to Firestore
+        await invoiceDocRef.set(invoiceData);
+        console.log("Invoice updated successfully!");
+    } catch (error) {
+        console.error("Error updating invoice: ", error);
+    }
 
     // Update the display immediately
     items = invoiceData.items; // Update local items array
@@ -242,17 +251,19 @@ async function addItem() {
     document.getElementById('grandTotal').innerText = formatNumber(grandTotal);
 
     // Clear input fields
-    document.getElementById('productName').value = '';
+    document.getElementById('product').value = '';
     document.getElementById('qty').value = '';
     document.getElementById('price').value = '';
 }
 
+// Make sure this code is executed when the DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
-    document.getElementById('passwordPrompt').classList.remove('hide');
-    document.getElementById('content').classList.remove('show');
-
-    fetchInvoiceNumbers(); // Fetch existing invoice numbers on load
+    document.getElementById('addItemButton').addEventListener('click', addItem);
 });
+
+
+
+
 
 async function generateNewInvoiceNumber() {
     try {
@@ -305,60 +316,33 @@ function toggleMenu() {
     menu.classList.toggle('show');
 }
 
-// Function to fetch and display product suggestions
-async function autocompleteProductName() {
-    const input = document.getElementById('productName');
-    const datalist = document.getElementById('productSuggestions');
+ const productInput = document.getElementById('product');
+    const suggestionsBox = document.getElementById('suggestions');
+    const priceInput = document.getElementById('price');
 
-    // Clear previous suggestions
-    datalist.innerHTML = '';
+    productInput.addEventListener('input', async () => {
+      const query = productInput.value.trim().toLowerCase();
+      suggestionsBox.innerHTML = '';
 
-    try {
-        const querySnapshot = await db.collection('inventory').get();
-        console.log('Fetched product data:');
+      if (query.length === 0) return;
 
-        querySnapshot.forEach((doc) => {
-            const productName = doc.id; // Document ID is the product name
-            const sellingPrice = doc.data()['Selling Price']; // Fetch the Selling Price
+      const inventoryRef = db.collection('Inventory');
+      const snapshot = await inventoryRef.get();
 
-            console.log(`Product: ${productName}, Selling Price: ${sellingPrice}`);
-
-            // Create an option for each product name
-            const option = document.createElement('option');
-            option.value = productName;
-            option.dataset.price = sellingPrice; // Store Selling Price as a data attribute
-            datalist.appendChild(option);
-        });
-
-    } catch (error) {
-        console.error('Error fetching product names:', error);
-    }
-}
-
-document.getElementById('productName').addEventListener('input', function() {
-    console.log('Input event triggered');
-    autocompleteProductName();
-});
-
-document.getElementById('productName').addEventListener('change', function() {
-    const input = this.value;
-    console.log('Change event triggered, input:', input);
-    
-    const options = document.getElementById('productSuggestions').options;
-    let price = '';
-
-    for (let i = 0; i < options.length; i++) {
-        if (options[i].value === input) {
-            price = options[i].dataset.price;
-            console.log('Price found:', price);
-            break;
+      snapshot.docs.forEach(doc => {
+        const productName = doc.id.toLowerCase();
+        if (productName.includes(query)) {
+          const suggestionItem = document.createElement('div');
+          suggestionItem.textContent = doc.id;
+          suggestionItem.onclick = () => selectProduct(doc);
+          suggestionsBox.appendChild(suggestionItem);
         }
+      });
+    });
+
+    function selectProduct(doc) {
+      productInput.value = doc.id;
+      priceInput.value = doc.data()["Selling Price"];
+      suggestionsBox.innerHTML = '';
     }
 
-    if (price) {
-        document.getElementById('price').value = price;
-    } else {
-        document.getElementById('price').value = ''; // Clear price if no match
-        console.log('Price not found, cleared input');
-    }
-});
