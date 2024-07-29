@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mega Mas Motor | Kuitansi</title>
+    <link rel="stylesheet" href="styles.css"> <!-- Link to your styles.css -->
+</head>
+<body>
+
+<!-- Password Prompt -->
+
+
+<!-- Main Content -->
+
+<!-- Navigation Bar -->
+<nav class="navbar">
+    <div class="navbar-container">
+        <a href="index.html" class="navbar-logo">
+            <h1>MEGA MAS MOTOR</h1>
+        </a>
+        <button class="navbar-toggle" onclick="toggleMenu()">
+            &#9776; <!-- Hamburger Icon -->
+        </button>
+        <ul class="navbar-menu" id="navbarMenu">
+            <li class="navbar-item"><a href="kuitansi.html">Buat Kuitansi</a></li>
+            <li class="navbar-item"><a href="inventory.html">Inventory</a></li>
+            <li class="navbar-item"><a href="order.html">Order</a></li>
+            <li class="navbar-item"><a href="sales.html">Sales</a></li>
+        </ul>
+    </div>
+</nav>
+
+
+
+    
+  <div class="container"> <!-- Add a container for flexbox layout -->
+
+    <!-- Invoice Content -->
+    <div class="invoice-box">
+        <table cellpadding="0" cellspacing="0">
+            <tr class="top">
+                <td colspan="3">
+                    <table class="logo-container">
+                        <tr>
+                            <td class="title">
+                                <img src="logo.png" alt="Logo">
+                            </td>
+                        </tr>
+                        <tr class="information line">
+                            <td colspan="3">
+                    
+                                   <span id="invoiceDate"></span> 
+                                   <input type="text" id="invoiceNumber" placeholder="Enter Invoice Number" list="invoiceNumbers" onchange="loadInvoiceDetails()">
+                                   <datalist id="invoiceNumbers"></datalist>
+                               </div>
+                              
+                         
+                               <br>
+                                <span>MEGA MAS MOTOR</span><br>
+                                <span>Jl. Kelapa No. 25, Palopo, Sulawesi Selatan</span><br>
+                                <span>0821-8713-8889</span>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+            <tr class="heading">
+                <td>Qty</td>
+                <td>Product Name</td>
+                <td style="text-align: center;">Total Price</td>
+
+            </tr>
+            <tbody id="invoiceItems">
+                <!-- Items will be added dynamically here -->
+            </tbody>
+            <tr class="total">
+                <td colspan="2" class="total-amount">Grand Total:</td>
+                <td class="total-value" id="grandTotal">0</td>
+            </tr>
+        </table>
+        <div style="text-align:center; margin-top: 10px; font-size: 12px;">Terima Kasih</div>
+    </div>
+
+    <!-- Input Box for Adding Items -->
+    <div class="input-box">
+        <div class="input-box-header">
+            <h2>Kuitansi</h2>
+            <img src="receipt.jpg" alt="Receipt Icon" class="receipt-icon">
+        </div>
+        <!-- New Invoice Number Generator -->
+        <div class="form-group">
+          <br>
+     
+          <div class="add-invoice-button">
+              <button id="addInvoiceNumberButton" onclick="addNewInvoiceNumber()">+ Nomor Baru</button>
+          </div>
+          <br>
+  
+        <form>
+            <label for="product">Product:</label><br>
+            <input type="text" id="product" name="product" autocomplete="off"class="input-field" placeholder=" Masukkan nama barang/ sesuaikan dengan ketikan">
+            <div id="suggestions"></div>
+            <label for="qty">Kuantiti:</label><br>
+            <input type="number" id="qty" name="qty" class="input-field" placeholder=" Ketik jumlah pembelian">
+            <br><label for="price">Harga/Item:</label><br>
+            <input type="number" id="price" name="price" class="input-field" placeholder=" Masukkan harga/ sesuaikan dengan ketikan">
+          </form>
+        </div>
+        <button id="addItemButton" onclick="addItem()" class="add-button">Add Item</button>
+
+    </div>
+
+      <!-- Print Button -->
+      <div class="Print">
+          <button onclick="printInvoice()">Print Invoice</button>
+      </div>
+    </div>
+
+  </div> <!-- Close container div -->
+  
+</div>
+
+<!-- Firebase SDK and Initialization -->
+<script src="https://www.gstatic.com/firebasejs/9.9.3/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.9.3/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.9.3/firebase-analytics-compat.js"></script>
+
+<!-- Your Firebase Configuration and Initialization -->
+<script>
+  // Your web app's Firebase configuration
+  const firebaseConfig = {
+    apiKey: "AIzaSyANCk_iM4XtSX0VW6iETK-tJdWHGAWMbS0",
+    authDomain: "megamasmotor-4008c.firebaseapp.com",
+    projectId: "megamasmotor-4008c",
+    storageBucket: "megamasmotor-4008c.appspot.com",
+    messagingSenderId: "874673615212",
+    appId: "1:874673615212:web:7f0ecdeee47fed60aa0349",
+    measurementId: "G-LF6NB7ZKLE"
+  };
+
+  // Initialize Firebase
+  const app = firebase.initializeApp(firebaseConfig);
+  const db = firebase.firestore();
+  const analytics = firebase.analytics();
+</script>
+
+<!-- Password Prompt Script -->
+
+<script src="password.js"></script>
+
+<!-- Main Script -->
+<script src="manual.js"></script>
+
+</body>
+</html>
