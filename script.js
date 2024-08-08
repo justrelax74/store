@@ -5,23 +5,20 @@ let selectedItemIndex = -1;
 document.addEventListener('DOMContentLoaded', () => {
     setDate();
     fetchInvoiceNumbers(); // Fetch existing invoice numbers on load
+    document.getElementById('addItemButton').addEventListener('click', addItem);
 });
 
 function setDate() {
     const now = new Date();
-
     const optionsDate = { year: 'numeric', month: 'short', day: '2-digit' };
     const formattedDate = now.toLocaleDateString('id-ID', optionsDate);
-
     const hours = String(now.getHours()).padStart(2, '0');
     const minutes = String(now.getMinutes()).padStart(2, '0');
     const seconds = String(now.getSeconds()).padStart(2, '0');
     const formattedTime = `${hours}:${minutes}:${seconds}`;
-
     const fullFormattedDate = `${formattedDate}, ${formattedTime}`;
     document.getElementById('invoiceDate').textContent = fullFormattedDate;
 }
-
 
 function formatNumber(number) {
     return number.toLocaleString('id-ID');
@@ -54,7 +51,6 @@ function loadInvoiceDetails() {
 
                 updateInvoiceItems();
                 document.getElementById('grandTotal').textContent = formatNumber(grandTotal);
-     
             } else {
                 alert('Invoice not found.');
             }
@@ -67,40 +63,38 @@ function loadInvoiceDetails() {
 }
 
 function saveEditedItem() {
-    const productName = document.getElementById('productName').value.trim();
+    const productName = document.getElementById('product').value.trim();
     const qty = parseInt(document.getElementById('qty').value, 10);
     const price = parseFloat(document.getElementById('price').value);
     const invoiceNumber = document.getElementById('invoiceNumber').value.trim();
 
     if (productName && !isNaN(qty) && !isNaN(price) && selectedItemIndex >= 0) {
         const item = items[selectedItemIndex];
-        const totalPrice = qty * price;
-        grandTotal += totalPrice - item.totalPrice; // Update grandTotal
+        const oldTotalPrice = item.totalPrice;
+        const newTotalPrice = qty * price;
 
-        // Remove the item being edited
-        items.splice(selectedItemIndex, 1);
-
-        // Create a new item object with updated details
-        const updatedItem = {
+        // Update item with new values
+        items[selectedItemIndex] = {
             productName: productName.toUpperCase(),
             qty: qty,
             price: price,
-            totalPrice: totalPrice
+            totalPrice: newTotalPrice
         };
 
-        // Add the updated item back to the items array
-        items.push(updatedItem);
+        // Update grandTotal
+        grandTotal += newTotalPrice - oldTotalPrice;
+        console.log(`Updated Grand Total: ${grandTotal}`);
 
-        // Update display and Firestore
+        // Update display
         updateInvoiceItems();
         document.getElementById('grandTotal').textContent = formatNumber(grandTotal);
-
         setDate();
 
-        document.getElementById('productName').value = '';
+        // Clear input fields
+        document.getElementById('product').value = '';
         document.getElementById('qty').value = '';
         document.getElementById('price').value = '';
-        selectedItemIndex = -1; // Reset index
+        selectedItemIndex = -1;
 
         // Save to Firestore
         db.collection('invoices').doc(invoiceNumber).set({
@@ -116,23 +110,22 @@ function saveEditedItem() {
     }
 }
 
+
 function updateInvoiceItems() {
     const invoiceItems = document.getElementById('invoiceItems');
     invoiceItems.innerHTML = ''; // Clear existing items
 
     items.forEach((item, index) => {
         const row = document.createElement('tr');
-        row.innerHTML = `
-            <td>${item.qty}</td>
+        row.innerHTML = 
+            `<td>${item.qty}</td>
             <td>${item.productName}</td>
             <td class="total-price">${formatNumber(item.totalPrice)}</td>
             <td><button onclick="editItem(${index})">Edit</button></td>
-            <td><button onclick="deleteItem(${index})">Delete</button></td>
-        `;
+            <td><button onclick="deleteItem(${index})">Delete</button></td>`;
         invoiceItems.appendChild(row);
     });
 }
-
 
 function printInvoice() {
     window.print();
@@ -140,19 +133,16 @@ function printInvoice() {
 
 function editItem(index) {
     const item = items[index];
-    items.splice(index, 1); // Remove the item from the array
-    updateInvoiceItems(); // Update display to remove the item
-
     document.getElementById('product').value = item.productName;
     document.getElementById('qty').value = item.qty;
     document.getElementById('price').value = item.price;
 
     selectedItemIndex = index; // Set selectedItemIndex for update
-    isUpdating = true; // Set flag to true as we're editing an item
 
     grandTotal -= item.totalPrice; // Update grandTotal
     document.getElementById('grandTotal').textContent = formatNumber(grandTotal);
 }
+
 function deleteItem(index) {
     const item = items[index];
     grandTotal -= item.totalPrice;
@@ -174,9 +164,6 @@ function deleteItem(index) {
         });
     }
 }
-
-
-
 
 async function addItem() {
     const invoiceNumber = document.getElementById('invoiceNumber').value.trim();
@@ -209,36 +196,31 @@ async function addItem() {
     }
 
     const itemTotalPrice = qty * price;
-    const updatedItem = {
+    const newItem = {
         productName: productName.toUpperCase(),
         qty: qty,
         price: price,
         totalPrice: itemTotalPrice
     };
 
-    if (selectedItemIndex >= 0) {
-        // Remove the old item if updating
-        invoiceData.items.splice(selectedItemIndex, 1);
-        selectedItemIndex = -1; // Reset index after removal
-    }
-
-    // Check if the item already exists in the invoice
-    const existingItemIndex = invoiceData.items.findIndex(item => item.productName === updatedItem.productName);
+    let existingItemIndex = invoiceData.items.findIndex(item => item.productName === newItem.productName);
     
     if (existingItemIndex >= 0) {
         // Update existing item
-        invoiceData.items[existingItemIndex] = updatedItem;
+        grandTotal -= invoiceData.items[existingItemIndex].totalPrice;
+        invoiceData.items[existingItemIndex] = newItem;
     } else {
         // Add new item
-        invoiceData.items.push(updatedItem);
+        invoiceData.items.push(newItem);
     }
 
     // Update grandTotal
-    invoiceData.grandTotal = invoiceData.items.reduce((total, item) => total + item.totalPrice, 0);
+    grandTotal = invoiceData.items.reduce((total, item) => total + item.totalPrice, 0);
+    console.log(`Updated Grand Total: ${grandTotal}`);
 
     try {
         // Save to Firestore
-        await invoiceDocRef.set(invoiceData);
+        await invoiceDocRef.set({ items: invoiceData.items, grandTotal: grandTotal });
         console.log("Invoice updated successfully!");
     } catch (error) {
         console.error("Error updating invoice: ", error);
@@ -246,9 +228,8 @@ async function addItem() {
 
     // Update the display immediately
     items = invoiceData.items; // Update local items array
-    grandTotal = invoiceData.grandTotal; // Update local grandTotal
     updateInvoiceItems(); // Refresh the invoice items display
-    document.getElementById('grandTotal').innerText = formatNumber(grandTotal);
+    document.getElementById('grandTotal').textContent = formatNumber(grandTotal);
 
     // Clear input fields
     document.getElementById('product').value = '';
@@ -256,93 +237,73 @@ async function addItem() {
     document.getElementById('price').value = '';
 }
 
-// Make sure this code is executed when the DOM is loaded
-document.addEventListener('DOMContentLoaded', () => {
-    document.getElementById('addItemButton').addEventListener('click', addItem);
+
+
+
+
+let inventoryCache = null;
+let lastQueryTime = 0;
+const cacheDuration = 300000; // 5 minutes in milliseconds
+
+async function fetchInventory() {
+    const now = Date.now();
+    if (inventoryCache && (now - lastQueryTime < cacheDuration)) {
+        console.log("Using cached inventory data");
+        return inventoryCache;
+    }
+    console.log("Fetching inventory data from Firestore");
+    const inventoryRef = db.collection('Inventory');
+    const snapshot = await inventoryRef.get();
+    inventoryCache = snapshot.docs.map(doc => ({ id: doc.id, data: doc.data() }));
+    lastQueryTime = now;
+    return inventoryCache;
+}
+
+
+const debounceDelay = 300; // 300 ms delay for debounce
+
+const productInput = document.getElementById('product');
+const suggestionsBox = document.getElementById('suggestions');
+const priceInput = document.getElementById('price');
+
+productInput.addEventListener('input', debounce(async () => {
+    const query = productInput.value.trim();
+    if (query) {
+        const inventory = await fetchInventory();
+        const suggestions = inventory.filter(item =>
+            item.id.toLowerCase().includes(query.toLowerCase())
+        );
+        suggestionsBox.innerHTML = '';
+        suggestions.forEach(item => {
+            const option = document.createElement('div');
+            option.classList.add('suggestion-item');
+            option.textContent = `${item.id} (Stock: ${item.data.Stock})`;
+            option.addEventListener('click', () => {
+                productInput.value = item.id;
+                priceInput.value = item.data['Selling Price'];
+                suggestionsBox.innerHTML = '';
+            });
+            suggestionsBox.appendChild(option);
+        });
+    } else {
+        suggestionsBox.innerHTML = '';
+    }
+}, debounceDelay));
+
+document.addEventListener('click', (event) => {
+    if (!suggestionsBox.contains(event.target) && event.target !== productInput) {
+        suggestionsBox.innerHTML = '';
+    }
 });
 
-
-
-
-
-async function generateNewInvoiceNumber() {
-    try {
-        const snapshot = await db.collection('invoices').get();
-        let maxInvoiceNumber = 0;
-
-        snapshot.forEach(doc => {
-            const invoiceNumber = parseInt(doc.id, 10); // Ensure invoiceNumber is parsed as an integer
-            if (invoiceNumber > maxInvoiceNumber) {
-                maxInvoiceNumber = invoiceNumber;
-            }
-        });
-
-        const newInvoiceNumber = maxInvoiceNumber + 1; // Increment the max invoice number by 1
-        return newInvoiceNumber;
-
-    } catch (error) {
-        console.error("Error fetching invoice numbers: ", error);
-        return null;
-    }
-}
-
-async function addNewInvoiceNumber() {
-    const newInvoiceNumber = await generateNewInvoiceNumber();
-    if (newInvoiceNumber !== null) {
-        // Set the new invoice number in the input field
-        document.getElementById('invoiceNumber').value = newInvoiceNumber;
-
-        try {
-            // Add the new invoice number to Firestore
-            await db.collection('invoices').doc(newInvoiceNumber.toString()).set({
-                date: new Date().toLocaleDateString(),
-                items: [],
-                grandTotal: 0
-            });
-            alert("New invoice number added successfully!");
-        } catch (error) {
-            console.error("Error adding new invoice number: ", error);
-            alert("Error adding new invoice number.");
+function debounce(func, delay) {
+    let timeoutId;
+    return (...args) => {
+        if (timeoutId) {
+            clearTimeout(timeoutId);
         }
-    }
+        timeoutId = setTimeout(() => {
+            func(...args);
+        }, delay);
+    };
 }
-
-// Add event listener for the button
-document.getElementById('addInvoiceNumberButton').addEventListener('click', addNewInvoiceNumber);
-
-// Function to toggle the mobile menu
-function toggleMenu() {
-    const menu = document.getElementById('navbarMenu');
-    menu.classList.toggle('show');
-}
-
- const productInput = document.getElementById('product');
-    const suggestionsBox = document.getElementById('suggestions');
-    const priceInput = document.getElementById('price');
-
-    productInput.addEventListener('input', async () => {
-      const query = productInput.value.trim().toLowerCase();
-      suggestionsBox.innerHTML = '';
-
-      if (query.length === 0) return;
-
-      const inventoryRef = db.collection('Inventory');
-      const snapshot = await inventoryRef.get();
-
-      snapshot.docs.forEach(doc => {
-        const productName = doc.id.toLowerCase();
-        if (productName.includes(query)) {
-          const suggestionItem = document.createElement('div');
-          suggestionItem.textContent = doc.id;
-          suggestionItem.onclick = () => selectProduct(doc);
-          suggestionsBox.appendChild(suggestionItem);
-        }
-      });
-    });
-
-    function selectProduct(doc) {
-      productInput.value = doc.id;
-      priceInput.value = doc.data()["Selling Price"];
-      suggestionsBox.innerHTML = '';
-    }
-
