@@ -96,21 +96,20 @@
               <button id="addInvoiceNumberButton" onclick="addNewInvoiceNumber()">+ Nomor Baru</button>
           </div>
           <br>
-          <div class="form-group">
-            <label for="productName">Nama Item</label>
-            <input type="text" id="productName" class="input-field" placeholder="Enter product name" list="productSuggestions">
-            <datalist id="productSuggestions"></datalist> <!-- Updated ID to match script -->
+  
+        <form>
+            <label for="product">Product:</label><br>
+            <input type="text" id="product" name="product" autocomplete="off"class="input-field" placeholder=" Masukkan nama barang/ sesuaikan dengan ketikan">
+            <div id="suggestions"></div>
+            <label for="qty">Kuantiti:</label><br>
+            <input type="number" id="qty" name="qty" class="input-field" placeholder=" Ketik jumlah pembelian">
+            <br><label for="price">Harga/Item:</label><br>
+            <input type="number" id="price" name="price" class="input-field" placeholder=" Masukkan harga/ sesuaikan dengan ketikan">
+          </form>
         </div>
-          <div class="form-group">
-              <label for="qty">Kuantiti:</label>
-              <input type="number" id="qty" class="input-field" placeholder="Enter quantity">
-          </div>
-          <div class="form-group">
-              <label for="price">Harga/Item:</label>
-              <input type="number" id="price" class="input-field" placeholder="Enter price">
-          </div>
-          <button onclick="addItem()" class="add-button">Add Item</button>
-      </div>
+        <button id="addItemButton" onclick="addItem()" class="add-button">Add Item</button>
+
+    </div>
 
       <!-- Print Button -->
       <div class="Print">
