@@ -35,6 +35,11 @@
             <!-- Collection options will be dynamically inserted here -->
         </div>
 
+        <!-- Search Item -->
+        <label for="search-item">Search Item:</label>
+        <input type="text" id="search-item" placeholder="Type keyword">
+        <button id="search-button">Search</button>
+
         <!-- Add New Product Form -->
         <form id="add-product-form">
             <label for="product-name">Product Name:</label>
@@ -68,7 +73,6 @@
             <tbody>
                 <!-- Inventory rows will be dynamically inserted here -->
             </tbody>
-            <div id="pagination"></div>
         </table>
         
         <!-- Hidden Edit Mode Section -->
@@ -76,8 +80,10 @@
             <h2>Edit Inventory</h2>
             <!-- Editable table or form goes here if needed -->
         </div>
+
+        <!-- Load More Button -->
+        <button id="load-more-btn" style="display:none;">Load More</button>
     </div>
-<div id="pagination"></div>
 
     <!-- Firebase SDK and Initialization -->
     <script src="https://www.gstatic.com/firebasejs/9.9.3/firebase-app-compat.js"></script>
