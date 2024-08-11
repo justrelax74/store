@@ -307,3 +307,8 @@ function debounce(func, delay) {
         }, delay);
     };
 }
+// Function to toggle the mobile menu
+function toggleMenu() {
+    const menu = document.getElementById('navbarMenu');
+    menu.classList.toggle('show');
+}
