@@ -45,22 +45,11 @@ function handleInlineEdit(event) {
 
 let isEditMode = false; // Flag to track whether edit mode is active
 let currentCollection = 'Inventory'; // Default collection
-let lastVisible = null; // To keep track of the last visible document for pagination
-let searchKeyword = ''; // To keep track of the search keyword
 
 document.addEventListener('DOMContentLoaded', async () => {
     const tableBody = document.querySelector('#inventory-table tbody');
     const collectionSelect = document.getElementById('collection-select');
     const collectionDropdown = document.getElementById('collection-dropdown');
-    const loadMoreButton = document.getElementById('load-more-btn');
-    const searchButton = document.getElementById('search-button');
-    const searchItemInput = document.getElementById('search-item');
-
-    // Check for null elements
-    if (!tableBody || !collectionSelect || !collectionDropdown || !loadMoreButton || !searchButton || !searchItemInput) {
-        console.error('One or more elements are missing in the DOM');
-        return;
-    }
 
     const collections = ["Inventory", "Ban", "Oli", "Air Radiator", "Shock Breaker", "Aki", "Lampu Stop", "Kampas Kopling", 
         "Tutup Kampas", "Busi", "Fender Liner", "Kampas Cakram Depan", 
@@ -72,8 +61,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         div.textContent = collection;
         div.addEventListener('click', () => {
             currentCollection = collection;
-            tableBody.innerHTML = ''; // Clear existing table data
-            lastVisible = null; // Reset last visible for pagination
             loadCollectionData(collection);
             collectionDropdown.style.display = 'none';
         });
@@ -85,37 +72,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     // Function to load collection data
-    async function loadCollectionData(collection, keyword = '', loadMore = false) {
-        if (!loadMore) {
-            tableBody.innerHTML = ''; // Clear existing table data
-            lastVisible = null; // Reset last visible for pagination
-        }
+    async function loadCollectionData(collection) {
+        tableBody.innerHTML = ''; // Clear existing table data
 
         try {
-            let query = db.collection(collection).orderBy('ProductName').limit(25);
-
-            if (keyword) {
-                query = db.collection(collection)
-                    .where('ProductName', '>=', keyword)
-                    .where('ProductName', '<=', keyword + '\uf8ff')
-                    .orderBy('ProductName')
-                    .limit(25);
-            }
-
-            if (lastVisible) {
-                query = query.startAfter(lastVisible);
-            }
-
-            const querySnapshot = await query.get();
-
-            if (querySnapshot.empty) {
-                console.log('No matching documents.');
-                return;
-            }
-
-            if (querySnapshot.docs.length > 0) {
-                lastVisible = querySnapshot.docs[querySnapshot.docs.length - 1];
-            }
+            // Fetch all documents from the specified collection
+            const querySnapshot = await db.collection(collection).get();
 
             querySnapshot.forEach((doc) => {
                 const data = doc.data();
@@ -130,12 +92,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                 `;
                 tableBody.appendChild(row);
             });
-
-            if (querySnapshot.docs.length === 25) {
-                loadMoreButton.style.display = 'block';
-            } else {
-                loadMoreButton.style.display = 'none';
-            }
 
             // Add event listener for inline editing
             tableBody.addEventListener('click', handleInlineEdit);
@@ -194,27 +150,6 @@ document.addEventListener('DOMContentLoaded', async () => {
         } catch (error) {
             console.error('Error adding document: ', error.message);
             alert('Error adding product. Please check the console for details.');
-        }
-    });
-
-    // Load more data when the "Load More" button is clicked
-    loadMoreButton.addEventListener('click', () => {
-        loadCollectionData(currentCollection, searchKeyword, true);
-    });
-
-    // Search item functionality
-    searchButton.addEventListener('click', () => {
-        searchKeyword = searchItemInput.value.trim();
-        lastVisible = null; // Reset last visible for pagination
-        loadCollectionData(currentCollection, searchKeyword);
-    });
-
-    // Trigger search when Enter key is pressed in search input
-    searchItemInput.addEventListener('keydown', (event) => {
-        if (event.key === 'Enter') {
-            searchKeyword = event.target.value.trim();
-            lastVisible = null; // Reset last visible for pagination
-            loadCollectionData(currentCollection, searchKeyword);
         }
     });
 });
