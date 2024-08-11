@@ -1,12 +1,66 @@
+// Helper function to format numbers with commas
+function formatNumberWithCommas(number) {
+    return number.toLocaleString();
+}
+
+// Function to handle inline editing
+function handleInlineEdit(event) {
+    if (!isEditMode) return; // Only allow editing if edit mode is active
+
+    const target = event.target;
+    if (target.tagName === 'TD' && target.classList.contains('editable')) {
+        const originalText = target.textContent;
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.value = originalText;
+        target.innerHTML = '';
+        target.appendChild(input);
+        input.focus();
+
+        input.addEventListener('blur', async () => {
+            const newValue = input.value;
+            target.textContent = newValue;
+
+            // Get SKU from the row
+            const sku = target.closest('tr').querySelector('td').textContent; // Get SKU from the first cell
+            const field = target.dataset.field;
+
+            try {
+                // Update Firestore
+                await db.collection(currentCollection).doc(sku).update({
+                    [field]: isNaN(newValue) ? newValue : parseInt(newValue, 10) // Convert to number if needed
+                });
+            } catch (error) {
+                console.error('Error updating document: ', error.message);
+            }
+        });
+
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                input.blur();
+            }
+        });
+    }
+}
+
+let isEditMode = false; // Flag to track whether edit mode is active
 let currentCollection = 'Inventory'; // Default collection
-let currentPage = 1;
-const itemsPerPage = 25;
+let lastVisible = null; // To keep track of the last visible document for pagination
+let searchKeyword = ''; // To keep track of the search keyword
 
 document.addEventListener('DOMContentLoaded', async () => {
     const tableBody = document.querySelector('#inventory-table tbody');
     const collectionSelect = document.getElementById('collection-select');
     const collectionDropdown = document.getElementById('collection-dropdown');
-    const paginationContainer = document.getElementById('pagination');
+    const loadMoreButton = document.getElementById('load-more-btn');
+    const searchButton = document.getElementById('search-button');
+    const searchItemInput = document.getElementById('search-item');
+
+    // Check for null elements
+    if (!tableBody || !collectionSelect || !collectionDropdown || !loadMoreButton || !searchButton || !searchItemInput) {
+        console.error('One or more elements are missing in the DOM');
+        return;
+    }
 
     const collections = ["Inventory", "Ban", "Oli", "Air Radiator", "Shock Breaker", "Aki", "Lampu Stop", "Kampas Kopling", 
         "Tutup Kampas", "Busi", "Fender Liner", "Kampas Cakram Depan", 
@@ -18,8 +72,9 @@ document.addEventListener('DOMContentLoaded', async () => {
         div.textContent = collection;
         div.addEventListener('click', () => {
             currentCollection = collection;
-            currentPage = 1; // Reset to the first page when switching collections
-            loadCollectionData(collection, currentPage);
+            tableBody.innerHTML = ''; // Clear existing table data
+            lastVisible = null; // Reset last visible for pagination
+            loadCollectionData(collection);
             collectionDropdown.style.display = 'none';
         });
         collectionDropdown.appendChild(div);
@@ -29,20 +84,38 @@ document.addEventListener('DOMContentLoaded', async () => {
         collectionDropdown.style.display = 'block';
     });
 
-    // Function to load collection data with pagination
-    async function loadCollectionData(collection, page) {
-        tableBody.innerHTML = ''; // Clear existing table data
+    // Function to load collection data
+    async function loadCollectionData(collection, keyword = '', loadMore = false) {
+        if (!loadMore) {
+            tableBody.innerHTML = ''; // Clear existing table data
+            lastVisible = null; // Reset last visible for pagination
+        }
 
         try {
-            const querySnapshot = await db.collection(collection)
-                .orderBy('SKU')
-                .offset((page - 1) * itemsPerPage)
-                .limit(itemsPerPage)
-                .get();
+            let query = db.collection(collection).orderBy('ProductName').limit(25);
 
-            const totalItemsSnapshot = await db.collection(collection).get();
-            const totalItems = totalItemsSnapshot.size;
-            const totalPages = Math.ceil(totalItems / itemsPerPage);
+            if (keyword) {
+                query = db.collection(collection)
+                    .where('ProductName', '>=', keyword)
+                    .where('ProductName', '<=', keyword + '\uf8ff')
+                    .orderBy('ProductName')
+                    .limit(25);
+            }
+
+            if (lastVisible) {
+                query = query.startAfter(lastVisible);
+            }
+
+            const querySnapshot = await query.get();
+
+            if (querySnapshot.empty) {
+                console.log('No matching documents.');
+                return;
+            }
+
+            if (querySnapshot.docs.length > 0) {
+                lastVisible = querySnapshot.docs[querySnapshot.docs.length - 1];
+            }
 
             querySnapshot.forEach((doc) => {
                 const data = doc.data();
@@ -58,36 +131,22 @@ document.addEventListener('DOMContentLoaded', async () => {
                 tableBody.appendChild(row);
             });
 
+            if (querySnapshot.docs.length === 25) {
+                loadMoreButton.style.display = 'block';
+            } else {
+                loadMoreButton.style.display = 'none';
+            }
+
             // Add event listener for inline editing
             tableBody.addEventListener('click', handleInlineEdit);
-
-            // Update pagination
-            updatePagination(totalPages, page);
 
         } catch (error) {
             console.error("Error fetching inventory data: ", error.message);
         }
     }
 
-    // Function to update pagination
-    function updatePagination(totalPages, currentPage) {
-        paginationContainer.innerHTML = ''; // Clear existing pagination
-
-        for (let i = 1; i <= totalPages; i++) {
-            const pageButton = document.createElement('button');
-            pageButton.textContent = i;
-            if (i === currentPage) {
-                pageButton.classList.add('active');
-            }
-            pageButton.addEventListener('click', () => {
-                loadCollectionData(currentCollection, i);
-            });
-            paginationContainer.appendChild(pageButton);
-        }
-    }
-
     // Load default collection data on page load
-    loadCollectionData(currentCollection, currentPage);
+    loadCollectionData(currentCollection);
 
     // Toggle edit mode
     document.getElementById('edit-mode-btn').addEventListener('click', () => {
@@ -131,10 +190,37 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
 
             // Reload inventory to reflect changes
-            loadCollectionData(currentCollection, currentPage);
+            loadCollectionData(currentCollection);
         } catch (error) {
             console.error('Error adding document: ', error.message);
             alert('Error adding product. Please check the console for details.');
         }
     });
+
+    // Load more data when the "Load More" button is clicked
+    loadMoreButton.addEventListener('click', () => {
+        loadCollectionData(currentCollection, searchKeyword, true);
+    });
+
+    // Search item functionality
+    searchButton.addEventListener('click', () => {
+        searchKeyword = searchItemInput.value.trim();
+        lastVisible = null; // Reset last visible for pagination
+        loadCollectionData(currentCollection, searchKeyword);
+    });
+
+    // Trigger search when Enter key is pressed in search input
+    searchItemInput.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter') {
+            searchKeyword = event.target.value.trim();
+            lastVisible = null; // Reset last visible for pagination
+            loadCollectionData(currentCollection, searchKeyword);
+        }
+    });
 });
+
+// Function to toggle the mobile menu
+function toggleMenu() {
+    const menu = document.getElementById('navbarMenu');
+    menu.classList.toggle('show');
+}
