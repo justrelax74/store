@@ -1,55 +1,12 @@
-// Helper function to format numbers with commas
-function formatNumberWithCommas(number) {
-    return number.toLocaleString();
-}
-
-// Function to handle inline editing
-function handleInlineEdit(event) {
-    if (!isEditMode) return; // Only allow editing if edit mode is active
-
-    const target = event.target;
-    if (target.tagName === 'TD' && target.classList.contains('editable')) {
-        const originalText = target.textContent;
-        const input = document.createElement('input');
-        input.type = 'text';
-        input.value = originalText;
-        target.innerHTML = '';
-        target.appendChild(input);
-        input.focus();
-
-        input.addEventListener('blur', async () => {
-            const newValue = input.value;
-            target.textContent = newValue;
-
-            // Get SKU from the row
-            const sku = target.closest('tr').querySelector('td').textContent; // Get SKU from the first cell
-            const field = target.dataset.field;
-
-            try {
-                // Update Firestore
-                await db.collection(currentCollection).doc(sku).update({
-                    [field]: isNaN(newValue) ? newValue : parseInt(newValue, 10) // Convert to number if needed
-                });
-            } catch (error) {
-                console.error('Error updating document: ', error.message);
-            }
-        });
-
-        input.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                input.blur();
-            }
-        });
-    }
-}
-
-let isEditMode = false; // Flag to track whether edit mode is active
 let currentCollection = 'Inventory'; // Default collection
+let currentPage = 1;
+const itemsPerPage = 25;
 
 document.addEventListener('DOMContentLoaded', async () => {
     const tableBody = document.querySelector('#inventory-table tbody');
     const collectionSelect = document.getElementById('collection-select');
     const collectionDropdown = document.getElementById('collection-dropdown');
+    const paginationContainer = document.getElementById('pagination');
 
     const collections = ["Inventory", "Ban", "Oli", "Air Radiator", "Shock Breaker", "Aki", "Lampu Stop", "Kampas Kopling", 
         "Tutup Kampas", "Busi", "Fender Liner", "Kampas Cakram Depan", 
@@ -61,7 +18,8 @@ document.addEventListener('DOMContentLoaded', async () => {
         div.textContent = collection;
         div.addEventListener('click', () => {
             currentCollection = collection;
-            loadCollectionData(collection);
+            currentPage = 1; // Reset to the first page when switching collections
+            loadCollectionData(collection, currentPage);
             collectionDropdown.style.display = 'none';
         });
         collectionDropdown.appendChild(div);
@@ -71,13 +29,20 @@ document.addEventListener('DOMContentLoaded', async () => {
         collectionDropdown.style.display = 'block';
     });
 
-    // Function to load collection data
-    async function loadCollectionData(collection) {
+    // Function to load collection data with pagination
+    async function loadCollectionData(collection, page) {
         tableBody.innerHTML = ''; // Clear existing table data
 
         try {
-            // Fetch all documents from the specified collection
-            const querySnapshot = await db.collection(collection).get();
+            const querySnapshot = await db.collection(collection)
+                .orderBy('SKU')
+                .offset((page - 1) * itemsPerPage)
+                .limit(itemsPerPage)
+                .get();
+
+            const totalItemsSnapshot = await db.collection(collection).get();
+            const totalItems = totalItemsSnapshot.size;
+            const totalPages = Math.ceil(totalItems / itemsPerPage);
 
             querySnapshot.forEach((doc) => {
                 const data = doc.data();
@@ -96,13 +61,33 @@ document.addEventListener('DOMContentLoaded', async () => {
             // Add event listener for inline editing
             tableBody.addEventListener('click', handleInlineEdit);
 
+            // Update pagination
+            updatePagination(totalPages, page);
+
         } catch (error) {
             console.error("Error fetching inventory data: ", error.message);
         }
     }
 
+    // Function to update pagination
+    function updatePagination(totalPages, currentPage) {
+        paginationContainer.innerHTML = ''; // Clear existing pagination
+
+        for (let i = 1; i <= totalPages; i++) {
+            const pageButton = document.createElement('button');
+            pageButton.textContent = i;
+            if (i === currentPage) {
+                pageButton.classList.add('active');
+            }
+            pageButton.addEventListener('click', () => {
+                loadCollectionData(currentCollection, i);
+            });
+            paginationContainer.appendChild(pageButton);
+        }
+    }
+
     // Load default collection data on page load
-    loadCollectionData(currentCollection);
+    loadCollectionData(currentCollection, currentPage);
 
     // Toggle edit mode
     document.getElementById('edit-mode-btn').addEventListener('click', () => {
@@ -146,16 +131,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             });
 
             // Reload inventory to reflect changes
-            loadCollectionData(currentCollection);
+            loadCollectionData(currentCollection, currentPage);
         } catch (error) {
             console.error('Error adding document: ', error.message);
             alert('Error adding product. Please check the console for details.');
         }
     });
 });
-
-// Function to toggle the mobile menu
-function toggleMenu() {
-    const menu = document.getElementById('navbarMenu');
-    menu.classList.toggle('show');
-}
