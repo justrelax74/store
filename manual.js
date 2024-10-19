@@ -4,54 +4,34 @@ let selectedItemIndex = -1;
 
 document.addEventListener('DOMContentLoaded', () => {
     setDate();
-    // fetchInvoiceNumbers(); // Remove Firestore fetch on load
 });
 
+// Set the current date and time
 function setDate() {
     const now = new Date();
-
     const optionsDate = { year: 'numeric', month: 'short', day: '2-digit' };
     const formattedDate = now.toLocaleDateString('id-ID', optionsDate);
-
     const hours = String(now.getHours()).padStart(2, '0');
     const minutes = String(now.getMinutes()).padStart(2, '0');
     const seconds = String(now.getSeconds()).padStart(2, '0');
     const formattedTime = `${hours}:${minutes}:${seconds}`;
-
     const fullFormattedDate = `${formattedDate}, ${formattedTime}`;
     document.getElementById('invoiceDate').textContent = fullFormattedDate;
 }
 
+// Format number to local string
 function formatNumber(number) {
     return number.toLocaleString('id-ID');
 }
 
-// Remove Firestore-related functions
-function fetchInvoiceNumbers() {
-    // const datalist = document.getElementById('invoiceNumbers');
-    // db.collection('invoices').get().then((querySnapshot) => {
-    //     querySnapshot.forEach((doc) => {
-    //         const option = document.createElement('option');
-    //         option.value = doc.id;
-    //         datalist.appendChild(option);
-    //     });
-    // }).catch((error) => {
-    //     console.error("Error fetching invoice numbers: ", error);
-    // });
-}
-
+// Load invoice details manually (without Firestore)
 function loadInvoiceDetails() {
-    // This function is now for manual loading
     const invoiceNumber = document.getElementById('invoiceNumber').value.trim();
     if (invoiceNumber) {
         // Simulate loading invoice details from local data
         const data = {}; // Replace with actual local data
         items = data.items || [];
         grandTotal = data.grandTotal || 0;
-
-        // Verify if items and productName are correctly retrieved
-        console.log(items);
-
         updateInvoiceItems();
         document.getElementById('grandTotal').textContent = formatNumber(grandTotal);
     } else {
@@ -59,18 +39,18 @@ function loadInvoiceDetails() {
     }
 }
 
+// Save edited item
 function saveEditedItem() {
-    const productName = document.getElementById('productName').value.trim();
+    const productName = document.getElementById('product').value.trim();
     const qty = parseInt(document.getElementById('qty').value, 10);
     const price = parseFloat(document.getElementById('price').value);
-    const invoiceNumber = document.getElementById('invoiceNumber').value.trim();
 
     if (productName && !isNaN(qty) && !isNaN(price) && selectedItemIndex >= 0) {
-        const item = items[selectedItemIndex];
-        const totalPrice = qty * price;
-        grandTotal += totalPrice - item.totalPrice; // Update grandTotal
+        const oldItem = items[selectedItemIndex];
+        const newTotalPrice = qty * price;
+        grandTotal += newTotalPrice - oldItem.totalPrice; // Update grandTotal
 
-        // Remove the item being edited
+        // Remove the old item being edited
         items.splice(selectedItemIndex, 1);
 
         // Create a new item object with updated details
@@ -78,7 +58,7 @@ function saveEditedItem() {
             productName: productName.toUpperCase(),
             qty: qty,
             price: price,
-            totalPrice: totalPrice
+            totalPrice: newTotalPrice
         };
 
         // Add the updated item back to the items array
@@ -90,7 +70,8 @@ function saveEditedItem() {
 
         setDate();
 
-        document.getElementById('productName').value = '';
+        // Clear input fields
+        document.getElementById('product').value = '';
         document.getElementById('qty').value = '';
         document.getElementById('price').value = '';
         selectedItemIndex = -1; // Reset index
@@ -99,6 +80,7 @@ function saveEditedItem() {
     }
 }
 
+// Update invoice items display
 function updateInvoiceItems() {
     const invoiceItems = document.getElementById('invoiceItems');
     invoiceItems.innerHTML = ''; // Clear existing items
@@ -116,14 +98,14 @@ function updateInvoiceItems() {
     });
 }
 
+// Print the invoice
 function printInvoice() {
     window.print();
 }
 
+// Edit an item
 function editItem(index) {
     const item = items[index];
-    items.splice(index, 1); // Remove the item from the array
-    updateInvoiceItems(); // Update display to remove the item
 
     document.getElementById('product').value = item.productName;
     document.getElementById('qty').value = item.qty;
@@ -131,10 +113,15 @@ function editItem(index) {
 
     selectedItemIndex = index; // Set selectedItemIndex for update
 
+    // Remove the item from the array temporarily
+    items.splice(index, 1);
+    updateInvoiceItems(); // Update display to remove the item
+
     grandTotal -= item.totalPrice; // Update grandTotal
     document.getElementById('grandTotal').textContent = formatNumber(grandTotal);
 }
 
+// Delete an item
 function deleteItem(index) {
     const item = items[index];
     grandTotal -= item.totalPrice;
@@ -144,6 +131,7 @@ function deleteItem(index) {
     document.getElementById('grandTotal').textContent = formatNumber(grandTotal);
 }
 
+// Add an item to the invoice
 function addItem() {
     const productName = document.getElementById('product').value.trim();
     const qty = parseInt(document.getElementById('qty').value, 10);
@@ -163,12 +151,13 @@ function addItem() {
     };
 
     if (selectedItemIndex >= 0) {
-        // Remove the old item if updating
-        items.splice(selectedItemIndex, 1);
-        selectedItemIndex = -1; // Reset index after removal
+        // Update the item if editing
+        items[selectedItemIndex] = newItem;
+        selectedItemIndex = -1; // Reset index after update
+    } else {
+        // Add new item
+        items.push(newItem);
     }
-
-    items.push(newItem);
 
     // Update grandTotal
     grandTotal = items.reduce((total, item) => total + item.totalPrice, 0);
@@ -183,24 +172,25 @@ function addItem() {
     document.getElementById('price').value = '';
 }
 
-// Make sure this code is executed when the DOM is loaded
+// Add event listeners
 document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('addItemButton').addEventListener('click', addItem);
 });
 
+// Generate a new invoice number
 function generateNewInvoiceNumber() {
-    // Simulate generating a new invoice number
     const newInvoiceNumber = Math.floor(Math.random() * 1000000);
     return newInvoiceNumber;
 }
 
+// Add a new invoice number
 function addNewInvoiceNumber() {
     const newInvoiceNumber = generateNewInvoiceNumber();
     document.getElementById('invoiceNumber').value = newInvoiceNumber;
     alert("New invoice number added successfully!");
 }
 
-// Add event listener for the button
+// Add event listener for the new invoice number button
 document.getElementById('addInvoiceNumberButton').addEventListener('click', addNewInvoiceNumber);
 
 // Function to toggle the mobile menu
@@ -209,6 +199,7 @@ function toggleMenu() {
     menu.classList.toggle('show');
 }
 
+// Product search functionality
 const productInput = document.getElementById('product');
 const suggestionsBox = document.getElementById('suggestions');
 const priceInput = document.getElementById('price');
@@ -236,6 +227,7 @@ productInput.addEventListener('input', () => {
     });
 });
 
+// Select a product from suggestions
 function selectProduct(product) {
     productInput.value = product.name;
     priceInput.value = product.price;
