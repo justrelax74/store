@@ -12,9 +12,9 @@ body {
 
 .container {
   display: flex;
-  flex-direction: column;
-  justify-content: center; /* Center the container */
-  align-items: center;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: flex-start;
   padding: 20px;
   max-width: 1200px;
   margin: 0 auto; /* Center the container */
@@ -22,7 +22,7 @@ body {
 }
 
 .input-box, .invoice-box {
-  width: 100%; /* Make full width on mobile */
+  width: 40%; /* Make full width on mobile */
   max-width: 45%; /* Limit width on larger screens */
   padding: 20px;
   border: 1px solid #eee;
@@ -126,9 +126,6 @@ body {
   height: auto;
 }
 
-.form-group {
-  margin-bottom: 15px;
-}
 
 .label {
   display: block;
@@ -481,4 +478,19 @@ h1 {
     .navbar-toggle {
         display: block; /* Show menu button on mobile */
     }
+}
+.invoice-details {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px; /* Add some space below if needed */
+}
+
+.invoice-details #invoiceDate {
+    flex-grow: 1;
+}
+
+.invoice-details #invoiceNumber {
+    flex-grow: 1;
+    margin-left: 10px; /* Adjust as needed for spacing */
 }

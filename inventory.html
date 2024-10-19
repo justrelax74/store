@@ -19,7 +19,7 @@
                 <li class="navbar-item"><a href="kuitansi.html">Buat Kuitansi</a></li>
                 <li class="navbar-item"><a href="inventory.html">Inventory</a></li>
                 <li class="navbar-item"><a href="order.html">Order</a></li>
-
+                <li class="navbar-item"><a href="sales.html">Sales</a></li>
             </ul>
         </div>
     </nav>
@@ -27,7 +27,8 @@
     <div class="container">
 
         <h1>Inventory Management</h1>
-        
+
+
         <!-- Collection Selector -->
         <label for="collection-select">Select Collection:</label>
         <div id="collection-select" class="collection-box">Select Collection</div>
@@ -54,7 +55,13 @@
 
         <!-- Toggle Edit Mode -->
         <button id="edit-mode-btn">Edit Mode</button>
+        <br>
+        <br>
         
+                <!-- Search Bar -->
+<label for="search-bar">Search Product:</label>
+<input type="text" id="search-bar" placeholder="Enter product name or SKU">
+<button id="search-btn">Search</button>
         <!-- Inventory Table -->
         <table id="inventory-table">
             <thead>

@@ -1,0 +1,64 @@
+/* product.css */
+
+/* Body styles */
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f4f4f4;
+  margin: 0;
+  padding: 20px;
+}
+
+/* Container for the product details */
+.product-container {
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  max-width: 400px;
+  margin: auto;
+}
+
+/* Product name styles */
+.product-name {
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 10px;
+  color: #333;
+}
+
+/* Price styles */
+.product-price {
+  font-size: 20px;
+  font-weight: bold;
+  margin: 10px 0;
+  color: #2c3e50; /* Darker shade for the price */
+}
+
+/* Stock styles */
+.product-stock {
+  font-size: 18px;
+  color: #e67e22; /* Orange color for stock */
+}
+
+/* Input styles */
+input[type="text"] {
+  width: 100%;
+  padding: 10px;
+  margin: 10px 0;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+}
+
+/* Button styles */
+button {
+  padding: 10px 15px;
+  background-color: #3498db; /* Blue color for buttons */
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+button:hover {
+  background-color: #2980b9; /* Darker blue on hover */
+}

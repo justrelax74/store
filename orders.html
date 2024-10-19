@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Orders</title>
+  <style>
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    table, th, td {
+      border: 1px solid black;
+    }
+    th, td {
+      padding: 8px;
+      text-align: left;
+    }
+    th {
+      background-color: #f2f2f2;
+    }
+    .delete-btn {
+      display: none; /* Hide delete buttons initially */
+    }
+    .delete-mode .delete-btn {
+      display: inline-block; /* Show delete buttons when delete mode is active */
+    }
+  </style>
+</head>
+<body>
+  <h1>Orders</h1>
+  
+  <!-- Toggle Delete Mode Button -->
+  <button id="toggleDeleteMode">Delete Mode: OFF</button>
+
+  <table id="ordersTable">
+    <thead>
+      <tr>
+        <th>Invoice Number</th>
+        <th>Products</th>
+        <th>Grand Total</th>
+        <th>Status</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <!-- Orders will be dynamically added here -->
+    </tbody>
+  </table>
+
+  <!-- Load Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-firestore.js"></script>
+  <script src="orders.js"></script>
+</body>
+</html>

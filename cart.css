@@ -1,0 +1,112 @@
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f4f4f4;
+  margin: 0;
+  padding: 0;
+}
+
+.container {
+  background-color: #fff;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  border-radius: 8px;
+  overflow: hidden;
+  max-width: 800px;
+  width: 100%;
+  padding: 20px;
+  margin: 20px auto; /* Center the container */
+}
+
+.product-container {
+  margin-bottom: 20px;
+}
+
+#invoiceDetails {
+  display: flex;
+  align-items: center; /* Aligns items vertically centered */
+  margin-bottom: 20px; /* Space between invoice input and cart table */
+}
+
+#invoiceDetails label {
+  font-weight: bold;
+  margin-right: 10px;
+}
+
+#invoiceDetails input {
+  padding: 5px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  margin-right: 10px; /* Space between input and button */
+}
+
+#invoiceDetails button {
+  padding: 5px 10px;
+  border: none;
+  background-color: #007bff;
+  color: white;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+#invoiceDetails button:hover {
+  background-color: #0056b3;
+}
+
+#cart {
+  margin-bottom: 20px;
+}
+
+#cartTable {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 10px;
+}
+
+#cartTable th,
+#cartTable td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: left;
+}
+
+#cartTable th {
+  background-color: #f2f2f2;
+}
+
+#cartTable td:last-child {
+  text-align: right;
+}
+
+#total {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+#total h3 {
+  margin: 0;
+  font-weight: normal;
+}
+
+#total span {
+  font-weight: bold;
+  margin-left: 10px;
+}
+
+.checkout-container {
+  display: flex;
+  justify-content: center;
+}
+
+.checkout-btn {
+  padding: 10px 20px;
+  border: none;
+  background-color: #28a745;
+  color: white;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.checkout-btn:hover {
+  background-color: #218838;
+}
+
