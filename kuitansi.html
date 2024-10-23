@@ -50,16 +50,15 @@
                         <tr class="information line">
                             <td colspan="3">
                     
-                                   <span id="invoiceDate"></span> 
-                                   <input type="text" id="invoiceNumber" placeholder="Masukkan nomor kuitansi" list="invoiceNumbers" onchange="loadInvoiceDetails()">
-                                   <datalist id="invoiceNumbers"></datalist>
-                               </div>
-                              
-                         
-                               <br>
+                 
+                                    <span id="invoiceDate"></span> <!-- Dynamic date-time will be placed here --><br>
                                 <span>MEGA MAS MOTOR</span><br>
-                                <span>Jl. Kelapa No. 25, Palopo, Sulawesi Selatan</span><br>
-                                <span>0821-8713-8889</span>
+                                <span>Jl. Kelapa No. 25, Palopo, Sulsel</span><br>
+                                <span>0821-8713-8889</span><br>
+                                
+                                <input type="text" id="invoiceNumber" placeholder="Nomor kuitansi"  list="invoiceNumbers" onchange="loadInvoiceDetails()">
+                                <datalist id="invoiceNumbers"></datalist>
+                           
                             </td>
                         </tr>
                     </table>
@@ -68,7 +67,7 @@
             <tr class="heading">
                 <td>Qty</td>
                 <td>Product Name</td>
-                <td style="text-align: center;">Total Price</td>
+                <td style="text-align: center;">Total </td>
 
             </tr>
             <tbody id="invoiceItems">
@@ -79,7 +78,7 @@
                 <td class="total-value" id="grandTotal">0</td>
             </tr>
         </table>
-        <div style="text-align:center; margin-top: 10px; font-size: 12px;">Terima Kasih</div>
+        <div style="text-align:center; margin-top: 10px; font-size: 16px;">Terima Kasih</div>
     </div>
 
     <!-- Input Box for Adding Items -->
