@@ -39,6 +39,7 @@ function fetchInvoiceNumbers() {
 
 function loadInvoiceDetails() {
     const invoiceNumber = document.getElementById('invoiceNumber').value.trim();
+    
     if (invoiceNumber) {
         db.collection('invoices').doc(invoiceNumber).get().then((doc) => {
             if (doc.exists) {
@@ -61,10 +62,19 @@ function loadInvoiceDetails() {
         alert('Please enter an invoice number.');
     }
 }
+document.addEventListener('DOMContentLoaded', () => {
+    setDate();
+    fetchInvoiceNumbers(); // Fetch existing invoice numbers on load
+    document.getElementById('invoiceNumber').addEventListener('input', function() {
+        this.value = this.value.replace(/[a-z]/g, (char) => char.toUpperCase());
+    });
+    document.getElementById('addItemButton').addEventListener('click', addItem);
+});
+
 
 function saveEditedItem() {
     const productName = document.getElementById('product').value.trim();
-    const qty = parseInt(document.getElementById('qty').value, 10);
+    const qty = parseFloat(document.getElementById('qty').value);
     const price = parseFloat(document.getElementById('price').value);
     const invoiceNumber = document.getElementById('invoiceNumber').value.trim();
 
@@ -109,7 +119,6 @@ function saveEditedItem() {
         alert('Please fill out all fields with valid values.');
     }
 }
-
 
 function updateInvoiceItems() {
     const invoiceItems = document.getElementById('invoiceItems');
@@ -168,7 +177,7 @@ function deleteItem(index) {
 async function addItem() {
     const invoiceNumber = document.getElementById('invoiceNumber').value.trim();
     const productName = document.getElementById('product').value.trim();
-    const qty = parseInt(document.getElementById('qty').value, 10);
+    const qty = parseFloat(document.getElementById('qty').value);
     const price = parseFloat(document.getElementById('price').value);
 
     if (!invoiceNumber) {
@@ -237,10 +246,6 @@ async function addItem() {
     document.getElementById('price').value = '';
 }
 
-
-
-
-
 let inventoryCache = null;
 let lastQueryTime = 0;
 const cacheDuration = 300000; // 5 minutes in milliseconds
@@ -258,7 +263,6 @@ async function fetchInventory() {
     lastQueryTime = now;
     return inventoryCache;
 }
-
 
 const debounceDelay = 300; // 300 ms delay for debounce
 
