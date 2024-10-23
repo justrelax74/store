@@ -1,10 +1,7 @@
-@font-face {
-  font-family: "Avant";
-  src: url("Fonts/Fonts/Avant/Avant1.ttf");
-}
+
 
 body {
-  font-family: "Avant";
+  font-family:monospace;
   margin: 0;
   padding: 20px;
   background-color: #000000; /* Light grey background */
@@ -39,18 +36,24 @@ body {
   border: none; /* Hide the table border */
 }
 
+.invoice-box tr.information.line {
+  font-size: 18px;
+  text-align: center;
+}
+
 #invoiceDate {
-  flex: 1;
+  flex: 5;
   text-align: left;
+
 }
 
 .invoice-box table td {
-  padding: 0;
+  padding: 1;
   border: none; /* Hide the cell borders */
 }
 
 .invoice-box table tr.top table td {
-  padding: 0;
+  padding: 3px;
 }
 
 .invoice-box table tr.top table td.title {
@@ -64,7 +67,7 @@ body {
 .invoice-box table tr.information table td {
   padding: 0;
   text-align: center;
-  font-size: 12px;
+  font-size: 21px;
 }
 
 .invoice-box table tr.line {
@@ -73,7 +76,9 @@ body {
 
 .invoice-box table tr.heading td {
   font-weight: bold;
-  font-size: 16px;
+  font-size: 21px;
+  text-align: center;
+  padding-right: 3px;
 }
 
 .invoice-box table tr.item td {
@@ -94,7 +99,7 @@ body {
 
 .total-amount, .total-value {
   font-weight: bold;
-  font-size: 16px;
+  font-size: 21px;
   padding: 5px;
   text-align: right;  /* Align right */
 }
@@ -158,7 +163,7 @@ body {
 
 .logo-container img {
   width: 90%;
-  height: auto;
+  height: 80px;
 }
 
 /* Style for the Print container to center its content */
@@ -184,27 +189,7 @@ body {
   background-color: #0056b3;
 }
 
-.receipt {
-  width: 100mm; /* Width of the thermal paper */
-  margin: 0 auto; /* Center the receipt */
-  font-family: Arial, sans-serif; /* Use a readable font */
-  font-size: 12px; /* Font size suitable for thermal paper */
-  line-height: 1.5; /* Line height for readability */
-  text-align: left; /* Left-align text */
-}
 
-.receipt-header, .receipt-footer {
-  text-align: center; /* Center align header and footer */
-}
-
-.receipt-items {
-  margin-top: 10px;
-}
-
-.receipt-items td {
-  padding: 0 5px; /* Padding for item details */
-  font-size: 12px; /* Ensure font size is readable */
-}
 
 /* Hide elements for printing */
 @media print {
@@ -222,49 +207,8 @@ body {
   }
 }
 
-/* Password Prompt styles */
-.password-prompt {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background-color: rgba(0, 0, 0, 0.7); /* Darker background */
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-}
 
-.password-prompt-box {
-  background-color: #fff;
-  padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-  text-align: center;
-}
 
-.password-prompt-box label {
-  font-weight: bold;
-}
-
-.password-prompt-box input {
-  padding: 8px;
-  margin: 8px;
-}
-
-.password-prompt-box button {
-  padding: 10px 20px;
-  background-color: #007bff;
-  color: #fff;
-  border: none;
-  cursor: pointer;
-  margin-top: 10px;
-}
-
-.password-prompt-box button:hover {
-  background-color: #0056b3;
-}
 
 /* Hide content behind password prompt */
 #content {
@@ -292,7 +236,8 @@ body {
 
 /* Table cell styles */
 #invoiceItems td {
-  padding: 3px;
+  font-size: 19px;
+  padding: 10px;
   border: none;
 }
 
@@ -303,8 +248,8 @@ body {
 
 #grandTotal {
   text-align: center;
-  font-size: 14px;
-  padding: 3px;
+  font-size: 21px;
+  padding: 10px;
 }
 
 /* Hide buttons for print view */
@@ -323,13 +268,13 @@ body {
 
 /* Style for invoice number box to make border invisible */
 #invoiceNumber {
-  text-align: right;
-  width: 232px;
+  text-align: center;
+  width: 200px;
   border: none; /* Remove border */
   background: transparent; /* Make background transparent */
   outline: none; /* Remove focus outline */
   padding: 0px; /* Adjust padding if needed */
-  font-size: 16px; /* Adjust font size if needed */
+  font-size: 18px; /* Adjust font size if needed */
   flex: 0;
   margin-left: auto;
 }
@@ -354,7 +299,8 @@ body {
 
 /* Ensure total price values align to the right */
 .total-price {
-  text-align: center;
+  text-align: right;
+
 }
 
 .add-invoice-button button {
@@ -370,11 +316,12 @@ body {
   background-color: #0056b3;
 }
 
-@media (max-width: 768px) {
-  .input-box, .invoice-box {
-    max-width: 100%;
+@media   (max-width:728px){
+  
+} .input-box, .invoice-box {
+    max-width: 200%;
   }
-}
+
 
 
 /* Navigation Bar Styles */
@@ -486,11 +433,4 @@ h1 {
     margin-bottom: 10px; /* Add some space below if needed */
 }
 
-.invoice-details #invoiceDate {
-    flex-grow: 1;
-}
 
-.invoice-details #invoiceNumber {
-    flex-grow: 1;
-    margin-left: 10px; /* Adjust as needed for spacing */
-}
