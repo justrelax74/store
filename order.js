@@ -1,232 +1,80 @@
-const invoiceList = document.querySelector('#invoice-list tbody');
-const form = document.querySelector('#add-invoice-form');
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mega Mas Motor | Order</title>
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <link rel="stylesheet" href="order.css">
+</head>
+<body>
+<!-- Navigation Bar -->
+<nav class="navbar">
+    <div class="navbar-container">
+        <a href="index.html" class="navbar-logo">
+            <h1>MEGA MAS MOTOR</h1>
+        </a>
+        <button class="navbar-toggle" onclick="toggleMenu()">
+            &#9776; <!-- Hamburger Icon -->
+        </button>
+        <ul class="navbar-menu" id="navbarMenu">
+            <li class="navbar-item"><a href="kuitansi.html">Buat Kuitansi</a></li>
+            <li class="navbar-item"><a href="inventory.html">Inventory</a></li>
+            <li class="navbar-item"><a href="order.html">Order</a></li>
+            <li class="navbar-item"><a href="sales.html">Sales</a></li>
+        </ul>
+    </div>
+</nav>
 
-// Function to format numbers with commas
-function formatNumber(number) {
-    return number.toLocaleString();
-}
+<h1>Order</h1>
+<div class="content">
+    <div id="invoice-list-container">
+        <table id="invoice-list">
+            <thead>
+                <tr>
+                    <th data-field="invoiceNumber">Invoice Numbers</th>
+                    <th data-field="items">Items</th>
+                    <th data-field="grandTotal">Grand Total</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Table rows will be dynamically added here -->
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="2">Total sales:</td>
+                    <td id="sum-grand-total">0</td>
+                    <td></td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+</div>
 
-// Create element & render invoice
-function renderInvoice(doc) {
-    let row = document.createElement('tr');
-    row.setAttribute('data-id', doc.id);
+<!-- Firebase SDK and Initialization -->
+<script src="https://www.gstatic.com/firebasejs/9.9.3/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.9.3/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.9.3/firebase-analytics-compat.js"></script>
+<script>
+    // Your web app's Firebase configuration
+    const firebaseConfig = {
+        apiKey: "AIzaSyANCk_iM4XtSX0VW6iETK-tJdWHGAWMbS0",
+        authDomain: "megamasmotor-4008c.firebaseapp.com",
+        projectId: "megamasmotor-4008c",
+        storageBucket: "megamasmotor-4008c.appspot.com",
+        messagingSenderId: "874673615212",
+        appId: "1:874673615212:web:7f0ecdeee47fed60aa0349",
+        measurementId: "G-LF6NB7ZKLE"
+    };
 
-    // Create cells
-    let invoiceNumberCell = document.createElement('td');
-    let itemsCell = document.createElement('td');
-    let grandTotalCell = document.createElement('td');
-    let actionsCell = document.createElement('td');
+    // Initialize Firebase
+    const app = firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+    const analytics = firebase.analytics();
+    db.settings({ timestampsInSnapshots: true });
+</script>
+<script src="order.js"></script>
 
-    // Set invoice number
-    invoiceNumberCell.textContent = doc.id;
-    invoiceNumberCell.className = 'invoice-number';
-
-    // Set items
-    itemsCell.innerHTML = doc.data().items.map(item => 
-        `${item.productName} (${item.qty} x ${formatNumber(item.price)})`).join('<br>');
-    itemsCell.className = 'item-name';
-
-    // Set grand total
-    grandTotalCell.textContent = `Total: ${formatNumber(doc.data().grandTotal)}`;
-    grandTotalCell.className = 'item-details';
-
-    // Create and append delete button
-    let deleteButton = document.createElement('button');
-    deleteButton.textContent = 'Delete';
-    deleteButton.className = 'delete';
-    deleteButton.addEventListener('click', () => {
-        db.collection('invoices').doc(doc.id).delete();
-    });
-    actionsCell.appendChild(deleteButton);
-
-    // Append cells to row
-    row.appendChild(invoiceNumberCell);
-    row.appendChild(itemsCell);
-    row.appendChild(grandTotalCell);
-    row.appendChild(actionsCell);
-
-    // Append row to table body
-    invoiceList.appendChild(row);
-}
-
-// Getting data
-db.collection('invoices').orderBy('grandTotal', 'desc').get().then(snapshot => {
-    snapshot.docs.forEach(doc => {
-        renderInvoice(doc);
-    });
-});
-
-// Saving data
-form.addEventListener('submit', function (e) {
-    e.preventDefault();
-    const items = JSON.parse(document.querySelector('#items-input').value);
-    const grandTotal = parseFloat(document.querySelector('#grandTotal-input').value);
-
-    db.collection('invoices').add({
-        items: items,
-        grandTotal: grandTotal
-    }).then(() => {
-        // Clear form fields
-        document.querySelector('#items-input').value = '';
-        document.querySelector('#grandTotal-input').value = '';
-    }).catch(error => {
-        console.error('Error adding document: ', error);
-    });
-});
-
-// Real-time listener
-db.collection('invoices').orderBy('grandTotal', 'desc').onSnapshot(snapshot => {
-    snapshot.docChanges().forEach(change => {
-        if (change.type === 'added') {
-            renderInvoice(change.doc);
-        } else if (change.type === 'removed') {
-            let row = invoiceList.querySelector(`[data-id="${change.doc.id}"]`);
-            if (row) {
-                invoiceList.removeChild(row);
-            }
-        }
-    });
-});
-
-// Function to toggle the mobile menu
-function toggleMenu() {
-    const menu = document.getElementById('navbarMenu');
-    menu.classList.toggle('show');
-}
-
-// Create element & render invoice
-function renderInvoice(doc) {
-    let row = document.createElement('tr');
-    row.setAttribute('data-id', doc.id);
-
-    // Create cells
-    let invoiceNumberCell = document.createElement('td');
-    let itemsCell = document.createElement('td');
-    let grandTotalCell = document.createElement('td');
-    let actionsCell = document.createElement('td');
-
-    // Set invoice number
-    invoiceNumberCell.textContent = doc.id;
-    invoiceNumberCell.className = 'invoice-number';
-
-    // Set items
-    itemsCell.innerHTML = doc.data().items.map(item => 
-        `${item.productName} (${item.qty} x ${formatNumber(item.price)})`).join('<br>');
-    itemsCell.className = 'item-name';
-
-    // Set grand total
-    grandTotalCell.textContent = `Total: ${formatNumber(doc.data().grandTotal)}`;
-    grandTotalCell.className = 'item-details';
-
-    // Create and append delete button
-    let deleteButton = document.createElement('button');
-    deleteButton.textContent = 'Delete';
-    deleteButton.className = 'delete';
-    deleteButton.addEventListener('click', () => {
-        // Show confirmation dialog
-        if (confirm('Are you sure you want to delete this invoice?')) {
-            db.collection('invoices').doc(doc.id).delete().then(() => {
-                console.log('Document successfully deleted!');
-            }).catch(error => {
-                console.error('Error removing document: ', error);
-            });
-        }
-    });
-    actionsCell.appendChild(deleteButton);
-
-    // Append cells to row
-    row.appendChild(invoiceNumberCell);
-    row.appendChild(itemsCell);
-    row.appendChild(grandTotalCell);
-    row.appendChild(actionsCell);
-
-    // Append row to table body
-    invoiceList.appendChild(row);
-}
-// Function to update the order status in Firestore
-async function updateOrderStatus(event) {
-    const invoiceNumber = event.target.getAttribute('data-invoice');
-    const newStatus = event.target.value;
-  
-    try {
-      await db.collection('invoices').doc(invoiceNumber).update({ status: newStatus });
-      console.log(`Order ${invoiceNumber} status updated to ${newStatus}`);
-    } catch (error) {
-      console.error(`Error updating order ${invoiceNumber}:`, error);
-      alert('Failed to update order status. Please try again.');
-    }
-  }
-  
-  // Function to checkout an invoice (and update status to 'checked_out')
-  async function checkoutInvoice(invoiceNumber) {
-    try {
-      // Get the invoice data to update stock
-      const invoiceDoc = await db.collection('invoices').doc(invoiceNumber).get();
-      const invoiceData = invoiceDoc.data();
-  
-      // Update stock for each item in the invoice
-      const stockUpdatePromises = invoiceData.items.map(async (item) => {
-        const inventoryDocRef = db.collection('Inventory').doc(item.name); // Assuming item.name matches the product name in inventory
-        await inventoryDocRef.update({
-          Stock: firebase.firestore.FieldValue.increment(-item.qty) // Decrease stock by the quantity in the invoice
-        });
-      });
-  
-      // Wait for all stock updates to complete
-      await Promise.all(stockUpdatePromises);
-  
-      // Update the status to 'checked_out' in Firestore
-      await db.collection('invoices').doc(invoiceNumber).update({
-        status: 'checked_out'
-      });
-  
-      console.log(`Order ${invoiceNumber} status updated to 'checked_out'`);
-  
-      // Save the invoice number in localStorage for reference
-      localStorage.setItem('currentInvoiceNumber', invoiceNumber);
-  
-      // Redirect to checkout page
-      window.location.href = 'checkout.html';
-    } catch (error) {
-      console.error('Error during checkout:', error);
-      alert('Checkout failed. Please try again.');
-    }
-  }
-  
-  // Function to delete an invoice
-  async function deleteInvoice(invoiceNumber) {
-    // If delete mode is on, delete without confirmation
-    if (deleteMode) {
-      try {
-        await db.collection('invoices').doc(invoiceNumber).delete();
-        loadOrders(); // Refresh the orders list after deletion
-      } catch (error) {
-        console.error('Error deleting invoice:', error);
-        alert('Failed to delete invoice. Please try again.');
-      }
-    } else {
-      // If delete mode is off, ask for confirmation
-      if (confirm("Are you sure you want to delete this order?")) {
-        try {
-          await db.collection('invoices').doc(invoiceNumber).delete();
-          loadOrders(); // Refresh the orders list after deletion
-        } catch (error) {
-          console.error('Error deleting invoice:', error);
-          alert('Failed to delete invoice. Please try again.');
-        }
-      }
-    }
-  }
-  
-  
-  // Toggle Delete Mode (Show/Hide Delete Buttons)
-  let deleteMode = false;
-  document.getElementById('toggleDeleteMode').addEventListener('click', function() {
-    deleteMode = !deleteMode;  // Toggle delete mode
-    document.body.classList.toggle('delete-mode', deleteMode);  // Toggle the delete-mode class
-    this.textContent = `Delete Mode: ${deleteMode ? 'ON' : 'OFF'}`;  // Update button text
-  });
-  
-  // Load orders on page load
-  document.addEventListener('DOMContentLoaded', loadOrders);
-  
+</body>
+</html>
