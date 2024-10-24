@@ -254,7 +254,9 @@ async function addItem() {
 
 let inventoryCache = null;
 let lastQueryTime = 0;
-const cacheDuration = 300000; // 5 minutes in milliseconds
+const cacheDuration = 10800000; // 3 hours in milliseconds
+
+const debounceDelay = 500; // 500 ms delay for debounce
 
 async function fetchInventory() {
     const now = Date.now();
@@ -269,8 +271,6 @@ async function fetchInventory() {
     lastQueryTime = now;
     return inventoryCache;
 }
-
-const debounceDelay = 300; // 300 ms delay for debounce
 
 const productInput = document.getElementById('product');
 const suggestionsBox = document.getElementById('suggestions');
