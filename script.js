@@ -255,34 +255,64 @@ async function addItem() {
 let inventoryCache = null;
 let lastQueryTime = 0;
 const cacheDuration = 10800000; // 3 hours in milliseconds
+const debounceDelay = 300; // Define the debounce delay in milliseconds
 
-const debounceDelay = 500; // 500 ms delay for debounce
-
-async function fetchInventory() {
+// Function to fetch inventory and store it in localStorage
+async function fetchAndCacheInventory() {
     const now = Date.now();
+
+    // Check if cache is valid and return cached data if so
     if (inventoryCache && (now - lastQueryTime < cacheDuration)) {
-        console.log("Using cached inventory data");
+        console.log("Using cached inventory data from localStorage");
         return inventoryCache;
     }
+
     console.log("Fetching inventory data from Firestore");
     const inventoryRef = db.collection('Inventory');
     const snapshot = await inventoryRef.get();
+
+    // Cache the fetched inventory data
     inventoryCache = snapshot.docs.map(doc => ({ id: doc.id, data: doc.data() }));
     lastQueryTime = now;
+
+    // Store in localStorage
+    localStorage.setItem('inventoryCache', JSON.stringify(inventoryCache));
+
+    console.log("Inventory data fetched and cached:", inventoryCache);
     return inventoryCache;
 }
+
+// Load inventory from localStorage
+function loadInventoryFromLocalStorage() {
+    const cachedData = localStorage.getItem('inventoryCache');
+    if (cachedData) {
+        inventoryCache = JSON.parse(cachedData);
+        lastQueryTime = Date.now(); // Update the last query time to now
+        console.log("Loaded inventory from localStorage:", inventoryCache);
+    } else {
+        console.log("No inventory data found in localStorage.");
+    }
+}
+
+// Load inventory on page load
+loadInventoryFromLocalStorage();
 
 const productInput = document.getElementById('product');
 const suggestionsBox = document.getElementById('suggestions');
 const priceInput = document.getElementById('price');
 
+// Debounce the input for inventory suggestions
 productInput.addEventListener('input', debounce(async () => {
     const query = productInput.value.trim();
     if (query) {
-        const inventory = await fetchInventory();
+        const inventory = await fetchAndCacheInventory(); // Fetch inventory from Firestore or localStorage
         const suggestions = inventory.filter(item =>
             item.id.toLowerCase().includes(query.toLowerCase())
         );
+
+        // Log the suggestions found
+        console.log("Suggestions found:", suggestions);
+
         suggestionsBox.innerHTML = ''; // Clear previous suggestions
         suggestions.forEach(item => {
             const option = document.createElement('div');
