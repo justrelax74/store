@@ -1,80 +1,82 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mega Mas Motor | Order</title>
-    <link rel="icon" href="favicon.ico" type="image/x-icon">
-    <link rel="stylesheet" href="order.css">
-</head>
-<body>
-<!-- Navigation Bar -->
-<nav class="navbar">
-    <div class="navbar-container">
-        <a href="index.html" class="navbar-logo">
-            <h1>MEGA MAS MOTOR</h1>
-        </a>
-        <button class="navbar-toggle" onclick="toggleMenu()">
-            &#9776; <!-- Hamburger Icon -->
-        </button>
-        <ul class="navbar-menu" id="navbarMenu">
-            <li class="navbar-item"><a href="kuitansi.html">Buat Kuitansi</a></li>
-            <li class="navbar-item"><a href="inventory.html">Inventory</a></li>
-            <li class="navbar-item"><a href="order.html">Order</a></li>
-            <li class="navbar-item"><a href="sales.html">Sales</a></li>
-        </ul>
-    </div>
-</nav>
+const invoiceList = document.querySelector('#invoice-list tbody');
+const sumGrandTotalElement = document.getElementById('sum-grand-total');
+let sumGrandTotal = 0;
 
-<h1>Order</h1>
-<div class="content">
-    <div id="invoice-list-container">
-        <table id="invoice-list">
-            <thead>
-                <tr>
-                    <th data-field="invoiceNumber">Invoice Numbers</th>
-                    <th data-field="items">Items</th>
-                    <th data-field="grandTotal">Grand Total</th>
-                    <th>Actions</th>
-                </tr>
-            </thead>
-            <tbody>
-                <!-- Table rows will be dynamically added here -->
-            </tbody>
-            <tfoot>
-                <tr>
-                    <td colspan="2">Total sales:</td>
-                    <td id="sum-grand-total">0</td>
-                    <td></td>
-                </tr>
-            </tfoot>
-        </table>
-    </div>
-</div>
+// Function to format numbers with commas
+function formatNumber(number) {
+    return number.toLocaleString();
+}
 
-<!-- Firebase SDK and Initialization -->
-<script src="https://www.gstatic.com/firebasejs/9.9.3/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.9.3/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.9.3/firebase-analytics-compat.js"></script>
-<script>
-    // Your web app's Firebase configuration
-    const firebaseConfig = {
-        apiKey: "AIzaSyANCk_iM4XtSX0VW6iETK-tJdWHGAWMbS0",
-        authDomain: "megamasmotor-4008c.firebaseapp.com",
-        projectId: "megamasmotor-4008c",
-        storageBucket: "megamasmotor-4008c.appspot.com",
-        messagingSenderId: "874673615212",
-        appId: "1:874673615212:web:7f0ecdeee47fed60aa0349",
-        measurementId: "G-LF6NB7ZKLE"
-    };
+// Create element & render invoice
+function renderInvoice(doc) {
+    let row = document.createElement('tr');
+    row.setAttribute('data-id', doc.id);
 
-    // Initialize Firebase
-    const app = firebase.initializeApp(firebaseConfig);
-    const db = firebase.firestore();
-    const analytics = firebase.analytics();
-    db.settings({ timestampsInSnapshots: true });
-</script>
-<script src="order.js"></script>
+    // Create cells
+    let invoiceNumberCell = document.createElement('td');
+    let itemsCell = document.createElement('td');
+    let grandTotalCell = document.createElement('td');
+    let actionsCell = document.createElement('td');
 
-</body>
-</html>
+    // Set invoice number
+    invoiceNumberCell.textContent = doc.id;  // Use document ID as invoice number
+
+    // Set items (assumes items is an array)
+    itemsCell.innerHTML = doc.data().items.map(item => 
+        `${item.productName} (${item.qty} x ${formatNumber(item.price)})`).join('<br>');
+
+    // Set grand total
+    const grandTotal = doc.data().grandTotal;
+    grandTotalCell.textContent = `Total: ${formatNumber(grandTotal)}`;
+
+    // Update sum of grand totals
+    sumGrandTotal += grandTotal;
+    sumGrandTotalElement.textContent = formatNumber(sumGrandTotal);
+
+    // Create and append delete button
+    let deleteButton = document.createElement('button');
+    deleteButton.textContent = 'Delete';
+    deleteButton.className = 'delete';
+    deleteButton.addEventListener('click', () => {
+        db.collection('invoices').doc(doc.id).delete().then(() => {
+            row.remove(); // Remove row from table after deletion
+            // Update sum of grand totals after deletion
+            sumGrandTotal -= grandTotal;
+            sumGrandTotalElement.textContent = formatNumber(sumGrandTotal);
+        });
+    });
+    actionsCell.appendChild(deleteButton);
+
+    // Append cells to row
+    row.appendChild(invoiceNumberCell);
+    row.appendChild(itemsCell);
+    row.appendChild(grandTotalCell);
+    row.appendChild(actionsCell);
+
+    // Append row to table body
+    invoiceList.appendChild(row);
+}
+
+// Load orders on page load and sort by invoice number
+function loadOrders() {
+    invoiceList.innerHTML = ''; // Clear current list
+    sumGrandTotal = 0; // Reset sum of grand totals
+
+    // Query to get all invoices and order them by document ID (invoice number)
+    db.collection('invoices').orderBy(firebase.firestore.FieldPath.documentId()).get()
+    .then(snapshot => {
+        if (snapshot.empty) {
+            console.log('No matching documents.');
+            return; // Exit if no documents found
+        }
+        snapshot.docs.forEach(doc => {
+            renderInvoice(doc);
+        });
+    })
+    .catch(error => {
+        console.error('Error loading orders: ', error);
+    });
+}
+
+// Load orders when the document is ready
+document.addEventListener('DOMContentLoaded', loadOrders);
