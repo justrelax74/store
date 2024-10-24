@@ -5,9 +5,13 @@ let selectedItemIndex = -1;
 document.addEventListener('DOMContentLoaded', () => {
     setDate();
     fetchInvoiceNumbers(); // Fetch existing invoice numbers on load
+    document.getElementById('invoiceNumber').addEventListener('input', function() {
+        this.value = this.value.replace(/[a-z]/g, (char) => char.toUpperCase());
+    });
     document.getElementById('addItemButton').addEventListener('click', addItem);
 });
 
+// Set the current date and time
 function setDate() {
     const now = new Date();
     const optionsDate = { year: 'numeric', month: 'short', day: '2-digit' };
@@ -20,23 +24,34 @@ function setDate() {
     document.getElementById('invoiceDate').textContent = fullFormattedDate;
 }
 
+// Format numbers for display
 function formatNumber(number) {
     return number.toLocaleString('id-ID');
 }
 
+// Fetch existing invoice numbers from Firestore
 function fetchInvoiceNumbers() {
     const datalist = document.getElementById('invoiceNumbers');
+    datalist.innerHTML = ''; // Clear existing options to avoid duplicates
+
+    const uniqueInvoices = new Set(); // Create a Set to hold unique invoice numbers
+
     db.collection('invoices').get().then((querySnapshot) => {
         querySnapshot.forEach((doc) => {
-            const option = document.createElement('option');
-            option.value = doc.id;
-            datalist.appendChild(option);
+            if (!uniqueInvoices.has(doc.id)) {
+                uniqueInvoices.add(doc.id); // Add invoice to Set if it isn't already present
+
+                const option = document.createElement('option');
+                option.value = doc.id;
+                datalist.appendChild(option);
+            }
         });
     }).catch((error) => {
         console.error("Error fetching invoice numbers: ", error);
     });
 }
 
+// Load invoice details when an invoice number is entered
 function loadInvoiceDetails() {
     const invoiceNumber = document.getElementById('invoiceNumber').value.trim();
     
@@ -62,15 +77,6 @@ function loadInvoiceDetails() {
         alert('Please enter an invoice number.');
     }
 }
-document.addEventListener('DOMContentLoaded', () => {
-    setDate();
-    fetchInvoiceNumbers(); // Fetch existing invoice numbers on load
-    document.getElementById('invoiceNumber').addEventListener('input', function() {
-        this.value = this.value.replace(/[a-z]/g, (char) => char.toUpperCase());
-    });
-    document.getElementById('addItemButton').addEventListener('click', addItem);
-});
-
 
 function saveEditedItem() {
     const productName = document.getElementById('product').value.trim();
@@ -277,7 +283,7 @@ productInput.addEventListener('input', debounce(async () => {
         const suggestions = inventory.filter(item =>
             item.id.toLowerCase().includes(query.toLowerCase())
         );
-        suggestionsBox.innerHTML = '';
+        suggestionsBox.innerHTML = ''; // Clear previous suggestions
         suggestions.forEach(item => {
             const option = document.createElement('div');
             option.classList.add('suggestion-item');
@@ -285,21 +291,23 @@ productInput.addEventListener('input', debounce(async () => {
             option.addEventListener('click', () => {
                 productInput.value = item.id;
                 priceInput.value = item.data['Selling Price'];
-                suggestionsBox.innerHTML = '';
+                suggestionsBox.innerHTML = ''; // Clear suggestions after selection
             });
             suggestionsBox.appendChild(option);
         });
     } else {
-        suggestionsBox.innerHTML = '';
+        suggestionsBox.innerHTML = ''; // Clear suggestions if the input is empty
     }
 }, debounceDelay));
 
+// Close suggestions box if clicking outside of it
 document.addEventListener('click', (event) => {
     if (!suggestionsBox.contains(event.target) && event.target !== productInput) {
         suggestionsBox.innerHTML = '';
     }
 });
 
+// Debounce function to limit the rate of function calls
 function debounce(func, delay) {
     let timeoutId;
     return (...args) => {
