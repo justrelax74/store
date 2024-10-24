@@ -5,6 +5,9 @@ let selectedItemIndex = -1;
 document.addEventListener('DOMContentLoaded', () => {
     setDate();
     fetchInvoiceNumbers(); // Fetch existing invoice numbers on load
+    document.getElementById('invoiceNumber').addEventListener('input', function() {
+        this.value = this.value.replace(/[a-z]/g, (char) => char.toUpperCase());
+    });
     document.getElementById('addItemButton').addEventListener('click', addItem);
 });
 
@@ -26,6 +29,7 @@ function formatNumber(number) {
 
 function fetchInvoiceNumbers() {
     const datalist = document.getElementById('invoiceNumbers');
+    datalist.innerHTML = ''; // Clear existing options
     db.collection('invoices').get().then((querySnapshot) => {
         querySnapshot.forEach((doc) => {
             const option = document.createElement('option');
@@ -62,15 +66,6 @@ function loadInvoiceDetails() {
         alert('Please enter an invoice number.');
     }
 }
-document.addEventListener('DOMContentLoaded', () => {
-    setDate();
-    fetchInvoiceNumbers(); // Fetch existing invoice numbers on load
-    document.getElementById('invoiceNumber').addEventListener('input', function() {
-        this.value = this.value.replace(/[a-z]/g, (char) => char.toUpperCase());
-    });
-    document.getElementById('addItemButton').addEventListener('click', addItem);
-});
-
 
 function saveEditedItem() {
     const productName = document.getElementById('product').value.trim();
@@ -264,50 +259,24 @@ async function fetchInventory() {
     return inventoryCache;
 }
 
-const debounceDelay = 300; // 300 ms delay for debounce
+const debounceDelay = 300;
+let debounceTimeout;
 
-const productInput = document.getElementById('product');
-const suggestionsBox = document.getElementById('suggestions');
-const priceInput = document.getElementById('price');
-
-productInput.addEventListener('input', debounce(async () => {
-    const query = productInput.value.trim();
-    if (query) {
-        const inventory = await fetchInventory();
-        const suggestions = inventory.filter(item =>
-            item.id.toLowerCase().includes(query.toLowerCase())
+document.getElementById('product').addEventListener('input', async function() {
+    const searchQuery = this.value.toLowerCase().trim();
+    clearTimeout(debounceTimeout);
+    debounceTimeout = setTimeout(async () => {
+        const inventoryData = await fetchInventory();
+        const suggestions = inventoryData.filter(item => 
+            item.data.ProductName.toLowerCase().includes(searchQuery)
         );
-        suggestionsBox.innerHTML = '';
+        console.log("Suggestions:", suggestions);
+        const datalist = document.getElementById('productList');
+        datalist.innerHTML = '';
         suggestions.forEach(item => {
-            const option = document.createElement('div');
-            option.classList.add('suggestion-item');
-            option.textContent = `${item.id} (Stock: ${item.data.Stock})`;
-            option.addEventListener('click', () => {
-                productInput.value = item.id;
-                priceInput.value = item.data['Selling Price'];
-                suggestionsBox.innerHTML = '';
-            });
-            suggestionsBox.appendChild(option);
+            const option = document.createElement('option');
+            option.value = item.data.ProductName;
+            datalist.appendChild(option);
         });
-    } else {
-        suggestionsBox.innerHTML = '';
-    }
-}, debounceDelay));
-
-document.addEventListener('click', (event) => {
-    if (!suggestionsBox.contains(event.target) && event.target !== productInput) {
-        suggestionsBox.innerHTML = '';
-    }
+    }, debounceDelay);
 });
-
-function debounce(func, delay) {
-    let timeoutId;
-    return (...args) => {
-        if (timeoutId) {
-            clearTimeout(timeoutId);
-        }
-        timeoutId = setTimeout(() => {
-            func(...args);
-        }, delay);
-    };
-}
