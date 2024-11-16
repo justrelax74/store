@@ -33,34 +33,27 @@ document.getElementById('getSalesDataButton').addEventListener('click', async ()
                     const data = doc.data();
                     const invoiceNumber = doc.id;
                     const items = data.items || []; // Get items from the order
-                    let invoiceSummary = []; // To store the summarized string for products
-                    let grandTotal = 0;
+                    const grandTotal = data.grandTotal || 0;
 
-                    // Summarize the items for the invoice
+                    // Add each product in the invoice to the table
                     items.forEach(item => {
                         const productName = item.productName || "Unknown Product"; // Ensure correct field name
                         const qty = item.qty || 0;  // Ensure correct field name for quantity
                         const totalPrice = item.totalPrice || 0; // Ensure correct field name for total price
-                        grandTotal += totalPrice;
 
-                        // Add summarized product to invoiceSummary
-                        invoiceSummary.push(`${productName} (${qty}x${totalPrice.toLocaleString()})`);
+                        // Add row to the table for each product
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${invoiceNumber}</td>
+                            <td>${productName}</td>
+                            <td>${qty}</td>
+                            <td>Rp ${totalPrice.toLocaleString()}</td>
+                        `;
+                        salesTableBody.appendChild(row);
+
+                        // Update total sales
+                        totalSales += totalPrice;
                     });
-
-                    // Join all summarized products in a single string
-                    const invoiceSummaryText = invoiceSummary.join(", ");
-
-                    // Add row to the table for the invoice
-                    const row = document.createElement('tr');
-                    row.innerHTML = `
-                        <td>${invoiceNumber}</td>
-                        <td>${invoiceSummaryText}</td>
-                        <td>Rp ${grandTotal.toLocaleString()}</td>
-                    `;
-                    salesTableBody.appendChild(row);
-
-                    // Update total sales
-                    totalSales += grandTotal;
                 });
             } else {
                 console.log(`No sales data found for ${dateString}`);
