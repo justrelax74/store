@@ -33,27 +33,34 @@ document.getElementById('getSalesDataButton').addEventListener('click', async ()
                     const data = doc.data();
                     const invoiceNumber = doc.id;
                     const items = data.items || []; // Get items from the order
-                    const grandTotal = data.grandTotal || 0;
+                    let invoiceSummary = []; // To store the summarized string for products
+                    let grandTotal = 0;
 
-                    // Add each product in the invoice to the table
+                    // Summarize the items for the invoice
                     items.forEach(item => {
-                        const productName = item.name || "Unknown Product"; // Default to "Unknown Product" if not available
-                        const quantity = item.quantity || 0; // Default to 0 if quantity is missing
-                        const totalPrice = item.totalPrice || 0; // Default to 0 if totalPrice is missing
+                        const productName = item.productName || "Unknown Product"; // Ensure correct field name
+                        const qty = item.qty || 0;  // Ensure correct field name for quantity
+                        const totalPrice = item.totalPrice || 0; // Ensure correct field name for total price
+                        grandTotal += totalPrice;
 
-                        // Add row to the table for each product
-                        const row = document.createElement('tr');
-                        row.innerHTML = `
-                            <td>${invoiceNumber}</td>
-                            <td>${productName}</td>
-                            <td>${quantity}</td>
-                            <td>Rp ${totalPrice.toLocaleString()}</td>
-                        `;
-                        salesTableBody.appendChild(row);
-
-                        // Update total sales
-                        totalSales += totalPrice;
+                        // Add summarized product to invoiceSummary
+                        invoiceSummary.push(`${productName} (${qty}x${totalPrice.toLocaleString()})`);
                     });
+
+                    // Join all summarized products in a single string
+                    const invoiceSummaryText = invoiceSummary.join(", ");
+
+                    // Add row to the table for the invoice
+                    const row = document.createElement('tr');
+                    row.innerHTML = `
+                        <td>${invoiceNumber}</td>
+                        <td>${invoiceSummaryText}</td>
+                        <td>Rp ${grandTotal.toLocaleString()}</td>
+                    `;
+                    salesTableBody.appendChild(row);
+
+                    // Update total sales
+                    totalSales += grandTotal;
                 });
             } else {
                 console.log(`No sales data found for ${dateString}`);
