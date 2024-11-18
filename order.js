@@ -80,3 +80,52 @@ function loadOrders() {
 
 // Load orders when the document is ready
 document.addEventListener('DOMContentLoaded', loadOrders);
+
+
+// Function to move invoices to a new collection named by the current date
+async function archiveInvoices() {
+  if (!confirm('Are you sure you want to archive all invoices? This action is irreversible.')) return;
+
+  const dateKey = new Date().toISOString().split('T')[0]; // Get current date in YYYY-MM-DD format
+  const archiveCollectionName = dateKey;
+
+  try {
+    const querySnapshot = await db.collection('invoices').get();
+    const batch = db.batch(); // Use Firestore batch for efficient writes
+
+    if (querySnapshot.empty) {
+      alert('No invoices to archive.');
+      return;
+    }
+
+    // Iterate over all invoices and copy them to the new collection
+    querySnapshot.forEach((doc) => {
+      const data = doc.data();
+      const invoiceRef = db.collection(archiveCollectionName).doc(doc.id); // Set same document ID in new collection
+      batch.set(invoiceRef, data);
+    });
+
+    // Commit the batch to copy all documents
+    await batch.commit();
+    console.log(`Invoices successfully archived to collection "${archiveCollectionName}"`);
+
+    // Delete all invoices from the original 'invoices' collection
+    const deleteBatch = db.batch();
+    querySnapshot.forEach((doc) => {
+      deleteBatch.delete(db.collection('invoices').doc(doc.id));
+    });
+
+    // Commit the delete batch
+    await deleteBatch.commit();
+    console.log('Original invoices successfully deleted.');
+
+    alert(`Invoices archived to "${archiveCollectionName}" and original invoices deleted.`);
+    loadOrders(); // Reload the orders table
+  } catch (error) {
+    console.error('Error archiving invoices:', error);
+    alert('Failed to archive invoices. Please try again.');
+  }
+}
+
+// Attach event listener to the archive button
+document.getElementById('archiveInvoices').addEventListener('click', archiveInvoices);
