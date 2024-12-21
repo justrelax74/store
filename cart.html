@@ -5,26 +5,47 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Shopping Cart</title>
     <link rel="stylesheet" href="cart.css"> <!-- Link to your CSS file -->
+    
 </head>
 <body>
+    <nav class="navbar">
+        <div class="navbar-container">
+            <a href="index.html" class="navbar-logo">
+                <h1>MEGA MAS MOTOR</h1>  <!-- This link will no longer look like a hyperlink -->
+            </a>
+            <button class="navbar-toggle" onclick="toggleMenu()">
+                &#9776; <!-- Hamburger Icon -->
+            </button>
+            <ul class="navbar-menu" id="navbarMenu">
+                <li class="navbar-item"><a href="cart.html">Buat Kuitansi</a></li>
+                <li class="navbar-item"><a href="inventory.html">Inventory</a></li>
+                <li class="navbar-item"><a href="orders.html">Order</a></li>
+                <li class="navbar-item"><a href="sales.html">Sales</a></li>
+            </ul>
+        </div>
+    </nav>
+    
+
     <div class="container">
         <div class="product-container">
             <h1 class="product-name" id="productName">Product Name</h1>
             <p class="product-price" id="productPrice">Price</p>
             <p class="product-stock" id="productStock">Stock: 0</p> <!-- Updated stock display -->
-            <input type="text" id="barcodeInput" placeholder="Scan or enter SKU">
+
+            <input type="text" id="barcodeInput" placeholder="Scan/Enter SKU or product name">
+            <div id="autocompleteResults" class="autocomplete-dropdown"></div> <!-- Autocomplete results container -->
+
             <button id="searchButton">Search</button>
         </div>
 
-        <!-- Invoice Number Form -->
-        <div id="invoiceDetails">
-            <label for="invoiceNumberInput">Cart:</label>
-            <input type="text" id="invoiceNumberInput" placeholder="Enter Invoice Number">
-            <button id="loadInvoiceButton">Load Invoice</button>
-        </div>
-
+    
         <!-- Cart Section -->
         <div class="cart-container" id="cart">
+            <!-- Add the Invoice Number Display -->
+<div class="invoice-number-container">
+    <h3>Order: # <span id="invoiceNumber"></span></h3>
+</div>
+
             <table id="cartTable">
                 <thead>
                     <tr>
@@ -44,18 +65,18 @@
                 <span id="grandTotal">0</span>
             </div>
         </div>
-        
+
         <!-- Checkout Button -->
         <div class="checkout-container">
             <button id="checkoutButton" class="checkout-btn">Checkout</button>
         </div>
     </div>
 
-    <!-- Link to the external JavaScript file -->
+    <!-- Firebase and Firestore -->
     <script src="https://www.gstatic.com/firebasejs/9.9.3/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.9.3/firebase-firestore-compat.js"></script>
+
+    <!-- Link to your JavaScript file -->
     <script src="cart.js"></script>
 </body>
 </html>
-
-
