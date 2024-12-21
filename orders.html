@@ -3,44 +3,46 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Orders</title>
-  <style>
-    table {
-      width: 100%;
-      border-collapse: collapse;
-    }
-    table, th, td {
-      border: 1px solid black;
-    }
-    th, td {
-      padding: 8px;
-      text-align: left;
-    }
-    th {
-      background-color: #f2f2f2;
-    }
-    .delete-btn {
-      display: none; /* Hide delete buttons initially */
-    }
-    .delete-mode .delete-btn {
-      display: inline-block; /* Show delete buttons when delete mode is active */
-    }
-  </style>
+  <title>Order</title>
+  <link rel="stylesheet" href="orders.css"> 
 </head>
 <body>
-  <h1>Orders</h1>
+  <nav class="navbar">
+    <div class="navbar-container">
+        <a href="index.html" class="navbar-logo">
+            <h1>MEGA MAS MOTOR</h1>  <!-- This link will no longer look like a hyperlink -->
+        </a>
+        <button class="navbar-toggle" onclick="toggleMenu()">
+            &#9776; <!-- Hamburger Icon -->
+        </button>
+        <ul class="navbar-menu" id="navbarMenu">
+
+            <li class="navbar-item"><a href="cart.html">Inventory</a></li>
+            <li class="navbar-item"><a href="orders.html">Order</a></li>
+
+        </ul>
+    </div>
+  </nav>
+
+  <h1>Order</h1>
+  <!-- Start New Order Button -->
+  <button id="startNewOrderBtn">(+) Tambah order</button>
+  <span id="customerNumber"></span>
   
   <!-- Toggle Delete Mode Button -->
-  <button id="toggleDeleteMode">Delete Mode: OFF</button>
+  <button id="toggleDeleteMode">(x) Delete</button>
+  
+  <!-- Toggle Show/Hide Checked Out Orders Button -->
+  <button id="toggleCheckedOutOrdersBtn">Status order</button>
 
   <table id="ordersTable">
     <thead>
       <tr>
-        <th>Invoice Number</th>
-        <th>Products</th>
+        <th>Nomor order</th>
+        <th>Produk</th>
         <th>Grand Total</th>
         <th>Status</th>
-        <th>Actions</th>
+        <th>Action</th>
       </tr>
     </thead>
     <tbody>
