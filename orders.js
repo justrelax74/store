@@ -1,6 +1,5 @@
 // Check if Firebase is already initialized
 if (!firebase.apps.length) {
-  // Initialize Firebase
   const firebaseConfig = {
     apiKey: "AIzaSyANCk_iM4XtSX0VW6iETK-tJdWHGAWMbS0",
     authDomain: "megamasmotor-4008c.firebaseapp.com",
@@ -14,35 +13,61 @@ if (!firebase.apps.length) {
 }
 
 const db = firebase.firestore();  // Initialize Firestore after Firebase is initialized
+let deleteMode = false; // Initialize delete mode as false by default
+let showCheckedOutOrders = false; // Initialize showCheckedOutOrders as false by default
 
-// Format price with currency (IDR) and no decimals
-function formatPrice(price) {
-  return new Intl.NumberFormat('en-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(price);
+// Function to start a new order
+async function startNewOrder() {
+  try {
+    const querySnapshot = await db.collection('invoices').get();
+    let lastInvoiceNumber = "00";
+
+    if (!querySnapshot.empty) {
+      const invoiceNumbers = querySnapshot.docs.map(doc => doc.id);
+      invoiceNumbers.sort((a, b) => parseInt(a) - parseInt(b));
+      lastInvoiceNumber = invoiceNumbers[invoiceNumbers.length - 1];
+    }
+
+    const newInvoiceNumber = String(parseInt(lastInvoiceNumber) + 1).padStart(2, '0');
+    await db.collection('invoices').doc(newInvoiceNumber).set({
+      grandTotal: 0,
+      status: 'OPEN',
+      items: []
+    });
+
+    localStorage.setItem('currentInvoiceNumber', newInvoiceNumber);
+    window.location.href = 'cart.html';
+  } catch (error) {
+    console.error('Error starting new order:', error);
+    alert('Failed to start a new order. Please try again.');
+  }
 }
+
+// Attach the function to the "Start New Order" button click event
+document.getElementById('startNewOrderBtn').addEventListener('click', startNewOrder);
 
 // Function to load orders from Firestore and render them in the table
 async function loadOrders() {
   try {
     const querySnapshot = await db.collection('invoices').get();
     const ordersTableBody = document.querySelector('#ordersTable tbody');
-    ordersTableBody.innerHTML = ''; // Clear existing rows
+    ordersTableBody.innerHTML = '';
 
     querySnapshot.forEach((doc) => {
       const data = doc.data();
       const invoiceNumber = doc.id;
       const grandTotal = data.grandTotal ? formatPrice(data.grandTotal) : 'N/A';
-      const status = data.status === 'checked_out' ? 'Checked Out' : 'Open';
+      const status = data.status === 'checked_out' ? 'LUNAS' : 'OPEN';
 
-      let productDetails = '';
-      if (data.items) {
-        productDetails = data.items.map(item => {
-          return `${item.productName} (Qty: ${item.qty}, Price: ${formatPrice(item.price)})`;
-        }).join('<br>');
-      } else {
-        productDetails = 'No items found';
+      // Skip rendering checked-out orders if showCheckedOutOrders is false
+      if (!showCheckedOutOrders && data.status === 'checked_out') {
+        return;
       }
 
-      // Create table row for each order/invoice
+      let productDetails = data.items ? 
+        data.items.map(item => `${item.productName} (Qty: ${item.qty}, Price: ${formatPrice(item.price)})`).join('<br>') 
+        : 'No items found';
+
       const row = document.createElement('tr');
       row.innerHTML = `
         <td>${invoiceNumber}</td>
@@ -50,19 +75,20 @@ async function loadOrders() {
         <td>${grandTotal}</td>
         <td>
           <select class="status-dropdown" data-invoice="${invoiceNumber}">
-            <option value="open" ${data.status === 'open' ? 'selected' : ''}>Open</option>
-            <option value="checked_out" ${data.status === 'checked_out' ? 'selected' : ''}>Checked Out</option>
+            <option value="open" ${data.status === 'OPEN' ? 'selected' : ''}>OPEN</option>
+            <option value="checked_out" ${data.status === 'checked_out' ? 'selected' : ''}>LUNAS</option>
           </select>
         </td>
         <td>
+          <button onclick="redirectToCart('${invoiceNumber}')">Edit</button>
           <button onclick="checkoutInvoice('${invoiceNumber}')">Checkout</button>
-          <button class="delete-btn" onclick="deleteInvoice('${invoiceNumber}')">Delete</button>
+          <button class="delete-btn" onclick="deleteInvoice('${invoiceNumber}')" style="display: ${deleteMode ? 'inline-block' : 'none'};">Delete</button>
+
         </td>
       `;
       ordersTableBody.appendChild(row);
     });
 
-    // Attach event listeners for status changes
     document.querySelectorAll('.status-dropdown').forEach(dropdown => {
       dropdown.addEventListener('change', updateOrderStatus);
     });
@@ -72,89 +98,142 @@ async function loadOrders() {
   }
 }
 
+// Toggle Delete Mode
+document.getElementById('toggleDeleteMode').addEventListener('click', function() {
+  deleteMode = !deleteMode;
+  document.body.classList.toggle('delete-mode', deleteMode);
+  this.textContent = `Delete Mode: ${deleteMode ? 'ON' : 'OFF'}`;
+  loadOrders();  // Reload orders to show/hide delete buttons based on delete mode
+});
+
+// Toggle Show/Hide Checked Out Orders
+document.getElementById('toggleCheckedOutOrdersBtn').addEventListener('click', function() {
+  showCheckedOutOrders = !showCheckedOutOrders;
+  this.textContent = `Status order: ${showCheckedOutOrders ? 'OPEN' : 'OPEN/LUNAS'}`;
+  loadOrders();  // Reload orders to show/hide checked-out orders based on toggle
+});
+
+// Format price with currency (IDR) and no decimals
+function formatPrice(price) {
+  return new Intl.NumberFormat('en-ID', { style: 'currency', currency: 'IDR', minimumFractionDigits: 0 }).format(price);
+}
+
 // Function to update the order status in Firestore
 async function updateOrderStatus(event) {
   const invoiceNumber = event.target.getAttribute('data-invoice');
   const newStatus = event.target.value;
-
   try {
     await db.collection('invoices').doc(invoiceNumber).update({ status: newStatus });
-    console.log(`Order ${invoiceNumber} status updated to ${newStatus}`);
   } catch (error) {
     console.error(`Error updating order ${invoiceNumber}:`, error);
     alert('Failed to update order status. Please try again.');
   }
 }
 
-// Function to checkout an invoice (and update status to 'checked_out')
+// Function to checkout an invoice
 async function checkoutInvoice(invoiceNumber) {
   try {
-    // Get the invoice data to update stock
+    if (!invoiceNumber) {
+      alert('No invoice number is available!');
+      return;
+    }
+
     const invoiceDoc = await db.collection('invoices').doc(invoiceNumber).get();
     const invoiceData = invoiceDoc.data();
 
+    if (!invoiceData || !Array.isArray(invoiceData.items) || invoiceData.items.length === 0) {
+      alert('The invoice is empty or invalid!');
+      return;
+    }
+
+    // Flag to check if there's any product not found in the inventory
+    let productNotFound = false;
+
     // Update stock for each item in the invoice
-    const stockUpdatePromises = invoiceData.items.map(async (item) => {
-      const inventoryDocRef = db.collection('Inventory').doc(item.productName); // Assuming item.name matches the product name in inventory
-      await inventoryDocRef.update({
-        Stock: firebase.firestore.FieldValue.increment(-item.qty) // Decrease stock by the quantity in the invoice
-      });
+    for (const item of invoiceData.items) {
+      if (!item.productName || item.qty === undefined) {
+        alert(`Invalid item in invoice: ${JSON.stringify(item)}`);
+        return;
+      }
+
+      const docRef = db.collection('Inventory').doc(item.productName);
+      const doc = await docRef.get();
+
+      if (doc.exists) {
+        const currentStock = doc.data().Stock || 0; // Default to 0 if stock is undefined
+
+        // Update stock in Firestore (allow negative stock)
+        await docRef.update({
+          Stock: currentStock - item.qty,
+        });
+        console.log(
+          `Stock for ${item.productName} updated: ${currentStock} -> ${currentStock - item.qty}`
+        );
+      } else {
+        // Product not found, add it to the "no data" collection
+        const noDataRef = db.collection('no data').doc(item.productName);
+        await noDataRef.set({
+          productName: item.productName,
+          qty: item.qty,
+          reason: 'Product not found in inventory during checkout',
+        });
+        console.log(`Product ${item.productName} added to 'no data' collection.`);
+
+        // Set the flag to true
+        productNotFound = true;
+      }
+    }
+
+    // Get the current date as yyyy-mm-dd for the sales collection
+    const currentDate = new Date().toISOString().split('T')[0];
+
+    // Copy the invoice into the date-named sales collection
+    const salesRef = db.collection(currentDate).doc(invoiceNumber);
+    await salesRef.set({
+      items: invoiceData.items,
+      grandTotal: invoiceData.items.reduce((total, item) => total + (item.price * item.qty), 0),
+      timestamp: firebase.firestore.FieldValue.serverTimestamp(),
     });
+    console.log(`Invoice ${invoiceNumber} copied successfully to collection ${currentDate}.`);
 
-    // Wait for all stock updates to complete
-    await Promise.all(stockUpdatePromises);
-
-    // Update the status to 'checked_out' in Firestore
+    // Mark the invoice as checked out in the invoices collection
     await db.collection('invoices').doc(invoiceNumber).update({
-      status: 'checked_out'
+      status: 'checked_out',
     });
+    console.log(`Invoice ${invoiceNumber} status updated to 'checked out' in invoices collection.`);
 
-    console.log(`Order ${invoiceNumber} status updated to 'checked_out'`);
-
-    // Save the invoice number in localStorage for reference
+    // Preserve localStorage for checkout.html to fetch data for printing
     localStorage.setItem('currentInvoiceNumber', invoiceNumber);
 
-    // Redirect to checkout page
+    // Redirect to checkout.html
     window.location.href = 'checkout.html';
   } catch (error) {
     console.error('Error during checkout:', error);
-    alert('Checkout failed. Please try again.');
+
+    // Provide detailed feedback for errors
+    alert(`Checkout failed! ${error.message}`);
   }
 }
 
+
 // Function to delete an invoice
 async function deleteInvoice(invoiceNumber) {
-  // If delete mode is on, delete without confirmation
-  if (deleteMode) {
+  if (deleteMode || confirm("Are you sure you want to delete this order?")) {
     try {
       await db.collection('invoices').doc(invoiceNumber).delete();
-      loadOrders(); // Refresh the orders list after deletion
+      loadOrders();
     } catch (error) {
       console.error('Error deleting invoice:', error);
       alert('Failed to delete invoice. Please try again.');
     }
-  } else {
-    // If delete mode is off, ask for confirmation
-    if (confirm("Are you sure you want to delete this order?")) {
-      try {
-        await db.collection('invoices').doc(invoiceNumber).delete();
-        loadOrders(); // Refresh the orders list after deletion
-      } catch (error) {
-        console.error('Error deleting invoice:', error);
-        alert('Failed to delete invoice. Please try again.');
-      }
-    }
   }
 }
 
-
-// Toggle Delete Mode (Show/Hide Delete Buttons)
-let deleteMode = false;
-document.getElementById('toggleDeleteMode').addEventListener('click', function() {
-  deleteMode = !deleteMode;  // Toggle delete mode
-  document.body.classList.toggle('delete-mode', deleteMode);  // Toggle the delete-mode class
-  this.textContent = `Delete Mode: ${deleteMode ? 'ON' : 'OFF'}`;  // Update button text
-});
+// Function to redirect to cart with selected invoice number
+function redirectToCart(invoiceNumber) {
+  localStorage.setItem('currentInvoiceNumber', invoiceNumber);
+  window.location.href = 'cart.html';
+}
 
 // Load orders on page load
 document.addEventListener('DOMContentLoaded', loadOrders);
