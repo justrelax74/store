@@ -25,7 +25,9 @@
   </nav>
 
   <h1>Order</h1>
-  <!-- Start New Order Button -->
+
+  <div class="content">
+      <!-- Start New Order Button -->
   <button id="startNewOrderBtn">(+) Tambah order</button>
   <span id="customerNumber"></span>
   
@@ -33,8 +35,7 @@
   <button id="toggleDeleteMode">(x) Delete</button>
   
   <!-- Toggle Show/Hide Checked Out Orders Button -->
-  <button id="toggleCheckedOutOrdersBtn">Status order</button>
-
+  <button id="toggleCheckedOutOrdersBtn">Status order</button> 
   <table id="ordersTable">
     <thead>
       <tr>
@@ -49,6 +50,7 @@
       <!-- Orders will be dynamically added here -->
     </tbody>
   </table>
+</div>
 
   <!-- Load Firebase SDK -->
   <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
