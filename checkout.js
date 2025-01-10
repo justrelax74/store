@@ -81,7 +81,7 @@ function printReceipt() {
 
 // Function to go back to the cart page
 function goBack() {
-  window.location.href = 'cart.html';
+  window.location.href = 'kuitansi.html';
 }
 //back to order page
 function home() {
