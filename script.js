@@ -289,7 +289,10 @@ function setupProductSuggestions() {
 
     productInput.addEventListener('input', debounce(async () => {
         const query = productInput.value.trim();
-        if (!query) return suggestionsBox.innerHTML = '';
+        if (!query) {
+            suggestionsBox.innerHTML = '';
+            return;
+        }
 
         const inventory = await fetchAndCacheInventory();
         const suggestions = inventory.filter(item => item.id.toLowerCase().includes(query.toLowerCase()));
@@ -314,6 +317,7 @@ function setupProductSuggestions() {
     });
 }
 
+
 // Debounce helper
 function debounce(func, delay) {
     let timeoutId;
@@ -325,22 +329,29 @@ function debounce(func, delay) {
 
 // Fetch and cache inventory
 async function fetchAndCacheInventory() {
-    const now = Date.now();
-    if (inventoryCache && now - lastQueryTime < 10800000) return inventoryCache;
+    const cachedData = localStorage.getItem('inventoryCache');
+    if (cachedData) {
+        console.log('Loaded inventory from localStorage');
+        inventoryCache = JSON.parse(cachedData);
+        lastQueryTime = Date.now();
+        return inventoryCache;
+    }
 
+    console.log('Fetching inventory from Firestore');
     const snapshot = await db.collection('Inventory').get();
     inventoryCache = snapshot.docs.map(doc => ({ id: doc.id, data: doc.data() }));
-    lastQueryTime = now;
     localStorage.setItem('inventoryCache', JSON.stringify(inventoryCache));
+    lastQueryTime = Date.now();
     return inventoryCache;
 }
 
 // Load inventory from localStorage
-function loadInventoryFromLocalStorage()
-{
+function loadInventoryFromLocalStorage() {
     const cachedData = localStorage.getItem('inventoryCache');
     if (cachedData) {
         inventoryCache = JSON.parse(cachedData);
-        lastQueryTime = Date.now();
+        console.log('Inventory loaded from localStorage');
+    } else {
+        console.log('No inventory data in localStorage');
     }
 }
