@@ -61,7 +61,7 @@ function displayReceipt(invoiceData, invoiceNumber) {
   invoiceData.items.forEach(item => {
     const row = document.createElement('tr');
     row.innerHTML = `
-      <td>${item.name}</td>
+      <td>${item.productName}</td>
       <td>${formatPrice(item.price)}</td>
       <td>${item.qty}</td>
       <td>${formatPrice(item.price * item.qty)}</td>
@@ -82,6 +82,10 @@ function printReceipt() {
 // Function to go back to the cart page
 function goBack() {
   window.location.href = 'cart.html';
+}
+//back to order page
+function home() {
+  window.location.href = 'orders.html';
 }
 
 document.addEventListener('DOMContentLoaded', () => {
