@@ -16,6 +16,8 @@ const db = firebase.firestore();  // Initialize Firestore after Firebase is init
 let deleteMode = false; // Initialize delete mode as false by default
 let showCheckedOutOrders = false; // Initialize showCheckedOutOrders as false by default
 
+
+
 // Function to start a new order
 async function startNewOrder() {
   try {
@@ -53,7 +55,7 @@ async function loadOrders() {
     const ordersTableBody = document.querySelector('#ordersTable tbody');
     ordersTableBody.innerHTML = '';
 
-    querySnapshot.forEach((doc) => {
+    querySnapshot.forEach(async (doc) => {
       const data = doc.data();
       const invoiceNumber = doc.id;
       const grandTotal = data.grandTotal ? formatPrice(data.grandTotal) : 'N/A';
@@ -62,6 +64,12 @@ async function loadOrders() {
       // Skip rendering checked-out orders if showCheckedOutOrders is false
       if (!showCheckedOutOrders && data.status === 'checked_out') {
         return;
+      }
+
+      // Auto delete invoice if grand total is 'N/A' and has no content
+      if (grandTotal === 'N/A' || !data.items || data.items.length === 0) {
+        await deleteInvoice(invoiceNumber);
+        return; // Skip further rendering of this order
       }
 
       let productDetails = data.items ? 
@@ -83,7 +91,6 @@ async function loadOrders() {
           <button onclick="redirectToCart('${invoiceNumber}')">Edit</button>
           <button onclick="checkoutInvoice('${invoiceNumber}')">Checkout</button>
           <button class="delete-btn" onclick="deleteInvoice('${invoiceNumber}')" style="display: ${deleteMode ? 'inline-block' : 'none'};">Delete</button>
-
         </td>
       `;
       ordersTableBody.appendChild(row);
@@ -97,6 +104,7 @@ async function loadOrders() {
     alert('Failed to load orders. Please try again.');
   }
 }
+
 
 // Toggle Delete Mode
 document.getElementById('toggleDeleteMode').addEventListener('click', function() {
@@ -220,7 +228,7 @@ async function checkoutInvoice(invoiceNumber) {
 
 // Function to delete an invoice
 async function deleteInvoice(invoiceNumber) {
-  if (deleteMode || confirm("Are you sure you want to delete this order?")) {
+  
     try {
       await db.collection('invoices').doc(invoiceNumber).delete();
       loadOrders();
@@ -229,7 +237,7 @@ async function deleteInvoice(invoiceNumber) {
       alert('Failed to delete invoice. Please try again.');
     }
   }
-}
+
 
 // Function to redirect to cart with selected invoice number
 function redirectToCart(invoiceNumber) {
