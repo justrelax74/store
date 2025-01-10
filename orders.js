@@ -109,7 +109,7 @@ document.getElementById('toggleDeleteMode').addEventListener('click', function()
 // Toggle Show/Hide Checked Out Orders
 document.getElementById('toggleCheckedOutOrdersBtn').addEventListener('click', function() {
   showCheckedOutOrders = !showCheckedOutOrders;
-  this.textContent = `Status order: ${showCheckedOutOrders ? 'OPEN' : 'OPEN/LUNAS'}`;
+  this.textContent = `Status order: ${showCheckedOutOrders ? 'OPEN/LUNAS' : 'OPEN'}`;
   loadOrders();  // Reload orders to show/hide checked-out orders based on toggle
 });
 
