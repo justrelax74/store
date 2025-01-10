@@ -36,7 +36,7 @@ async function startNewOrder() {
     });
 
     localStorage.setItem('currentInvoiceNumber', newInvoiceNumber);
-    window.location.href = 'cart.html';
+    window.location.href = 'kuitansi.html';
   } catch (error) {
     console.error('Error starting new order:', error);
     alert('Failed to start a new order. Please try again.');
@@ -175,9 +175,10 @@ async function checkoutInvoice(invoiceNumber) {
         await noDataRef.set({
           productName: item.productName,
           qty: item.qty,
+          pricePerUnit: item.price || null, // Include price if available
           reason: 'Product not found in inventory during checkout',
         });
-        console.log(`Product ${item.productName} added to 'no data' collection.`);
+        console.log(`Product ${item.productName} added to 'no data' collection with price info.`);
 
         // Set the flag to true
         productNotFound = true;
@@ -216,6 +217,7 @@ async function checkoutInvoice(invoiceNumber) {
 }
 
 
+
 // Function to delete an invoice
 async function deleteInvoice(invoiceNumber) {
   if (deleteMode || confirm("Are you sure you want to delete this order?")) {
@@ -232,7 +234,7 @@ async function deleteInvoice(invoiceNumber) {
 // Function to redirect to cart with selected invoice number
 function redirectToCart(invoiceNumber) {
   localStorage.setItem('currentInvoiceNumber', invoiceNumber);
-  window.location.href = 'cart.html';
+  window.location.href = 'kuitansi.html';
 }
 
 // Load orders on page load
