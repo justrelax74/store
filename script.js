@@ -2,6 +2,7 @@ let grandTotal = 0;
 let items = [];
 let selectedItemIndex = -1;
 
+
 document.addEventListener('DOMContentLoaded', () => {
     initializeApp();
 });
@@ -143,7 +144,7 @@ async function addItem() {
     const price = parseFloat(document.getElementById('price').value);
 
     if (!invoiceNumber || !productName || isNaN(qty) || isNaN(price)) {
-        return alert('Please fill out all fields with valid values.');
+        return ;
     }
 
     const itemTotalPrice = qty * price;
