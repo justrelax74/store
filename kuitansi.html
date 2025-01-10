@@ -25,8 +25,8 @@
         <ul class="navbar-menu" id="navbarMenu">
             <li class="navbar-item"><a href="kuitansi.html">Buat Kuitansi</a></li>
             <li class="navbar-item"><a href="inventory.html">Inventory</a></li>
-            <li class="navbar-item"><a href="order.html">Order</a></li>
-    
+            <li class="navbar-item"><a href="orders.html">Order</a></li>
+
         </ul>
     </div>
 </nav>
@@ -107,16 +107,16 @@
         <button id="addItemButton" onclick="addItem()" class="add-button">Add Item</button>
 
     </div>
-
-      <!-- Print Button -->
-      <div class="Print">
-          <button onclick="printInvoice()">Print Invoice</button>
-      </div>
+<br>
+      <!-- Checkout Button -->
+      <div class="checkout-container">
+        <button id="checkoutButton" class="checkout-btn">Checkout</button>
     </div>
+</div>
+
 
   </div> <!-- Close container div -->
-  
-</div>
+ 
 
 <!-- Firebase SDK and Initialization -->
 <script src="https://www.gstatic.com/firebasejs/9.9.3/firebase-app-compat.js"></script>
