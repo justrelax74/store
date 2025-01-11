@@ -8,7 +8,7 @@
 </head>
 <body>
 
-<!-- Password Prompt -->
+
 
 
 <!-- Main Content -->
@@ -37,86 +37,36 @@
   <div class="container"> <!-- Add a container for flexbox layout -->
 
     <!-- Invoice Content -->
-    <div class="invoice-box">
-        <table cellpadding="0" cellspacing="0">
-            <tr class="top">
-                <td colspan="3">
-                    <table class="logo-container">
-                        <tr>
-                            <td class="title">
-                                <img src="logo.png" alt="Logo">
-                            </td>
-                        </tr>
-                        <tr class="information line">
-                            <td colspan="3">
-                    
-                 
-                                    <span id="invoiceDate"></span> <!-- Dynamic date-time will be placed here --><br>
-                                <span>MEGA MAS MOTOR</span><br>
-                                <span>Jl. Kelapa No. 25, Palopo, Sulsel</span><br>
-                                <span>0821-8713-8889</span><br>
-                                
-                                <input type="text" id="invoiceNumber" placeholder="Nomor kuitansi"  list="invoiceNumbers" onchange="loadInvoiceDetails()">
-                                <datalist id="invoiceNumbers"></datalist>
-                           
-                            </td>
-                        </tr>
-                    </table>
-                </td>
-            </tr>
-            <tr class="heading">
-                <td>Qty</td>
-                <td>Product Name</td>
-                <td style="text-align: center;">Total </td>
-
-            </tr>
-            <tbody id="invoiceItems">
-                <!-- Items will be added dynamically here -->
-            </tbody>
-            <tr class="total">
-                <td colspan="2" class="total-amount">Grand Total:</td>
-                <td class="total-value" id="grandTotal">0</td>
-            </tr>
-        </table>
-        <div style="text-align:center; margin-top: 10px; font-size: 16px;">Terima Kasih</div>
-    </div>
-
-    <!-- Input Box for Adding Items -->
-    <div class="input-box">
-        <div class="input-box-header">
-            <h2>Kuitansi</h2>
-            <img src="receipt.jpg" alt="Receipt Icon" class="receipt-icon">
+    <div class="container">
+        <div class="invoice-box">
+            <h2>Order: # <input type="text" id="invoiceNumber" placeholder="Nomor kuitansi" list="invoiceNumbers" onchange="loadInvoiceDetails()">
+                <datalist id="invoiceNumbers"></datalist>
+            </h2>
+            <span id="invoiceDate"></span>
+            <table cellpadding="0" cellspacing="0">
+                <thead>
+                    <tr class="heading">
+                        <th>Product Name</th>
+                        <th>Qty</th>
+                        <th>Price/pcs</th>
+                        <th>Subtotal</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="invoiceItems">
+                    <!-- Dynamic rows will be added here -->
+                </tbody>
+                <tr class="total">
+                    <td colspan="3" class="total-amount">Grand Total:</td>
+                    <td class="total-value" id="grandTotal">0</td>
+                </tr>
+            </table>
+            <button id="addRowButton" class="add-row-btn">+ Add Item</button>
         </div>
-        <!-- New Invoice Number Generator -->
-        <div class="form-group">
-          <br>
-     
-    
-          <br>
-  
-        <form>
-            <label for="product">Product:</label><br>
-            <input type="text" id="product" name="product" autocomplete="off"class="input-field" placeholder=" Masukkan nama barang/ sesuaikan dengan ketikan">
-            <div id="suggestions"></div>
-            <label for="qty">Kuantiti:</label><br>
-            <input type="number" id="qty" name="qty" class="input-field" placeholder=" Ketik jumlah pembelian">
-            <br><label for="price">Harga/Item:</label><br>
-            <input type="number" id="price" name="price" class="input-field" placeholder=" Masukkan harga/ sesuaikan dengan ketikan">
-          </form>
+        <div class="checkout-container">
+            <button id="checkoutButton" class="checkout-btn">Checkout</button>
         </div>
-        <button id="addItemButton" onclick="addItem()" class="add-button">Add Item</button>
-
     </div>
-<br>
-      <!-- Checkout Button -->
-      <div class="checkout-container">
-        <button id="checkoutButton" class="checkout-btn">Checkout</button>
-    </div>
-</div>
-
-
-  </div> <!-- Close container div -->
- 
 
 <!-- Firebase SDK and Initialization -->
 <script src="https://www.gstatic.com/firebasejs/9.9.3/firebase-app-compat.js"></script>
