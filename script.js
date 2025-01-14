@@ -52,7 +52,7 @@ function fetchInvoiceNumbers() {
 
 // Fetch and cache inventory
 async function fetchAndCacheInventory() {
-    const cacheDuration = 5 * 60 * 1000; // 5 minutes
+    const cacheDuration = 3 * 60 * 60 * 1000; // 3 hours
     const now = Date.now();
 
     if (inventoryCache.length && (now - lastQueryTime < cacheDuration)) {
@@ -62,7 +62,10 @@ async function fetchAndCacheInventory() {
 
     console.log('Fetching inventory from Firestore');
     const snapshot = await db.collection('Inventory').get();
-    inventoryCache = snapshot.docs.map(doc => ({ id: doc.id, data: doc.data() }));
+    inventoryCache = snapshot.docs.map(doc => ({
+        id: doc.id,
+        data: doc.data(),
+    }));
     localStorage.setItem('inventoryCache', JSON.stringify(inventoryCache));
     lastQueryTime = now;
 
@@ -76,9 +79,11 @@ function loadInventoryFromLocalStorage() {
         inventoryCache = JSON.parse(cachedData);
         console.log('Inventory loaded from localStorage');
     } else {
-        console.log('No inventory data in localStorage');
+        console.log('No inventory data in localStorage. Fetching from Firestore...');
+        fetchAndCacheInventory();
     }
 }
+
 
 // Load invoice details by number
 function loadInvoiceDetails() {
@@ -212,27 +217,29 @@ function deleteRow(row) {
 
 // Autocomplete for product input
 function setupAutocomplete(input, suggestionsBox) {
-    input.addEventListener('input', debounce(async () => {
-        const query = input.value.trim();
+    input.addEventListener('input', debounce(() => {
+        const query = input.value.trim().toLowerCase();
         if (!query) {
             suggestionsBox.innerHTML = '';
             return;
         }
 
-        const inventory = await fetchAndCacheInventory();
-        const suggestions = inventory.filter(item => item.id.toLowerCase().includes(query.toLowerCase()));
+        // Filter inventory cache for matching products
+        const suggestions = inventoryCache.filter(item => 
+            item.id.toLowerCase().includes(query)
+        );
 
-        suggestionsBox.innerHTML = '';
+        suggestionsBox.innerHTML = ''; // Clear previous suggestions
         suggestions.forEach(item => {
             const option = document.createElement('div');
             option.textContent = `${item.id} (Stock: ${item.data.Stock})`;
-            option.style.cursor = "pointer";
+            option.style.cursor = 'pointer';
 
             option.addEventListener('click', () => {
                 const row = input.closest('tr');
                 input.value = item.id;
                 row.querySelector('.price-input').value = item.data['Selling Price'] || 0;
-                suggestionsBox.innerHTML = '';
+                suggestionsBox.innerHTML = ''; // Clear suggestions after selection
                 updateSubtotal({ target: row.querySelector('.price-input') });
                 autosaveInvoice();
             });
@@ -241,12 +248,19 @@ function setupAutocomplete(input, suggestionsBox) {
         });
     }, 300));
 
-    document.addEventListener('click', event => {
+    // Close suggestions when clicking outside
+    document.addEventListener('click', (event) => {
         if (!suggestionsBox.contains(event.target) && event.target !== input) {
             suggestionsBox.innerHTML = '';
         }
     });
 }
+
+// Initialize app and load cached inventory
+document.addEventListener('DOMContentLoaded', async () => {
+    await fetchAndCacheInventory(); // Ensure inventory is loaded
+    initializeApp();
+});
 
 // Autosave the invoice details
 function autosaveInvoice() {
