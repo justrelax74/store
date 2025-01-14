@@ -16,8 +16,6 @@ const db = firebase.firestore();  // Initialize Firestore after Firebase is init
 let deleteMode = false; // Initialize delete mode as false by default
 let showCheckedOutOrders = false; // Initialize showCheckedOutOrders as false by default
 
-
-
 // Function to start a new order
 async function startNewOrder() {
   try {
@@ -105,14 +103,45 @@ async function loadOrders() {
   }
 }
 
-
 // Toggle Delete Mode
-document.getElementById('toggleDeleteMode').addEventListener('click', function() {
+document.getElementById('toggleDeleteMode').addEventListener('click', function () {
   deleteMode = !deleteMode;
   document.body.classList.toggle('delete-mode', deleteMode);
   this.textContent = `Delete Mode: ${deleteMode ? 'ON' : 'OFF'}`;
-  loadOrders();  // Reload orders to show/hide delete buttons based on delete mode
+  
+  const contentContainer = document.querySelector('.content');
+  let deleteAllButton = document.getElementById('deleteAllButton');
+
+  if (deleteMode) {
+    // If delete mode is ON and the button doesn't exist, create it
+    if (!deleteAllButton) {
+      deleteAllButton = document.createElement('button');
+      deleteAllButton.id = 'deleteAllButton';
+      deleteAllButton.textContent = 'Delete All';
+      deleteAllButton.addEventListener('click', function () {
+        if (confirm('Are you sure you want to delete all orders? This action cannot be undone.')) {
+          deleteAllOrders(); // Call the function to delete all orders
+        }
+      });
+      contentContainer.appendChild(deleteAllButton);
+    }
+    deleteAllButton.style.display = 'inline-block'; // Ensure it's visible
+  } else {
+    // If delete mode is OFF, hide the button
+    if (deleteAllButton) {
+      deleteAllButton.style.display = 'none';
+    }
+  }
+
+  loadOrders(); // Reload orders to show/hide delete buttons based on delete mode
 });
+
+// Function to delete all orders (example placeholder)
+function deleteAllOrders() {
+  console.log('All orders have been deleted.');
+  // Add your deletion logic here
+  loadOrders();
+}
 
 // Toggle Show/Hide Checked Out Orders
 document.getElementById('toggleCheckedOutOrdersBtn').addEventListener('click', function() {
@@ -154,41 +183,46 @@ async function checkoutInvoice(invoiceNumber) {
       return;
     }
 
+    // Filter out invalid items from the invoice
+    const validItems = invoiceData.items.filter(item => {
+      return item.productName && item.price > 0 && item.qty > 0;
+    });
+
+    if (validItems.length === 0) {
+      alert('No valid items in the invoice to checkout!');
+      await db.collection('invoices').doc(invoiceNumber).delete(); // Delete the empty invoice
+      return;
+    }
+
+    // Update the invoice with valid items before proceeding
+    await db.collection('invoices').doc(invoiceNumber).update({
+      items: validItems,
+    });
+
     // Flag to check if there's any product not found in the inventory
     let productNotFound = false;
 
-    // Update stock for each item in the invoice
-    for (const item of invoiceData.items) {
-      if (!item.productName || item.qty === undefined) {
-        alert(`Invalid item in invoice: ${JSON.stringify(item)}`);
-        return;
-      }
-
+    // Update stock for each item in the valid items list
+    for (const item of validItems) {
       const docRef = db.collection('Inventory').doc(item.productName);
       const doc = await docRef.get();
 
       if (doc.exists) {
-        const currentStock = doc.data().Stock || 0; // Default to 0 if stock is undefined
+        const currentStock = doc.data().Stock || 0;
 
         // Update stock in Firestore (allow negative stock)
         await docRef.update({
           Stock: currentStock - item.qty,
         });
-        console.log(
-          `Stock for ${item.productName} updated: ${currentStock} -> ${currentStock - item.qty}`
-        );
       } else {
         // Product not found, add it to the "no data" collection
         const noDataRef = db.collection('no data').doc(item.productName);
         await noDataRef.set({
           productName: item.productName,
           qty: item.qty,
-          pricePerUnit: item.price || null, // Include price if available
+          pricePerUnit: item.price || null,
           reason: 'Product not found in inventory during checkout',
         });
-        console.log(`Product ${item.productName} added to 'no data' collection with price info.`);
-
-        // Set the flag to true
         productNotFound = true;
       }
     }
@@ -199,17 +233,15 @@ async function checkoutInvoice(invoiceNumber) {
     // Copy the invoice into the date-named sales collection
     const salesRef = db.collection(currentDate).doc(invoiceNumber);
     await salesRef.set({
-      items: invoiceData.items,
-      grandTotal: invoiceData.items.reduce((total, item) => total + (item.price * item.qty), 0),
+      items: validItems,
+      grandTotal: validItems.reduce((total, item) => total + (item.price * item.qty), 0),
       timestamp: firebase.firestore.FieldValue.serverTimestamp(),
     });
-    console.log(`Invoice ${invoiceNumber} copied successfully to collection ${currentDate}.`);
 
     // Mark the invoice as checked out in the invoices collection
     await db.collection('invoices').doc(invoiceNumber).update({
       status: 'checked_out',
     });
-    console.log(`Invoice ${invoiceNumber} status updated to 'checked out' in invoices collection.`);
 
     // Preserve localStorage for checkout.html to fetch data for printing
     localStorage.setItem('currentInvoiceNumber', invoiceNumber);
@@ -218,26 +250,21 @@ async function checkoutInvoice(invoiceNumber) {
     window.location.href = 'checkout.html';
   } catch (error) {
     console.error('Error during checkout:', error);
-
-    // Provide detailed feedback for errors
     alert(`Checkout failed! ${error.message}`);
   }
 }
 
 
-
 // Function to delete an invoice
 async function deleteInvoice(invoiceNumber) {
-  
-    try {
-      await db.collection('invoices').doc(invoiceNumber).delete();
-      loadOrders();
-    } catch (error) {
-      console.error('Error deleting invoice:', error);
-      alert('Failed to delete invoice. Please try again.');
-    }
+  try {
+    await db.collection('invoices').doc(invoiceNumber).delete();
+    loadOrders();
+  } catch (error) {
+    console.error('Error deleting invoice:', error);
+    alert('Failed to delete invoice. Please try again.');
   }
-
+}
 
 // Function to redirect to cart with selected invoice number
 function redirectToCart(invoiceNumber) {
