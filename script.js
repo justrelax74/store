@@ -256,11 +256,6 @@ function setupAutocomplete(input, suggestionsBox) {
     });
 }
 
-// Initialize app and load cached inventory
-document.addEventListener('DOMContentLoaded', async () => {
-    await fetchAndCacheInventory(); // Ensure inventory is loaded
-    initializeApp();
-});
 
 // Autosave the invoice details
 function autosaveInvoice() {
