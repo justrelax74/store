@@ -267,7 +267,7 @@ function autosaveInvoice() {
 
     const updatedItems = [];
     document.querySelectorAll('#invoiceItems tr').forEach(row => {
-        const productName = row.querySelector('.product-input').value;
+        const productName = row.querySelector('.product-input').value.toUpperCase(); // Capitalize product name
         const qty = parseFloat(row.querySelector('.qty-input').value) || 0;
         const price = parseFloat(row.querySelector('.price-input').value) || 0;
         const totalPrice = parseFloat(row.querySelector('.subtotal-input').value) || 0;
