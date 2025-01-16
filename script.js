@@ -217,16 +217,18 @@ function deleteRow(row) {
 
 // Autocomplete for product input
 function setupAutocomplete(input, suggestionsBox) {
+    // Automatically capitalize the input
+    input.style.textTransform = 'uppercase'; // Set CSS style for auto-capitalization
     input.addEventListener('input', debounce(() => {
-        const query = input.value.trim().toLowerCase();
+        const query = input.value.trim().toUpperCase();
         if (!query) {
             suggestionsBox.innerHTML = '';
             return;
         }
 
         // Filter inventory cache for matching products
-        const suggestions = inventoryCache.filter(item => 
-            item.id.toLowerCase().includes(query)
+        const suggestions = inventoryCache.filter(item =>
+            item.id.toUpperCase().includes(query)
         );
 
         suggestionsBox.innerHTML = ''; // Clear previous suggestions
@@ -255,6 +257,7 @@ function setupAutocomplete(input, suggestionsBox) {
         }
     });
 }
+
 
 
 // Autosave the invoice details
