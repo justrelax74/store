@@ -58,25 +58,30 @@ async function loadOrders() {
       const invoiceNumber = doc.id;
       const grandTotal = data.grandTotal ? formatPrice(data.grandTotal) : 'N/A';
       const status = data.status === 'checked_out' ? 'LUNAS' : 'OPEN';
-
+    
       // Skip rendering checked-out orders if showCheckedOutOrders is false
       if (!showCheckedOutOrders && data.status === 'checked_out') {
         return;
       }
-
+    
       // Auto delete invoice if grand total is 'N/A' and has no content
       if (grandTotal === 'N/A' || !data.items || data.items.length === 0) {
         await deleteInvoice(invoiceNumber);
         return; // Skip further rendering of this order
       }
-
-      let productDetails = data.items ? 
-        data.items.map(item => `${item.productName} (Qty: ${item.qty}, Price: ${formatPrice(item.price)})`).join('<br>') 
+    
+      let productDetails = data.items 
+        ? data.items.map(item => `${item.productName} (Qty: ${item.qty}, Price: ${formatPrice(item.price)})`).join('<br>') 
         : 'No items found';
-
+    
+      const carType = data.carType || 'N/A';
+      const policeNumber = data.policeNumber || 'N/A';
+    
       const row = document.createElement('tr');
       row.innerHTML = `
         <td>${invoiceNumber}</td>
+        <td>${carType}</td>
+        <td>${policeNumber}</td>
         <td>${productDetails}</td>
         <td>${grandTotal}</td>
         <td>
@@ -93,6 +98,7 @@ async function loadOrders() {
       `;
       ordersTableBody.appendChild(row);
     });
+    
 
     document.querySelectorAll('.status-dropdown').forEach(dropdown => {
       dropdown.addEventListener('change', updateOrderStatus);
