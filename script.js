@@ -265,6 +265,10 @@ function setupAutocomplete(input, suggestionsBox) {
 
 
 
+// Add event listeners to carType and policeNumber fields for autosaving
+document.getElementById('carType').addEventListener('input', () => autosaveInvoice());
+document.getElementById('policeNumber').addEventListener('input', () => autosaveInvoice());
+
 // Autosave the invoice details
 function autosaveInvoice() {
     const invoiceNumber = document.getElementById('invoiceNumber').value.trim().toUpperCase(); // Ensure uppercase
@@ -282,7 +286,6 @@ function autosaveInvoice() {
 
         updatedItems.push({ productName, qty, price, totalPrice });
     });
-
 
     const grandTotal = updatedItems.reduce((sum, item) => sum + item.totalPrice, 0);
 
