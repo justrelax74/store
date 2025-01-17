@@ -316,6 +316,9 @@ function debounce(func, delay) {
 // Checkout button logic
 document.getElementById('checkoutButton').addEventListener('click', async () => {
     const invoiceNumber = document.getElementById('invoiceNumber').value.trim();
+    const carType = document.getElementById('carType').value.trim().toUpperCase(); // Ensure uppercase
+    const policeNumber = document.getElementById('policeNumber').value.trim().toUpperCase(); // Ensure uppercase
+
     if (!invoiceNumber) {
         alert("Invoice number is required.");
         return;
@@ -391,6 +394,8 @@ document.getElementById('checkoutButton').addEventListener('click', async () => 
         await db.collection(today).doc(invoiceNumber).set({
             items: updatedItems,
             grandTotal,
+            carType, // Include carType in sales collection
+            policeNumber, // Include policeNumber in sales collection
             timestamp: firebase.firestore.FieldValue.serverTimestamp(),
         });
 
