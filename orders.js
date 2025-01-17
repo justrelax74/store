@@ -241,6 +241,8 @@ async function checkoutInvoice(invoiceNumber) {
     await salesRef.set({
       items: validItems,
       grandTotal: validItems.reduce((total, item) => total + (item.price * item.qty), 0),
+      carType: invoiceData.carType || 'N/A', // Save car type
+      policeNumber: invoiceData.policeNumber || 'N/A', // Save police number
       timestamp: firebase.firestore.FieldValue.serverTimestamp(),
     });
 
@@ -259,6 +261,7 @@ async function checkoutInvoice(invoiceNumber) {
     alert(`Checkout failed! ${error.message}`);
   }
 }
+
 
 
 // Function to delete an invoice
