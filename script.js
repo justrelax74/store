@@ -44,7 +44,7 @@ function fetchInvoiceNumbers() {
     db.collection('invoices').get().then(snapshot => {
         snapshot.forEach(doc => {
             const option = document.createElement('option');
-            option.value = doc.id;
+            option.value = doc.id.toUpperCase();
             datalist.appendChild(option);
         });
     }).catch(error => console.error("Error fetching invoice numbers:", error));
@@ -64,7 +64,7 @@ async function fetchAndCacheInventory() {
     const snapshot = await db.collection('Inventory').get();
     inventoryCache = snapshot.docs.map(doc => ({
         id: doc.id,
-        data: doc.data(),
+        id: doc.id.toUpperCase(),
     }));
     localStorage.setItem('inventoryCache', JSON.stringify(inventoryCache));
     lastQueryTime = now;
@@ -87,7 +87,7 @@ function loadInventoryFromLocalStorage() {
 
 // Load invoice details by number
 function loadInvoiceDetails() {
-    const invoiceNumber = document.getElementById('invoiceNumber').value.trim();
+    const invoiceNumber = document.getElementById('invoiceNumber').value.trim().toUpperCase(); 
 
     if (!invoiceNumber) return alert('Please enter an invoice number.');
 
@@ -96,14 +96,19 @@ function loadInvoiceDetails() {
             const data = doc.data();
             items = data.items || [];
             grandTotal = data.grandTotal || 0;
-            renderEditableInvoiceItems();
-            document.getElementById('grandTotal').textContent = formatNumber(grandTotal);
-            localStorage.setItem('currentInvoiceNumber', invoiceNumber); // Ensure it's saved to local storage
-        } else {
-            alert('Invoice not found.');
-        }
-    }).catch(error => console.error("Error fetching invoice details:", error));
-}
+
+             // Load car type and police number
+             document.getElementById('carType').value = (data.carType || '').toUpperCase(); // Ensure uppercase
+             document.getElementById('policeNumber').value = (data.policeNumber || '').toUpperCase(); // Ensure uppercase
+ 
+             renderEditableInvoiceItems();
+             document.getElementById('grandTotal').textContent = formatNumber(grandTotal);
+             localStorage.setItem('currentInvoiceNumber', invoiceNumber); // Ensure it's saved to local storage
+         } else {
+             alert('Invoice not found.');
+         }
+     }).catch(error => console.error("Error fetching invoice details:", error));
+ }
 
 // Render invoice items as editable rows
 function renderEditableInvoiceItems() {
@@ -262,12 +267,15 @@ function setupAutocomplete(input, suggestionsBox) {
 
 // Autosave the invoice details
 function autosaveInvoice() {
-    const invoiceNumber = document.getElementById('invoiceNumber').value.trim();
+    const invoiceNumber = document.getElementById('invoiceNumber').value.trim().toUpperCase(); // Ensure uppercase
     if (!invoiceNumber) return;
+
+    const carType = document.getElementById('carType').value.trim().toUpperCase(); // Ensure uppercase
+    const policeNumber = document.getElementById('policeNumber').value.trim().toUpperCase(); // Ensure uppercase
 
     const updatedItems = [];
     document.querySelectorAll('#invoiceItems tr').forEach(row => {
-        const productName = row.querySelector('.product-input').value.toUpperCase(); // Capitalize product name
+        const productName = row.querySelector('.product-input').value.toUpperCase(); // Ensure uppercase
         const qty = parseFloat(row.querySelector('.qty-input').value) || 0;
         const price = parseFloat(row.querySelector('.price-input').value) || 0;
         const totalPrice = parseFloat(row.querySelector('.subtotal-input').value) || 0;
@@ -275,17 +283,21 @@ function autosaveInvoice() {
         updatedItems.push({ productName, qty, price, totalPrice });
     });
 
+
     const grandTotal = updatedItems.reduce((sum, item) => sum + item.totalPrice, 0);
 
     db.collection('invoices').doc(invoiceNumber).set({
         items: updatedItems,
-        grandTotal
+        grandTotal,
+        carType, // Save uppercase car type
+        policeNumber, // Save uppercase police number
     }).then(() => console.log('Invoice autosaved successfully.'))
     .catch(error => console.error('Error autosaving invoice:', error));
 
     // Save current invoice number in local storage
     localStorage.setItem('currentInvoiceNumber', invoiceNumber);
 }
+
 
 // Format number for display
 function formatNumber(number) {
