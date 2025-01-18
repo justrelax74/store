@@ -238,14 +238,19 @@ function setupAutocomplete(input, suggestionsBox) {
 
         suggestionsBox.innerHTML = ''; // Clear previous suggestions
         suggestions.forEach(item => {
+            const sellingPrice = item.data['Selling Price'] || 0; // Default to 0 if not available
+            const stock = item.data['Stock'] || 'N/A'; // Default to 'N/A' if stock isn't available
             const option = document.createElement('div');
-            option.textContent = `${item.id} (Stock: ${item.data.Stock})`;
+            option.innerHTML = `
+                <strong>${item.id}</strong> - 
+                Selling Price: <em>${formatNumber(sellingPrice)}</em> - 
+                Stock: <em>${stock}</em>`;
             option.style.cursor = 'pointer';
 
             option.addEventListener('click', () => {
                 const row = input.closest('tr');
                 input.value = item.id;
-                row.querySelector('.price-input').value = item.data['Selling Price'] || 0;
+                row.querySelector('.price-input').value = sellingPrice; // Pre-fill selling price
                 suggestionsBox.innerHTML = ''; // Clear suggestions after selection
                 updateSubtotal({ target: row.querySelector('.price-input') });
                 autosaveInvoice();
@@ -262,6 +267,7 @@ function setupAutocomplete(input, suggestionsBox) {
         }
     });
 }
+
 
 
 
