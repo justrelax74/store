@@ -239,7 +239,7 @@ function setupAutocomplete(input, suggestionsBox) {
         suggestionsBox.innerHTML = ''; // Clear previous suggestions
         suggestions.forEach(item => {
             const sellingPrice = item.data['Selling Price'] || 0; // Default to 0 if not available
-            const stock = item.data['Stock'] || 'N/A'; // Default to 'N/A' if stock isn't available
+            const stock = item.data['Stock'] || '0'; // Default to 'N/A' if stock isn't available
             const option = document.createElement('div');
             option.innerHTML = `
                 <strong>${item.id}</strong> - 
