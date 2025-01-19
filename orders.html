@@ -9,7 +9,7 @@
 <body>
   <nav class="navbar">
     <div class="navbar-container">
-        <a href="index.html" class="navbar-logo">
+        <a href="orderhp.html" class="navbar-logo">
             <h1>MEGA MAS MOTOR</h1>  <!-- This link will no longer look like a hyperlink -->
         </a>
         <button class="navbar-toggle" onclick="toggleMenu()">
@@ -31,11 +31,9 @@
   <button id="startNewOrderBtn">(+) Tambah order</button>
   <span id="customerNumber"></span>
   
-  <!-- Toggle Delete Mode Button -->
-  <button id="toggleDeleteMode">(x) Delete</button>
+
   
-  <!-- Toggle Show/Hide Checked Out Orders Button -->
-  <button id="toggleCheckedOutOrdersBtn">Status order</button> 
+
   <table id="ordersTable">
     <thead>
       <tr>
@@ -44,7 +42,6 @@
         <th>Nomor Polisi</th>
         <th>Produk</th>
         <th>Grand Total</th>
-        <th>Status</th>
         <th>Action</th>
       </tr>
     </thead>
@@ -59,4 +56,4 @@
   <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-firestore.js"></script>
   <script src="orders.js"></script>
 </body>
-</html>
+</>
