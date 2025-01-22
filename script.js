@@ -64,7 +64,7 @@ async function fetchAndCacheInventory() {
     const snapshot = await db.collection('Inventory').get();
     inventoryCache = snapshot.docs.map(doc => ({
         id: doc.id,
-        id: doc.id.toUpperCase(),
+        data: doc.data(), // Include the document's data
     }));
     localStorage.setItem('inventoryCache', JSON.stringify(inventoryCache));
     lastQueryTime = now;
@@ -235,18 +235,18 @@ function setupAutocomplete(input, suggestionsBox) {
         const suggestions = inventoryCache.filter(item =>
             item.id.toUpperCase().includes(query)
         );
-
+        
         suggestionsBox.innerHTML = ''; // Clear previous suggestions
         suggestions.forEach(item => {
-            const price = item.data['Selling Price'] || 0; // Default to 0 if not available
-            const stock = item.data['Stock'] || '0'; // Default to 'N/A' if stock isn't available
+            const price = item.data['Selling Price'] || 0; // Access the price from data
+            const stock = item.data['Stock'] || 'N/A'; // Access the stock from data
             const option = document.createElement('div');
-            option.innerHTML = `
+            option.innerHTML = ` 
                 <strong>${item.id}</strong> - 
                 Price: <em>${formatNumber(price)}</em> - 
                 Stock: <em>${stock}</em>`;
             option.style.cursor = 'pointer';
-
+        
             option.addEventListener('click', () => {
                 const row = input.closest('tr');
                 input.value = item.id;
@@ -255,7 +255,7 @@ function setupAutocomplete(input, suggestionsBox) {
                 updateSubtotal({ target: row.querySelector('.price-input') });
                 autosaveInvoice();
             });
-
+        
             suggestionsBox.appendChild(option);
         });
     }, 300));
