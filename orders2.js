@@ -1,6 +1,4 @@
-import { initializeApp } from "firebase/app";
-import { getFirestore, collection, getDocs, doc, setDoc, updateDoc, deleteDoc } from "firebase/firestore";
-import { getStorage } from "firebase/storage"; // Optional, if you use Firebase Storage
+
 
 // Initialize Firebase
 const firebaseConfig = {
