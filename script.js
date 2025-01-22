@@ -296,17 +296,20 @@ function autosaveInvoice() {
 
     const grandTotal = updatedItems.reduce((sum, item) => sum + item.totalPrice, 0);
 
+    // Update only relevant fields, excluding `status`
     db.collection('invoices').doc(invoiceNumber).set({
         items: updatedItems,
         grandTotal,
         carType, // Save uppercase car type
         policeNumber, // Save uppercase police number
-    }).then(() => console.log('Invoice autosaved successfully.'))
-    .catch(error => console.error('Error autosaving invoice:', error));
+    }, { merge: true }) // Use merge to avoid overwriting the entire document
+        .then(() => console.log('Invoice autosaved successfully.'))
+        .catch(error => console.error('Error autosaving invoice:', error));
 
     // Save current invoice number in local storage
     localStorage.setItem('currentInvoiceNumber', invoiceNumber);
 }
+
 
 
 // Format number for display
