@@ -240,8 +240,8 @@ function setupAutocomplete(input, suggestionsBox) {
         suggestions.forEach(item => {
             const price = item.data['Selling Price'] || 0; // Access the price from data
             const stock = item.data['Stock'] || 'N/A'; // Access the stock from data
-            const buyingPrice = item.data['Buying Price'] || 0;  // Fetch Buying Price
-        const category = item.data['Category'] || 'Uncategorized'; // Fetch Category
+            const buyingPrice = Number(item.data['Buying Price']) || 0;  // Ensure it's a number
+            const category = item.data['Category'] || 'Uncategorized'; // Fetch Category
 
             const option = document.createElement('div');
             option.innerHTML = ` 
@@ -300,7 +300,7 @@ function autosaveInvoice() {
         const price = parseFloat(row.querySelector('.price-input').value) || 0;
         const totalPrice = parseFloat(row.querySelector('.subtotal-input').value) || 0;
 
-        const buyingPrice = row.dataset.buyingPrice || 0;
+        const buyingPrice = Number(row.dataset.buyingPrice) || 0;
         const category = row.dataset.category || 'Uncategorized';
         
         updatedItems.push({ productName, qty, price, buyingPrice, category, totalPrice });
@@ -406,7 +406,7 @@ document.getElementById('checkoutButton').addEventListener('click', async () => 
                 productName: item.productName,
                 qty: item.qty,
                 price: item.price || 0,
-                buyingPrice: item.buyingPrice || 0, // Ensure Buying Price is saved
+                buyingPrice: Number(item.buyingPrice) || 0, // Ensure Buying Price is saved as a number
                 category: item.category || 'Uncategorized', // Ensure Category is saved
                 totalPrice: item.qty * (item.price || 0),
             });
