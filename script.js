@@ -240,6 +240,9 @@ function setupAutocomplete(input, suggestionsBox) {
         suggestions.forEach(item => {
             const price = item.data['Selling Price'] || 0; // Access the price from data
             const stock = item.data['Stock'] || 'N/A'; // Access the stock from data
+            const buyingPrice = item.data['Buying Price'] || 0;  // Fetch Buying Price
+        const category = item.data['Category'] || 'Uncategorized'; // Fetch Category
+
             const option = document.createElement('div');
             option.innerHTML = ` 
                 <strong>${item.id}</strong> - 
@@ -250,11 +253,17 @@ function setupAutocomplete(input, suggestionsBox) {
             option.addEventListener('click', () => {
                 const row = input.closest('tr');
                 input.value = item.id;
-                row.querySelector('.price-input').value = price; // Pre-fill price
+                row.querySelector('.price-input').value = price; // Pre-fill Selling Price
+                
+                // Store Buying Price & Category in hidden attributes
+                row.dataset.buyingPrice = buyingPrice;
+                row.dataset.category = category;
+            
                 suggestionsBox.innerHTML = ''; // Clear suggestions after selection
                 updateSubtotal({ target: row.querySelector('.price-input') });
                 autosaveInvoice();
             });
+            
         
             suggestionsBox.appendChild(option);
         });
@@ -291,7 +300,10 @@ function autosaveInvoice() {
         const price = parseFloat(row.querySelector('.price-input').value) || 0;
         const totalPrice = parseFloat(row.querySelector('.subtotal-input').value) || 0;
 
-        updatedItems.push({ productName, qty, price, totalPrice });
+        const buyingPrice = row.dataset.buyingPrice || 0;
+        const category = row.dataset.category || 'Uncategorized';
+        
+        updatedItems.push({ productName, qty, price, buyingPrice, category, totalPrice });
     });
 
     const grandTotal = updatedItems.reduce((sum, item) => sum + item.totalPrice, 0);
@@ -309,7 +321,6 @@ function autosaveInvoice() {
     // Save current invoice number in local storage
     localStorage.setItem('currentInvoiceNumber', invoiceNumber);
 }
-
 
 
 // Format number for display
@@ -395,6 +406,8 @@ document.getElementById('checkoutButton').addEventListener('click', async () => 
                 productName: item.productName,
                 qty: item.qty,
                 price: item.price || 0,
+                buyingPrice: item.buyingPrice || 0, // Ensure Buying Price is saved
+                category: item.category || 'Uncategorized', // Ensure Category is saved
                 totalPrice: item.qty * (item.price || 0),
             });
         }
