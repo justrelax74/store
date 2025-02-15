@@ -16,6 +16,7 @@ const db = firebase.firestore();  // Initialize Firestore after Firebase is init
 let deleteMode = false; // Initialize delete mode as false by default
 let showCheckedOutOrders = false; // Initialize showCheckedOutOrders as false by default
 
+
 // Function to start a new order
 async function startNewOrder() {
   try {
@@ -41,6 +42,12 @@ async function startNewOrder() {
     console.error('Error starting new order:', error);
     alert('Failed to start a new order. Please try again.');
   }
+}
+
+
+function toggleMenu() {
+  const menu = document.getElementById("navbarMenu");
+  menu.classList.toggle("active");
 }
 
 // Attach the function to the "Start New Order" button click event
