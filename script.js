@@ -1,3 +1,13 @@
+document.addEventListener("DOMContentLoaded", function () {
+    // Your existing script.js code goes here
+});
+
+const element = document.getElementById("someElementId");
+if (element) {
+    element.textContent = "Hello!";
+}
+
+
 let grandTotal = 0;
 let items = [];
 let inventoryCache = [];
