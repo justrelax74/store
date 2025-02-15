@@ -1,3 +1,8 @@
+function toggleMenu() {
+  const menu = document.getElementById("navbarMenu");
+  menu.classList.toggle("active");
+}
+
 document.addEventListener("DOMContentLoaded", function () {
     // Your existing script.js code goes here
 });
