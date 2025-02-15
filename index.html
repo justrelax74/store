@@ -7,77 +7,57 @@
     <link rel="stylesheet" href="index.css">
 </head>
 <body>
+
 <!-- Navigation Bar -->
 <nav class="navbar">
     <div class="navbar-container">
         <a href="index.html" class="navbar-logo">
             <h1>MEGA MAS MOTOR</h1>
         </a>
-        <button class="navbar-toggle" onclick="toggleMenu()">
-            &#9776; <!-- Hamburger Icon -->
-        </button>
+        <button class="navbar-toggle" onclick="toggleMenu()">&#9776;</button>
         <ul class="navbar-menu" id="navbarMenu">
-            <li class="navbar-item"><a href="kuitansi.html">Buat Kuitansi</a></li>
             <li class="navbar-item"><a href="inventory.html">Inventory</a></li>
-            <li class="navbar-item"><a href="order.html">Order</a></li>
-      
+            <li class="navbar-item"><a href="orders1.html">Order</a></li>
+            <li class="navbar-item"><a href="sales.html">Sales</a></li>
         </ul>
     </div>
 </nav>
 
-</nav>
+<main class="container">
 
-    </header>
-    
-    <main class="container">
-        <!-- Hero Section -->
-        <section class="hero">
-            <h1>Welcome to Megamas Motor</h1>
-            <p>Your trusted partner for automotive spare parts and services in Palopo. We are an official TireZone!</p>
-            <a href="#learn-more" class="button">Learn More</a>
-        </section>
-        
-        <!-- About Us Section -->
-        <section id="learn-more" class="content-section">
-            <h2>About Us</h2>
-            <p>We provide high-quality automotive spare parts and professional services to keep your vehicle running smoothly. As an official TireZone, we offer a wide range of tires to meet your needs.</p>
-        </section>
-        
-        <!-- Services Section -->
-        <section class="content-section">
-            <h2>Our Services</h2>
-            <div class="services">
-                <div class="service">
-                    <h3>Spare Parts</h3>
-                    <p>We offer a comprehensive selection of automotive spare parts for various makes and models.</p>
-                </div>
-                <div class="service">
-                    <h3>Vehicle Service</h3>
-                    <p>Our expert technicians provide top-notch maintenance and repair services to keep your vehicle in prime condition.</p>
-                </div>
-                <div class="service">
-                    <h3>Tire Services</h3>
-                    <p>As an official TireZone, we offer a wide range of tires and tire-related services to ensure your safety on the road.</p>
-                </div>
-            </div>
-        </section>
+ <br><br>
+        <h1>Mega Mas Motor</h1>
 
-        <!-- Contact Us Section -->
-        <section class="content-section">
-            <h2>Contact Us</h2>
-            <p>Visit us or connect with us online:</p>
-            <ul>
-                <li><a href="https://maps.app.goo.gl/8VxEm9bFQdQczECK9" target="_blank">Our Location on Google Maps</a></li>
-                <li><a href="https://www.instagram.com/megamasmtr/" target="_blank">Follow us on Instagram</a></li>
-                <li><a href="https://wa.me/6282187138889" class="whatsapp-link" target="_blank">Chat with us on WhatsApp</a></li>
-            </ul>
-        </section>
-    </main>
-    
-    <footer>
-        <p>&copy; 2024 Megamas Motor. All rights reserved.</p>
-    </footer>
 
-    <script src="script.js"></script>
+   
+    <!-- Authentication Section -->
+    <section class="content-section">
+        <h2>Login</h2>
+        <input type="email" id="email" placeholder="Enter Email">
+        <input type="password" id="password" placeholder="Enter Password">
+        <button onclick="login()">Login</button>
+        <button onclick="logout()">Logout</button>
+        <p><a href="#" class="forgot-password" onclick="resetPassword()">Lupa password</a></p>
+
+
+        <p id="loginStatus">Checking login status...</p>
+    </section>
+</main>
+
+<footer>
+    <p>&copy; 2024 biyanmailoa.   All rights reserved.</p>
+</footer>
+<p id="someElementId">This will be updated by script.js</p>
+
+<!-- Firebase SDK -->
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.7.1/firebase-auth-compat.js"></script>
+
+<!-- Firebase Authentication Script -->
+<script src="auth.js"></script>
+
+<!-- Other scripts -->
+<script src="script.js"></script>
+
 </body>
 </html>
