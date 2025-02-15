@@ -221,3 +221,21 @@ button:hover {
       display: block; /* Show menu button on mobile */
   }
 }
+.navbar-menu {
+  display: none;
+  flex-direction: column;
+  list-style: none;
+  padding: 0;
+}
+
+.navbar-menu.active {
+  display: flex;
+}
+
+/* Make sure the menu shows properly on larger screens */
+@media (min-width: 768px) {
+  .navbar-menu {
+    display: flex;
+    flex-direction: row;
+  }
+}
