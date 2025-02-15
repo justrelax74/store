@@ -12,6 +12,7 @@ if (!firebase.apps.length) {
   firebase.initializeApp(firebaseConfig);
 }
 
+
 const db = firebase.firestore();  // Initialize Firestore after Firebase is initialized
 let deleteMode = false; // Initialize delete mode as false by default
 let showCheckedOutOrders = false; // Initialize showCheckedOutOrders as false by default
