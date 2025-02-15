@@ -1,3 +1,8 @@
+function toggleMenu() {
+  const menu = document.getElementById("navbarMenu");
+  menu.classList.toggle("active");
+}
+
 // Helper function to format numbers with commas
 function formatNumberWithCommas(number) {
     return number.toLocaleString();
