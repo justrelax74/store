@@ -16,16 +16,17 @@
 <!-- Navigation Bar -->
 <nav class="navbar">
     <div class="navbar-container">
-        <a href="orderhp.html" class="navbar-logo">
+        <a href="index.html" class="navbar-logo">
             <h1>MEGA MAS MOTOR</h1>
         </a>
         <button class="navbar-toggle" onclick="toggleMenu()">
             &#9776; <!-- Hamburger Icon -->
         </button>
         <ul class="navbar-menu" id="navbarMenu">
-            <li class="navbar-item"><a href="kuitansi.html">Buat Kuitansi</a></li>
+        
             <li class="navbar-item"><a href="inventory.html">Inventory</a></li>
-            <li class="navbar-item"><a href="orders.html">Order</a></li>
+            <li class="navbar-item"><a href="orders1.html">Order</a></li>
+            <li class="navbar-item"><a href="sales.html">Sales</a></li>
 
         </ul>
     </div>
@@ -40,17 +41,16 @@
     <div class="container">
         <div class="invoice-box">
             <h2>
-    Order: # <input type="text" id="invoiceNumber" placeholder="Nomor kuitansi" list="invoiceNumbers" readonly>
-<datalist id="invoiceNumbers"></datalist>
-
+                    Order: # <input type="text" id="invoiceNumber" placeholder="Nomor kuitansi" list="invoiceNumbers" readonly>
+                    <datalist id="invoiceNumbers"></datalist>
             </h2>
             <span id="invoiceDate"></span>
 
             <div class="additional-info">
-                <label for="carType">Tipe Mobil:</label>
+                <label for="carType">Car Type:</label>
                 <input type="text" id="carType" placeholder="Enter Car Type">
                 
-                <label for="policeNumber">Nomor Polisi:</label>
+                <label for="policeNumber">Police Number:</label>
                 <input type="text" id="policeNumber" placeholder="Enter Police Number">
             </div>
         
@@ -74,37 +74,52 @@
             </table>
             <button id="addRowButton" class="add-row-btn">+ Add Item</button>
         </div>
-      
+
+        
     </div>
 
 <!-- Firebase SDK and Initialization -->
 <script src="https://www.gstatic.com/firebasejs/9.9.3/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-auth.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.9.3/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.9.3/firebase-analytics-compat.js"></script>
 
 <!-- Your Firebase Configuration and Initialization -->
 <script>
-  // Your web app's Firebase configuration
-  const firebaseConfig = {
-    apiKey: "AIzaSyANCk_iM4XtSX0VW6iETK-tJdWHGAWMbS0",
-    authDomain: "megamasmotor-4008c.firebaseapp.com",
-    projectId: "megamasmotor-4008c",
-    storageBucket: "megamasmotor-4008c.appspot.com",
-    messagingSenderId: "874673615212",
-    appId: "1:874673615212:web:7f0ecdeee47fed60aa0349",
-    measurementId: "G-LF6NB7ZKLE"
-  };
-
-  // Initialize Firebase
-  const app = firebase.initializeApp(firebaseConfig);
-  const db = firebase.firestore();
-  const analytics = firebase.analytics();
-</script>
-
+    const firebaseConfig = {
+      apiKey: "AIzaSyANCk_iM4XtSX0VW6iETK-tJdWHGAWMbS0",
+      authDomain: "megamasmotor-4008c.firebaseapp.com",
+      databaseURL: "https://megamasmotor-4008c-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "megamasmotor-4008c",
+      storageBucket: "megamasmotor-4008c.appspot.com",  <!-- Fix typo here -->
+      messagingSenderId: "874673615212",
+      appId: "1:874673615212:web:7f0ecdeee47fed60aa0349",
+      measurementId: "G-LF6NB7ZKLE"
+    };
+  
+    // Initialize Firebase (Only Once)
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+    const db = firebase.firestore();
+    const analytics = firebase.analytics();
+  </script>
+  <script>
+      document.addEventListener("DOMContentLoaded", () => {
+        auth.onAuthStateChanged((user) => {
+          if (!user) {
+            console.log("No user logged in. Redirecting to login page...");
+            window.location.href = "index.html"; // Update this if your login page is different
+          } else {
+            console.log("User logged in:", user.email);
+          }
+        });
+      });
+    </script>
+    
 
 
 <!-- Main Script -->
-<script src="script.js"></script>
+<script src="script1.js"></script>
 
 </body>
 </html>
