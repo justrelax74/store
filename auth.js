@@ -1,55 +1,70 @@
 document.addEventListener("DOMContentLoaded", function () {
-  console.log("Initializing Firebase authentication...");
+    console.log("Initializing Firebase authentication...");
 
-  const firebaseConfig = {
-    apiKey: "AIzaSyANCk_iM4XtSX0VW6iETK-tJdWHGAWMbS0",
-    authDomain: "megamasmotor-4008c.firebaseapp.com",
-    databaseURL: "https://megamasmotor-4008c-default-rtdb.asia-southeast1.firebasedatabase.app",
-    projectId: "megamasmotor-4008c",
-    storageBucket: "megamasmotor-4008c.firebasestorage.app",
-    messagingSenderId: "874673615212",
-    appId: "1:874673615212:web:7f0ecdeee47fed60aa0349",
-    measurementId: "G-LF6NB7ZKLE"
-  };
-  firebase.initializeApp(firebaseConfig);
-  const auth = firebase.auth();
+    const firebaseConfig = {
+        apiKey: "AIzaSyANCk_iM4XtSX0VW6iETK-tJdWHGAWMbS0",
+        authDomain: "megamasmotor-4008c.firebaseapp.com",
+        databaseURL: "https://megamasmotor-4008c-default-rtdb.asia-southeast1.firebasedatabase.app",
+        projectId: "megamasmotor-4008c",
+        storageBucket: "megamasmotor-4008c.firebasestorage.app",
+        messagingSenderId: "874673615212",
+        appId: "1:874673615212:web:7f0ecdeee47fed60aa0349",
+        measurementId: "G-LF6NB7ZKLE"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
 
-  function login() {
-      const email = document.getElementById("email").value;
-      const password = document.getElementById("password").value;
+    function login() {
+        const email = document.getElementById("email").value;
+        const password = document.getElementById("password").value;
 
-      auth.signInWithEmailAndPassword(email, password)
-          .then((userCredential) => {
-              document.getElementById("loginStatus").textContent = "Login successful!";
-              console.log("User logged in:", userCredential.user);
-          })
-          .catch((error) => {
-              console.error("Login error:", error.message);
-              document.getElementById("loginStatus").textContent = "Login failed: Invalid email or incorrect password " 
-          });
-  }
+        auth.signInWithEmailAndPassword(email, password)
+            .then((userCredential) => {
+                document.getElementById("loginStatus").textContent = "Login successful!";
+                console.log("User logged in:", userCredential.user);
+                
+                // Set session flag to track login event
+                sessionStorage.setItem("userLoggedIn", "true");
 
-  function logout() {
-      auth.signOut()
-          .then(() => {
-              document.getElementById("loginStatus").textContent = "Logged out.";
-              console.log("User logged out");
-          })
-          .catch((error) => {
-              console.error("Logout error:", error.message);
-          });
-  }
+                // Redirect to orders.html after successful login
+                window.location.href = "orders.html";
+            })
+            .catch((error) => {
+                console.error("Login error:", error.message);
+                document.getElementById("loginStatus").textContent = "Login failed: Invalid email or incorrect password";
+            });
+    }
 
-  auth.onAuthStateChanged((user) => {
-      if (user) {
-          document.getElementById("loginStatus").textContent = `Logged in as ${user.email}`;
-      } else {
-          document.getElementById("loginStatus").textContent = "Not logged in.";
-      }
-  });
+    function logout() {
+        auth.signOut()
+            .then(() => {
+                document.getElementById("loginStatus").textContent = "Logged out.";
+                console.log("User logged out");
+                
+                // Remove login session flag
+                sessionStorage.removeItem("userLoggedIn");
+            })
+            .catch((error) => {
+                console.error("Logout error:", error.message);
+            });
+    }
 
-  window.login = login;
-  window.logout = logout;
+    auth.onAuthStateChanged((user) => {
+        if (user) {
+            document.getElementById("loginStatus").textContent = `Logged in as ${user.email}`;
+            
+            // Redirect only if login came from the login form
+            if (sessionStorage.getItem("userLoggedIn")) {
+                sessionStorage.removeItem("userLoggedIn"); // Prevent repeated redirection
+                window.location.href = "orders.html";
+            }
+        } else {
+            document.getElementById("loginStatus").textContent = "Not logged in.";
+        }
+    });
+
+    window.login = login;
+    window.logout = logout;
 });
 
 function resetPassword() {
