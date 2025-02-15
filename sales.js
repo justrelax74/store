@@ -1,79 +1,179 @@
+// Initialize Firebase
+
+// Chart variables
+let combinedChart, avgRevenueChart, avgCustomerChart;
+
+// Event listener for fetching sales data
 document.getElementById('getSalesDataButton').addEventListener('click', async () => {
-  const startDate = new Date(document.getElementById('startDate').value);
-  const endDate = new Date(document.getElementById('endDate').value);
-  const salesTableBody = document.getElementById('salesTableBody');
-  const totalSalesElement = document.getElementById('totalSales');
-  let totalSales = 0;
+    const startDate = new Date(document.getElementById('startDate').value);
+    const endDate = new Date(document.getElementById('endDate').value);
+    const salesTableBody = document.getElementById('salesTableBody');
+    const totalSalesElement = document.getElementById('totalSales');
+    const totalCustomersElement = document.getElementById('totalCustomers');
+    const totalProfitElement = document.getElementById('totalProfit');
+    const roiElement = document.getElementById('roi');
 
-  // Clear the table before fetching new data
-  salesTableBody.innerHTML = '';
+    let totalSales = 0;
+    let totalCustomers = 0;
+    let totalProfit = 0;
+    let totalBuyingCost = 0;
+    let serviceProfit = 0;  // New variable to track service profit
+    
 
-  // Check if dates are valid
-  if (isNaN(startDate) || isNaN(endDate)) {
-      alert("Please select valid start and end dates.");
-      return;
-  }
+    const dailySales = [];
+    const dailyCustomers = [];
+    const labels = [];
 
-  if (startDate > endDate) {
-      alert("Start date cannot be after end date.");
-      return;
-  }
+    salesTableBody.innerHTML = '';
+    resetCharts();
 
-  // Iterate through each day within the selected date range
-  let currentDate = new Date(startDate);
-  while (currentDate <= endDate) {
-      const dateString = currentDate.toISOString().split('T')[0]; // Format date as YYYY-MM-DD
+    if (isNaN(startDate) || isNaN(endDate) || startDate > endDate) {
+        alert("Please select valid start and end dates.");
+        return;
+    }
 
-      try {
-          const snapshot = await db.collection(dateString).get();
-          console.log(`Fetching sales data for: ${dateString}`); // Debug log
+    let currentDate = new Date(startDate);
+    while (currentDate <= endDate) {
+        const dateString = currentDate.toISOString().split('T')[0];
 
-          if (!snapshot.empty) {
-              snapshot.forEach(doc => {
-                  const data = doc.data();
-                  const invoiceNumber = doc.id;
-                  const items = data.items || []; // Get items from the order
-                  let invoiceSummary = []; // To store the summarized string for products
-                  let grandTotal = 0;
+        try {
+            const snapshot = await db.collection(dateString).get();
+            let dailyTotal = 0;
+            let dailyCustomerCount = 0;
+            let dailyProfit = 0;
+            let dailyBuyingCost = 0;
 
-                  // Summarize the items for the invoice
-                  items.forEach(item => {
-                      const productName = item.productName || "Unknown Product"; // Ensure correct field name
-                      const qty = item.qty || 0;  // Ensure correct field name for quantity
-                      const price = item.price || 0; // Ensure correct field name for price per unit
-                      const totalPrice = price * qty; // Calculate the total price for each item
-                      grandTotal += totalPrice;
+            if (!snapshot.empty) {
+                snapshot.forEach(doc => {
+                    const data = doc.data();
+                    const invoiceNumber = doc.id;
+                    const items = data.items || [];
+                    const carType = data.carType || "Unknown";
+                    const policeNumber = data.policeNumber || "N/A";
 
-                      // Add summarized product to invoiceSummary
-                      invoiceSummary.push(`${productName} (${qty}x${price.toLocaleString()})`);
-                  });
+                    dailyCustomerCount++;
 
-                  // Join all summarized products in a single string
-                  const invoiceSummaryText = invoiceSummary.join(", ");
+                    items.forEach((item, index) => {
+                        const productName = item.productName || "Unknown Product";
+                        const qty = item.qty || 0;
+                        const price = item.price || 0;
+                        const totalPrice = price * qty;
+                        const buyingPrice = item.buyingPrice || 0;
+                        const category = item.category || "UNKNOWN";
 
-                  // Add row to the table for the invoice
-                  const row = document.createElement('tr');
-                  row.innerHTML = `
-                      <td>${invoiceNumber}</td>
-                      <td>${invoiceSummaryText}</td>
-                      <td>Rp ${grandTotal.toLocaleString()}</td>
-                  `;
-                  salesTableBody.appendChild(row);
+                        let profit = totalPrice - (buyingPrice * qty);
+                        let displayProfit = profit.toLocaleString();
 
-                  // Update total sales
-                  totalSales += grandTotal;
-              });
-          } else {
-              console.log(`No sales data found for ${dateString}`);
-          }
-      } catch (error) {
-          console.error(`Error fetching data for ${dateString}:`, error);
-      }
+                        if (buyingPrice === 0 && category !== "SERVICE") {
+                            displayProfit = "N/A"; // Exclude from profit calculation
+                        } else {
+                            dailyProfit += profit;
+                            if (buyingPrice > 0) {
+                                dailyBuyingCost += buyingPrice * qty; // Only sum if Buying Price > 0
+                            }
+                        }
+                        
+                        // Track service profit separately
+                        if (category === "SERVICE") {
+                            serviceProfit += profit;
+                        }
+                        
+                        dailyTotal += totalPrice;
 
-      // Move to the next day
-      currentDate.setDate(currentDate.getDate() + 1);
-  }
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${index === 0 ? invoiceNumber : ''}</td>
+                            <td>${productName}</td>
+                            <td>${qty}</td>
+                            <td>${price.toLocaleString()}</td>
+                            <td>Rp ${totalPrice.toLocaleString()}</td>
+                            <td>${category}</td>
+                            <td>${displayProfit}</td>
+                            <td>${carType}</td>
+                            <td>${policeNumber}</td>
+                        `;
+                        salesTableBody.appendChild(row);
+                    });
+                });
 
-  // Update total sales display
-  totalSalesElement.textContent = `Rp ${totalSales.toLocaleString()}`;
+                totalSales += dailyTotal;
+                totalProfit += dailyProfit;
+                totalBuyingCost += dailyBuyingCost;
+                totalCustomers += dailyCustomerCount;
+            }
+
+            labels.push(dateString);
+            dailySales.push(dailyTotal);
+            dailyCustomers.push(dailyCustomerCount);
+        } catch (error) {
+            console.error(`Error fetching data for ${dateString}:`, error);
+        }
+
+        currentDate.setDate(currentDate.getDate() + 1);
+    }
+
+    totalSalesElement.textContent = `Rp ${totalSales.toLocaleString()}`;
+    totalCustomersElement.textContent = totalCustomers;
+    totalProfitElement.textContent = `Rp ${totalProfit.toLocaleString()}`;
+
+    // Calculate and display ROI (only when Buying Price > 0)
+// Calculate and display ROI (excluding service profit)
+let adjustedProfit = totalProfit - serviceProfit;
+let roi = totalBuyingCost > 0 ? (adjustedProfit / totalBuyingCost) : 0;
+roiElement.textContent = `${(roi * 100).toFixed(2)}%`;
+
+
+    // Display total service profit
+    document.getElementById('serviceProfit').textContent = `Rp ${serviceProfit.toLocaleString()}`;
+
 });
+
+// Function to reset charts
+function resetCharts() {
+    [combinedChart, avgRevenueChart, avgCustomerChart].forEach(chart => chart?.destroy());
+}
+
+// Function to generate combined chart (Daily Revenue & Customers)
+function generateCombinedChart(labels, salesData, customerData) {
+    const ctx = document.getElementById('combinedChart').getContext('2d');
+
+    combinedChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [
+                {
+                    label: 'Daily Sales (Rp)',
+                    data: salesData,
+                    borderColor: 'blue',
+                    backgroundColor: 'rgba(0, 0, 255, 0.1)',
+                    borderWidth: 2,
+                    yAxisID: 'y',
+                },
+                {
+                    label: 'Daily Customers',
+                    data: customerData,
+                    borderColor: 'green',
+                    backgroundColor: 'rgba(0, 255, 0, 0.1)',
+                    borderWidth: 2,
+                    yAxisID: 'y1',
+                }
+            ]
+        },
+        options: {
+            responsive: true,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: { display: true, text: 'Sales (Rp)' },
+                    ticks: { callback: value => `Rp ${value.toLocaleString()}` }
+                },
+                y1: {
+                    beginAtZero: true,
+                    position: 'right',
+                    title: { display: true, text: 'Customers' }
+                }
+            }
+        }
+    });
+}
