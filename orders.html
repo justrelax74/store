@@ -51,9 +51,36 @@
   </table>
 </div>
 
-  <!-- Load Firebase SDK -->
+
+  <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-auth.js"></script>
   <script src="https://www.gstatic.com/firebasejs/8.6.8/firebase-firestore.js"></script>
+
+  <!-- Firebase Authentication -->
+  <script>
+  const firebaseConfig = {
+   apiKey: "AIzaSyANCk_iM4XtSX0VW6iETK-tJdWHGAWMbS0",
+    authDomain: "megamasmotor-4008c.firebaseapp.com",
+   databaseURL: "https://megamasmotor-4008c-default-rtdb.asia-southeast1.firebasedatabase.app",
+   projectId: "megamasmotor-4008c",
+   storageBucket: "megamasmotor-4008c.firebasestorage.app",
+   messagingSenderId: "874673615212",
+   appId: "1:874673615212:web:7f0ecdeee47fed60aa0349",
+   measurementId: "G-LF6NB7ZKLE"
+};
+
+    // Initialize Firebase
+    firebase.initializeApp(firebaseConfig);
+    const auth = firebase.auth();
+
+    // Protect this page
+    auth.onAuthStateChanged((user) => {
+      if (!user) {
+        window.location.href = "index.html"; // Redirect if not logged in
+      }
+    });
+  </script>
   <script src="orders.js"></script>
 </body>
 </>
