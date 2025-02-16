@@ -11,18 +11,12 @@ document.addEventListener("DOMContentLoaded", function () {
         appId: "1:874673615212:web:7f0ecdeee47fed60aa0349",
         measurementId: "G-LF6NB7ZKLE"
     };
-    
     firebase.initializeApp(firebaseConfig);
     const auth = firebase.auth();
-    const db = firebase.database(); // 🔹 Connect to Firebase Database
 
     // 🔹 Work hours (08:00 - 19:00 WITA for testing)
     const WORK_HOURS_START = 8;
     const WORK_HOURS_END = 19;
-
-    function getCurrentTimestamp() {
-        return new Date().toISOString(); // 🔹 Save timestamps in ISO format
-    }
 
     function getCurrentHourWITA() {
         const now = new Date();
@@ -34,18 +28,16 @@ document.addEventListener("DOMContentLoaded", function () {
         return currentHour >= WORK_HOURS_START && currentHour < WORK_HOURS_END;
     }
 
-    function logEvent(userId, email, action) {
-        const logRef = db.ref("logs").push(); // 🔹 Create a new log entry
-        logRef.set({
-            userId: userId,
-            email: email,
-            action: action,
-            timestamp: getCurrentTimestamp()
-        }).then(() => {
-            console.log(`Logged ${action} for ${email}`);
-        }).catch(error => {
-            console.error("Failed to log event:", error.message);
-        });
+    function clearCacheAndStorage() {
+        console.log("Clearing localStorage and cache...");
+        localStorage.clear();
+        sessionStorage.clear();
+        
+        if ('caches' in window) {
+            caches.keys().then((names) => {
+                names.forEach((name) => caches.delete(name));
+            });
+        }
     }
 
     function login() {
@@ -59,17 +51,12 @@ document.addEventListener("DOMContentLoaded", function () {
 
         auth.signInWithEmailAndPassword(email, password)
             .then((userCredential) => {
-                const user = userCredential.user;
+                clearCacheAndStorage(); // Clear cache/storage on successful login
                 document.getElementById("loginStatus").textContent = "Login successful!";
-                console.log("User logged in:", user.email);
+                console.log("User logged in:", userCredential.user);
 
-                // 🔹 Store login timestamp in logs
-                logEvent(user.uid, user.email, "login");
-
-                // Store login session
                 sessionStorage.setItem("userLoggedIn", "true");
 
-                // Redirect to orders.html
                 window.location.href = "orders.html";
             })
             .catch((error) => {
@@ -79,51 +66,39 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function logout() {
-        if (auth.currentUser) {
-            const user = auth.currentUser;
-
-            // 🔹 Log logout event before signing out
-            logEvent(user.uid, user.email, "logout");
-
-            auth.signOut()
-                .then(() => {
-                    document.getElementById("loginStatus").textContent = "Logged out.";
-                    console.log("User logged out");
-
-                    // Remove session flag
-                    sessionStorage.removeItem("userLoggedIn");
-
-                    // Redirect to login page
-                    window.location.href = "index.html";
-                })
-                .catch((error) => {
-                    console.error("Logout error:", error.message);
-                });
-        }
+        auth.signOut()
+            .then(() => {
+                clearCacheAndStorage(); // Clear cache/storage on logout
+                document.getElementById("loginStatus").textContent = "Logged out.";
+                console.log("User logged out");
+            })
+            .catch((error) => {
+                console.error("Logout error:", error.message);
+            });
     }
 
     function enforceWorkHours() {
         const currentHour = getCurrentHourWITA();
-
+        
         auth.currentUser?.getIdToken(true).then(() => {
             if (!isLoginAllowed() && auth.currentUser) {
                 alert("Work hours have ended. You will be logged out.");
-
-                logout();
+                auth.signOut().then(() => {
+                    console.log("User auto-logged out due to work hours restriction.");
+                    window.location.href = "index.html";
+                });
             }
         }).catch(error => {
             console.error("Auto-logout check failed:", error.message);
         });
     }
 
-    // 🔹 Run enforceWorkHours every minute to ensure compliance
     setInterval(enforceWorkHours, 60000);
 
     auth.onAuthStateChanged((user) => {
         if (user) {
             document.getElementById("loginStatus").textContent = `Logged in as ${user.email}`;
-
-            // Redirect only if login came from login form
+            
             if (sessionStorage.getItem("userLoggedIn")) {
                 sessionStorage.removeItem("userLoggedIn");
                 window.location.href = "orders.html";
