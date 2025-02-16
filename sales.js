@@ -1,8 +1,4 @@
 // Initialize Firebase
-function toggleMenu() {
-  const menu = document.getElementById("navbarMenu");
-  menu.classList.toggle("active");
-}
 
 // Chart variables
 let combinedChart, avgRevenueChart, avgCustomerChart;
