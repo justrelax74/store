@@ -1,3 +1,25 @@
+document.addEventListener("DOMContentLoaded", function () {
+    // Your existing script.js code goes here
+});
+
+const element = document.getElementById("someElementId");
+if (element) {
+    element.textContent = "Hello!";
+}
+document.addEventListener("DOMContentLoaded", function () {
+  const auth = firebase.auth();
+
+  auth.onAuthStateChanged(user => {
+      if (user) {
+          user.getIdTokenResult().then(idTokenResult => {
+              if (idTokenResult.claims.admin) {
+                  document.getElementById("adminPanel").style.display = "block";
+              }
+          });
+      }
+  });
+});
+
 let grandTotal = 0;
 let items = [];
 let inventoryCache = [];
@@ -72,6 +94,11 @@ async function fetchAndCacheInventory() {
     return inventoryCache;
 }
 
+function toggleMenu() {
+    const menu = document.getElementById("navbarMenu");
+    menu.classList.toggle("active");
+  }
+  
 // Load inventory from localStorage
 function loadInventoryFromLocalStorage() {
     const cachedData = localStorage.getItem('inventoryCache');
@@ -100,6 +127,7 @@ function loadInvoiceDetails() {
              // Load car type and police number
              document.getElementById('carType').value = (data.carType || '').toUpperCase(); // Ensure uppercase
              document.getElementById('policeNumber').value = (data.policeNumber || '').toUpperCase(); // Ensure uppercase
+             
  
              renderEditableInvoiceItems();
              document.getElementById('grandTotal').textContent = formatNumber(grandTotal);
@@ -108,7 +136,9 @@ function loadInvoiceDetails() {
              alert('Invoice not found.');
          }
      }).catch(error => console.error("Error fetching invoice details:", error));
- }
+}
+
+
 
 // Render invoice items as editable rows
 function renderEditableInvoiceItems() {
@@ -240,6 +270,9 @@ function setupAutocomplete(input, suggestionsBox) {
         suggestions.forEach(item => {
             const price = item.data['Selling Price'] || 0; // Access the price from data
             const stock = item.data['Stock'] || 'N/A'; // Access the stock from data
+            const buyingPrice = Number(item.data['Buying Price']) || 0;  // Ensure it's a number
+            const category = item.data['Category'] || 'Uncategorized'; // Fetch Category
+
             const option = document.createElement('div');
             option.innerHTML = ` 
                 <strong>${item.id}</strong> - 
@@ -250,11 +283,17 @@ function setupAutocomplete(input, suggestionsBox) {
             option.addEventListener('click', () => {
                 const row = input.closest('tr');
                 input.value = item.id;
-                row.querySelector('.price-input').value = price; // Pre-fill price
+                row.querySelector('.price-input').value = price; // Pre-fill Selling Price
+                
+                // Store Buying Price & Category in hidden attributes
+                row.dataset.buyingPrice = buyingPrice;
+                row.dataset.category = category;
+            
                 suggestionsBox.innerHTML = ''; // Clear suggestions after selection
                 updateSubtotal({ target: row.querySelector('.price-input') });
                 autosaveInvoice();
             });
+            
         
             suggestionsBox.appendChild(option);
         });
@@ -291,7 +330,10 @@ function autosaveInvoice() {
         const price = parseFloat(row.querySelector('.price-input').value) || 0;
         const totalPrice = parseFloat(row.querySelector('.subtotal-input').value) || 0;
 
-        updatedItems.push({ productName, qty, price, totalPrice });
+        const buyingPrice = Number(row.dataset.buyingPrice) || 0;
+        const category = row.dataset.category || 'Uncategorized';
+        
+        updatedItems.push({ productName, qty, price, buyingPrice, category, totalPrice });
     });
 
     const grandTotal = updatedItems.reduce((sum, item) => sum + item.totalPrice, 0);
@@ -394,6 +436,8 @@ document.getElementById('checkoutButton').addEventListener('click', async () => 
                 productName: item.productName,
                 qty: item.qty,
                 price: item.price || 0,
+                buyingPrice: Number(item.buyingPrice) || 0, // Ensure Buying Price is saved as a number
+                category: item.category || 'Uncategorized', // Ensure Category is saved
                 totalPrice: item.qty * (item.price || 0),
             });
         }
