@@ -16,9 +16,8 @@ document.getElementById('getSalesDataButton').addEventListener('click', async ()
     let totalSales = 0;
     let totalCustomers = 0;
     let totalProfit = 0;
-    let totalBuyingCost = 0;
-    let serviceProfit = 0;  // New variable to track service profit
-    
+    let totalBuyingCost = 0;  
+    let serviceProfit = 0;
 
     const dailySales = [];
     const dailyCustomers = [];
@@ -69,11 +68,10 @@ document.getElementById('getSalesDataButton').addEventListener('click', async ()
                         } else {
                             dailyProfit += profit;
                             if (buyingPrice > 0) {
-                                dailyBuyingCost += buyingPrice * qty; // Only sum if Buying Price > 0
+                                dailyBuyingCost += buyingPrice * qty;
                             }
                         }
                         
-                        // Track service profit separately
                         if (category === "SERVICE") {
                             serviceProfit += profit;
                         }
@@ -116,16 +114,27 @@ document.getElementById('getSalesDataButton').addEventListener('click', async ()
     totalCustomersElement.textContent = totalCustomers;
     totalProfitElement.textContent = `Rp ${totalProfit.toLocaleString()}`;
 
-    // Calculate and display ROI (only when Buying Price > 0)
-// Calculate and display ROI (excluding service profit)
-let adjustedProfit = totalProfit - serviceProfit;
-let roi = totalBuyingCost > 0 ? (adjustedProfit / totalBuyingCost) : 0;
-roiElement.textContent = `${(roi * 100).toFixed(2)}%`;
+    // Calculate ROI (excluding service profit)
+    let adjustedProfit = totalProfit - serviceProfit;
+    let roi = totalBuyingCost > 0 ? (adjustedProfit / totalBuyingCost) : 0;
+    roiElement.textContent = `${(roi * 100).toFixed(2)}%`;
 
+    // Calculate Revenue from Products
+    let revenueFromProducts = totalSales - serviceProfit;
 
-    // Display total service profit
+    // Estimate Product Profit using ROI
+    let estimatedProductProfit = (roi * revenueFromProducts)/(1+roi);
+
+    // Calculate Estimated Total Profit
+    let estimatedTotalProfit = estimatedProductProfit + serviceProfit;
+
+    // Display results
     document.getElementById('serviceProfit').textContent = `Rp ${serviceProfit.toLocaleString()}`;
+    document.getElementById('estimatedProductProfit').textContent = `Rp ${estimatedProductProfit.toLocaleString()}`;
+    document.getElementById('estimatedTotalProfit').textContent = `Rp ${estimatedTotalProfit.toLocaleString()}`;
 
+    // Update the charts after fetching data
+    generateCombinedChart(labels, dailySales, dailyCustomers);
 });
 
 // Function to reset charts
