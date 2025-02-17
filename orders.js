@@ -136,8 +136,8 @@ async function loadOrders() {
           </select>
         </td>
         <td>
-          <button class="admin-button" onclick="redirectToCart('${invoiceNumber}')">Edit</button>
-          <button onclick="checkoutInvoice('${invoiceNumber}')">Checkout</button>
+          <button  onclick="redirectToCart('${invoiceNumber}')">Edit</button>
+          <button class="admin-button" onclick="checkoutInvoice('${invoiceNumber}')">Checkout</button>
           <button class="delete-btn admin-button" onclick="deleteInvoice('${invoiceNumber}')" style="display: ${deleteMode ? 'inline-block' : 'none'};">Delete</button>
         </td>
       `;
