@@ -123,16 +123,26 @@ function loadInvoiceDetails() {
             const data = doc.data();
             items = data.items || [];
             grandTotal = data.grandTotal || 0;
-
-             // Load car type and police number
-             document.getElementById('carType').value = (data.carType || '').toUpperCase(); // Ensure uppercase
-             document.getElementById('policeNumber').value = (data.policeNumber || '').toUpperCase(); // Ensure uppercase
-             
- 
-             renderEditableInvoiceItems();
-             document.getElementById('grandTotal').textContent = formatNumber(grandTotal);
-             localStorage.setItem('currentInvoiceNumber', invoiceNumber); // Ensure it's saved to local storage
-         } else {
+        
+            // Load car type and police number
+            document.getElementById('carType').value = (data.carType || '').toUpperCase();
+            document.getElementById('policeNumber').value = (data.policeNumber || '').toUpperCase();
+        
+            // Ensure category and buyingPrice fields are preserved
+            items = items.map(item => ({
+                productName: item.productName,
+                qty: item.qty,
+                price: item.price,
+                totalPrice: item.totalPrice,
+                buyingPrice: item.buyingPrice ?? 0,  // Ensure existing value or fallback to 0
+                category: item.category ?? 'Uncategorized', // Ensure existing value or fallback to 'Uncategorized'
+            }));
+        
+            renderEditableInvoiceItems();
+            document.getElementById('grandTotal').textContent = formatNumber(grandTotal);
+            localStorage.setItem('currentInvoiceNumber', invoiceNumber);
+        }
+         else {
              alert('Invoice not found.');
          }
      }).catch(error => console.error("Error fetching invoice details:", error));
@@ -317,38 +327,44 @@ document.getElementById('policeNumber').addEventListener('input', () => autosave
 
 // Autosave the invoice details
 function autosaveInvoice() {
-    const invoiceNumber = document.getElementById('invoiceNumber').value.trim().toUpperCase(); // Ensure uppercase
+    const invoiceNumber = document.getElementById('invoiceNumber').value.trim().toUpperCase();
     if (!invoiceNumber) return;
 
-    const carType = document.getElementById('carType').value.trim().toUpperCase(); // Ensure uppercase
-    const policeNumber = document.getElementById('policeNumber').value.trim().toUpperCase(); // Ensure uppercase
+    const carType = document.getElementById('carType').value.trim().toUpperCase();
+    const policeNumber = document.getElementById('policeNumber').value.trim().toUpperCase();
 
     const updatedItems = [];
     document.querySelectorAll('#invoiceItems tr').forEach(row => {
-        const productName = row.querySelector('.product-input').value.toUpperCase(); // Ensure uppercase
+        const productName = row.querySelector('.product-input').value.toUpperCase();
         const qty = parseFloat(row.querySelector('.qty-input').value) || 0;
         const price = parseFloat(row.querySelector('.price-input').value) || 0;
         const totalPrice = parseFloat(row.querySelector('.subtotal-input').value) || 0;
 
-        const buyingPrice = Number(row.dataset.buyingPrice) || 0;
-        const category = row.dataset.category || 'Uncategorized';
-        
+        // Preserve existing category and buyingPrice
+        let buyingPrice = Number(row.dataset.buyingPrice) || 0;
+        let category = row.dataset.category || 'Uncategorized';
+
+        // If the row was originally loaded from Firestore, preserve its values
+        const existingItem = items.find(i => i.productName === productName);
+        if (existingItem) {
+            buyingPrice = existingItem.buyingPrice ?? buyingPrice;
+            category = existingItem.category ?? category;
+        }
+
         updatedItems.push({ productName, qty, price, buyingPrice, category, totalPrice });
     });
 
     const grandTotal = updatedItems.reduce((sum, item) => sum + item.totalPrice, 0);
 
-    // Update only relevant fields, excluding `status`
     db.collection('invoices').doc(invoiceNumber).set({
         items: updatedItems,
         grandTotal,
-        carType, // Save uppercase car type
-        policeNumber, // Save uppercase police number
-    }, { merge: true }) // Use merge to avoid overwriting the entire document
+        carType,
+        policeNumber,
+    }, { merge: true })
         .then(() => console.log('Invoice autosaved successfully.'))
         .catch(error => console.error('Error autosaving invoice:', error));
 
-    // Save current invoice number in local storage
     localStorage.setItem('currentInvoiceNumber', invoiceNumber);
 }
 
