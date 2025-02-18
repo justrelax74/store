@@ -144,7 +144,7 @@ async function loadOrders() {
       ordersTableBody.appendChild(row);
     });
 
-    // Check admin status and hide admin elements if user is not an admins
+    // Check admin status and hide admin elements if user is not an admin
     auth.onAuthStateChanged(user => {
       if (user) {
         user.getIdTokenResult().then(idTokenResult => {
