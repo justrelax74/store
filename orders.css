@@ -218,7 +218,6 @@ tbody tr:nth-child(even) {
     display: block;
   }
 }
-
 .navbar-menu {
   display: none;
   flex-direction: column;
@@ -237,4 +236,13 @@ tbody tr:nth-child(even) {
     flex-direction: row;
   }
 }
+.button-container {
+  display: flex;
+  align-items: center; /* Align items vertically */
+  gap: 10px; /* Add space between items */
+}
 
+.adminPanel {
+  display: flex;
+  gap: 10px; /* Space between admin buttons */
+}
