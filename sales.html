@@ -21,20 +21,24 @@
         </ul>
     </div>
 </nav>
-
+<br>
+<h1><br></h1>
 <h1>Sales & Customer Analytics</h1>
+
+
+
+
+
 
 <!-- Date Selection -->
 <div class="content">
-    <div>
-        <label for="startDate">Start Date:</label>
-        <input type="date" id="startDate">
-    </div>
-    <div>
-        <label for="endDate">End Date:</label>
-        <input type="date" id="endDate">
-    </div>
-    <button id="getSalesDataButton">Get Sales Data</button>
+  <label for="startDate">Start Date:</label>
+  <input type="date" id="startDate">
+  <label for="endDate">End Date:</label>
+  <input type="date" id="endDate">
+  <button id="getSalesDataButton">Get Sales Data</button>
+  <br>
+
     <h2>Total Sales: <span id="totalSales">Rp 0</span></h2>
     <h2>Total Customers: <span id="totalCustomers">0</span></h2>
     <h2>Total Profit real: <span id="totalProfit">Rp 0</span></h2>
@@ -62,6 +66,18 @@
         </thead>
         <tbody id="salesTableBody"></tbody>
     </table>
+</div>
+<div>
+<h2>Sales by Category</h2>
+<table id="categorySalesTable">
+    <thead>
+        <tr>
+            <th>Category</th>
+            <th>Total Sales (Rp)</th>
+        </tr>
+    </thead>
+    <tbody id="categorySalesTableBody"></tbody>
+</table>
 </div>
 
 <!-- Charts -->
