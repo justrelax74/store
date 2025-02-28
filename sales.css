@@ -1,171 +1,189 @@
-/* General Page Layout */
+@font-face {
+  font-family: "Avant";
+  src: url("Fonts/Fonts/Avant/Avant1.ttf");
+}
+
+/* General body styling for a cleaner look */
 body {
-    font-family: Arial, sans-serif;
-    background-color: #f4f7fc;
-    margin: 0;
-    padding: 0;
+  font-family: "Avant";
+  background: #000000;
+  margin: 0;
+  padding: 0;
+}
+h1{
+  color: #fff;
+  font-size: 48px;
+  letter-spacing: 2px;
+  margin-top: 80px;
+  text-align: center;
+
+}
+h2{
+  color: #000000;
+  font-size: 20px;
+  letter-spacing: 2px;
+  margin-top: 10px;
+  text-align: center;
 }
 
-h1, h2 {
-    text-align: center;
-    color: #333;
+label{
+  color:#000000;
 }
-
 /* Navigation Bar */
 .navbar {
-    background-color: #007BFF;
-    padding: 1rem 0;
+  background-color: #333;
+  padding: 10px 0;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  z-index: 1000;
 }
 
 .navbar-container {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 15px;
 }
 
 .navbar-logo h1 {
-    color: white;
-    margin: 0;
+  color: white;
+  margin: 0;
+  font-size: 20px;
+}
+
+.navbar-logo {
+  text-decoration: none;
 }
 
 .navbar-toggle {
-    background: none;
-    border: none;
-    font-size: 1.5rem;
-    color: white;
-    display: none;
-    cursor: pointer;
+  display: none;
+  background: none;
+  border: none;
+  color: white;
+  font-size: 24px;
+  cursor: pointer;
 }
 
 .navbar-menu {
-    display: flex;
-    list-style-type: none;
-    margin: 0;
-    padding: 0;
+  display: flex;
+  justify-content: center;
+  list-style-type: none;
+  margin: 0;
+  padding: 0;
 }
 
 .navbar-item {
-    margin-left: 2rem;
+  margin: 0 15px;
 }
 
 .navbar-item a {
-    color: white;
-    text-decoration: none;
-    font-size: 1.1rem;
+  color: white;
+  text-decoration: none;
+  font-size: 16px;
+  font-weight: bold;
+  padding: 8px 16px;
+  display: block;
 }
 
 .navbar-item a:hover {
-    text-decoration: underline;
+  background-color: #575757;
+  border-radius: 4px;
 }
 
 /* Responsive Navbar */
 @media (max-width: 768px) {
-    .navbar-menu {
-        display: none;
-        flex-direction: column;
-        position: absolute;
-        top: 60px;
-        left: 0;
-        width: 100%;
-        background-color: #007BFF;
-        padding: 1rem;
-    }
-    .navbar-toggle {
-        display: block;
-    }
-    .navbar-menu.active {
-        display: flex;
-    }
+  .navbar-menu {
+      display: none;
+      flex-direction: column;
+      position: absolute;
+      top: 60px;
+      left: 0;
+      width: 100%;
+      background-color: #007BFF;
+      padding: 1rem;
+  }
+  .navbar-toggle {
+      display: block;
+  }
+  .navbar-menu.active {
+      display: flex;
+  }
 }
+
+
 
 /* Content Area */
 .content {
-    text-align: center;
-    padding: 2rem;
+  text-align: center;
+  background-color: #ffffff;
+  border-radius: 20px;
+  margin:250px;
+  padding: 10px;
 }
 
 /* Date Picker and Button Styling */
 input[type="date"], button {
-    padding: 0.5rem;
-    font-size: 1rem;
-    margin: 10px;
-    border-radius: 4px;
-    border: 1px solid #ddd;
+  padding: 0.5rem;
+  font-size: 1rem;
+  margin: 10px;
+  border-radius: 4px;
+  border: 1px solid #ddd;
 }
 
 button {
-    background-color: #007BFF;
-    color: white;
-    cursor: pointer;
+  background-color: #ff0000;
+  color: white;
+  cursor: pointer;
 }
 
 button:hover {
-    background-color: #0056b3;
+  background-color: #0056b3;
 }
 
 /* Table Styling */
 table {
-    width: 80%;
-    margin: 20px auto;
-    border-collapse: collapse;
-    background-color: white;
-    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+  width: 80%;
+  margin: 20px auto;
+  border-collapse: collapse;
+  background-color: white;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
 th, td {
-    padding: 1rem;
-    text-align: left;
-    border-bottom: 1px solid #ddd;
+  padding: 1rem;
+  text-align: left;
+  border-bottom: 1px solid #ddd;
 }
 
 th {
-    background-color: #007BFF;
-    color: white;
-    font-size: 1.1rem;
+  background-color: #ff0000;
+  color: white;
+  font-size: 1.1rem;
 }
 
 td {
-    font-size: 1rem;
-    color: #333;
+  font-size: 1rem;
+  color: #333;
 }
 
 /* Total Sales Section */
 #totalSales {
-    font-size: 1.5rem;
-    font-weight: bold;
-    color: #333;
-    margin-top: 20px;
-    display: block;
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #333;
+  margin-top: 20px;
+  display: block;
 }
 
 /* Responsive Table */
 @media (max-width: 768px) {
-    table {
-        width: 100%;
-    }
-    th, td {
-        font-size: 0.9rem;
-        padding: 0.8rem;
-    }
-}
-.navbar-menu {
-  display: none;
-  flex-direction: column;
-  list-style: none;
-  padding: 0;
-}
-
-.navbar-menu.active {
-  display: flex;
-}
-
-/* Make sure the menu shows properly on larger screens */
-@media (min-width: 768px) {
-  .navbar-menu {
-    display: flex;
-    flex-direction: row;
+  table {
+      width: 100%;
+  }
+  th, td {
+      font-size: 0.9rem;
+      padding: 0.8rem;
   }
 }
