@@ -12,18 +12,20 @@ document.getElementById('getSalesDataButton').addEventListener('click', async ()
     const totalCustomersElement = document.getElementById('totalCustomers');
     const totalProfitElement = document.getElementById('totalProfit');
     const roiElement = document.getElementById('roi');
-
+    const categorySalesTableBody = document.getElementById('categorySalesTableBody');
+    
     let totalSales = 0;
     let totalCustomers = 0;
     let totalProfit = 0;
     let totalBuyingCost = 0;  
     let serviceProfit = 0;
-
+    let categorySales = {}; // Object to store sales by category
     const dailySales = [];
     const dailyCustomers = [];
     const labels = [];
 
     salesTableBody.innerHTML = '';
+    categorySalesTableBody.innerHTML = '';
     resetCharts();
 
     if (isNaN(startDate) || isNaN(endDate) || startDate > endDate) {
@@ -71,12 +73,17 @@ document.getElementById('getSalesDataButton').addEventListener('click', async ()
                                 dailyBuyingCost += buyingPrice * qty;
                             }
                         }
-                        
+
                         if (category === "SERVICE") {
                             serviceProfit += profit;
                         }
-                        
+
                         dailyTotal += totalPrice;
+
+                        if (!categorySales[category]) {
+                            categorySales[category] = 0;
+                        }
+                        categorySales[category] += totalPrice;
 
                         const row = document.createElement('tr');
                         row.innerHTML = `
@@ -110,39 +117,38 @@ document.getElementById('getSalesDataButton').addEventListener('click', async ()
         currentDate.setDate(currentDate.getDate() + 1);
     }
 
+    Object.keys(categorySales).forEach(category => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${category}</td>
+            <td>Rp ${categorySales[category].toLocaleString()}</td>
+        `;
+        categorySalesTableBody.appendChild(row);
+    });
+
     totalSalesElement.textContent = `Rp ${totalSales.toLocaleString()}`;
     totalCustomersElement.textContent = totalCustomers;
     totalProfitElement.textContent = `Rp ${totalProfit.toLocaleString()}`;
 
-    // Calculate ROI (excluding service profit)
     let adjustedProfit = totalProfit - serviceProfit;
     let roi = totalBuyingCost > 0 ? (adjustedProfit / totalBuyingCost) : 0;
     roiElement.textContent = `${(roi * 100).toFixed(2)}%`;
 
-    // Calculate Revenue from Products
     let revenueFromProducts = totalSales - serviceProfit;
-
-    // Estimate Product Profit using ROI
-    let estimatedProductProfit = (roi * revenueFromProducts)/(1+roi);
-
-    // Calculate Estimated Total Profit
+    let estimatedProductProfit = (roi * revenueFromProducts) / (1 + roi);
     let estimatedTotalProfit = estimatedProductProfit + serviceProfit;
 
-    // Display results
     document.getElementById('serviceProfit').textContent = `Rp ${serviceProfit.toLocaleString()}`;
     document.getElementById('estimatedProductProfit').textContent = `Rp ${estimatedProductProfit.toLocaleString()}`;
     document.getElementById('estimatedTotalProfit').textContent = `Rp ${estimatedTotalProfit.toLocaleString()}`;
 
-    // Update the charts after fetching data
     generateCombinedChart(labels, dailySales, dailyCustomers);
 });
 
-// Function to reset charts
 function resetCharts() {
     [combinedChart, avgRevenueChart, avgCustomerChart].forEach(chart => chart?.destroy());
 }
 
-// Function to generate combined chart (Daily Revenue & Customers)
 function generateCombinedChart(labels, salesData, customerData) {
     const ctx = document.getElementById('combinedChart').getContext('2d');
 
@@ -186,4 +192,3 @@ function generateCombinedChart(labels, salesData, customerData) {
         }
     });
 }
- 
