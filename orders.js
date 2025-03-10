@@ -77,7 +77,8 @@ async function startNewOrder() {
     await db.collection('invoices').doc(newInvoiceNumber).set({
       grandTotal: 0,
       status: 'OPEN',
-      items: []
+      items: [],
+      createdTimestamp: firebase.firestore.FieldValue.serverTimestamp() // Add timestamp here
     });
 
     localStorage.setItem('currentInvoiceNumber', newInvoiceNumber);
@@ -87,6 +88,7 @@ async function startNewOrder() {
     alert('Failed to start a new order. Please try again.');
   }
 }
+
 
 // Attach the function to the "Start New Order" button click event
 document.getElementById('startNewOrderBtn').addEventListener('click', startNewOrder);
@@ -352,5 +354,42 @@ function redirectToCart(invoiceNumber) {
   window.location.href = 'kuitansi.html';
 }
 
-// Load orders on page load
-document.addEventListener('DOMContentLoaded', loadOrders);
+// Function to auto-delete previous day checked out invoices
+async function autoDeleteOldCheckedOutInvoices() {
+  try {
+    console.log('autoDeleteOldCheckedOutInvoices function triggered');
+
+    const startOfYesterday = new Date();
+    startOfYesterday.setDate(startOfYesterday.getDate() - 1);
+    startOfYesterday.setHours(0, 0, 0, 0);
+    console.log('Start of yesterday:', startOfYesterday);
+
+    const endOfYesterday = new Date(startOfYesterday);
+    endOfYesterday.setHours(23, 59, 59, 999);
+    console.log('End of yesterday:', endOfYesterday);
+
+    const querySnapshot = await db.collection('invoices')
+      .where('status', '==', 'checked_out')
+      .where('createdTimestamp', '>=', firebase.firestore.Timestamp.fromDate(startOfYesterday))
+      .where('createdTimestamp', '<=', firebase.firestore.Timestamp.fromDate(endOfYesterday))
+      .get();
+
+    console.log('Invoices found:', querySnapshot.size);
+
+    const batch = db.batch();
+    querySnapshot.forEach(doc => {
+      batch.delete(doc.ref);
+    });
+
+    await batch.commit();
+    console.log('Previous day checked out invoices successfully deleted.');
+  } catch (error) {
+    console.error('Error auto-deleting old checked out invoices:', error);
+  }
+}
+
+// Load orders on page load, autodeletes previous orders
+document.addEventListener('DOMContentLoaded', () => {
+  loadOrders();
+  autoDeleteOldCheckedOutInvoices(); // Trigger the auto-delete function on page load
+});
