@@ -139,26 +139,34 @@ async function deleteDocument(docId) {
 async function uploadProductToInventory(docId, data) {
   try {
     const inventoryDoc = {
-      SKU: "", // Initialize SKU as an empty string
-      "Selling Price": data.pricePerUnit || 0, // Use pricePerUnit as Selling Price
-      "Buying Price": data.buyingPrice || 0, // New field
-      Stock: data.stock || 0, // Default Stock to 0 if not present
-      Category: data.category || "Uncategorized", // Default category if not present
+      SKU: "",
+      "Selling Price": data.pricePerUnit || 0,
+      "Buying Price": data.buyingPrice || 0,
+      Stock: data.stock || 0,
+      Category: data.category || "Uncategorized",
     };
 
-    // Add document to "Inventory" collection
+    // Add to Inventory
     await db.collection("Inventory").doc(docId).set(inventoryDoc);
 
-    // Delete product from "no data" collection after successful upload
-    await db.collection("no data").doc(docId).delete();
-    alert(`Product "${docId}" uploaded to Inventory successfully and removed from "no data".`);
+    // ✅ Save alias for future typo protection
+    await db.collection("aliases").doc(docId.toLowerCase()).set({
+      realName: docId,
+      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+      source: "no data",
+    });
 
-    loadNoData(); // Reload the table after changes
+    // Delete from no data
+    await db.collection("no data").doc(docId).delete();
+    alert(`Product "${docId}" uploaded and alias created.`);
+
+    loadNoData();
   } catch (error) {
     console.error(`Error uploading product "${docId}" to Inventory:`, error);
-    alert(`Failed to upload product "${docId}" to Inventory. Please try again.`);
+    alert(`Failed to upload product "${docId}" to Inventory.`);
   }
 }
+
 
 // Load data when DOM is ready
 document.addEventListener("DOMContentLoaded", loadNoData);
