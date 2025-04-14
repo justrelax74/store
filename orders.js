@@ -254,7 +254,8 @@ async function checkoutInvoice(invoiceNumber) {
       return;
     }
 
-    const invoiceDoc = await db.collection('invoices').doc(invoiceNumber).get();
+    const invoiceRef = db.collection('invoices').doc(invoiceNumber);
+    const invoiceDoc = await invoiceRef.get();
     const invoiceData = invoiceDoc.data();
 
     if (!invoiceData || !Array.isArray(invoiceData.items) || invoiceData.items.length === 0) {
@@ -262,41 +263,47 @@ async function checkoutInvoice(invoiceNumber) {
       return;
     }
 
-    // Filter out invalid items from the invoice
-    const validItems = invoiceData.items.filter(item => {
-      return item.productName && item.price > 0 && item.qty > 0;
-    });
+    const validItems = invoiceData.items.filter(item =>
+      item.productName && item.price > 0 && item.qty > 0
+    );
 
     if (validItems.length === 0) {
       alert('No valid items in the invoice to checkout!');
-      await db.collection('invoices').doc(invoiceNumber).delete(); // Delete the empty invoice
+      await invoiceRef.delete();
       return;
     }
 
-    // Update the invoice with valid items before proceeding
-    await db.collection('invoices').doc(invoiceNumber).update({
-      items: validItems,
-    });
+    const currentDate = new Date().toISOString().split('T')[0];
+    const salesRef = db.collection(currentDate).doc(invoiceNumber);
+    const salesDoc = await salesRef.get();
 
-    // Flag to check if there's any product not found in the inventory
+    // Step 1: If re-checkout, restore previous stock
+    if (invoiceData.status === 'checked_out' && salesDoc.exists) {
+      const oldItems = salesDoc.data().items || [];
+      for (const item of oldItems) {
+        const invRef = db.collection('Inventory').doc(item.productName);
+        const invDoc = await invRef.get();
+        const currentStock = invDoc.exists ? invDoc.data().Stock || 0 : 0;
+        await invRef.update({
+          Stock: currentStock + item.qty
+        });
+      }
+    }
+
     let productNotFound = false;
 
-    // Update stock for each item in the valid items list
+    // Step 2: Subtract stock for new items
     for (const item of validItems) {
       const docRef = db.collection('Inventory').doc(item.productName);
       const doc = await docRef.get();
 
       if (doc.exists) {
         const currentStock = doc.data().Stock || 0;
-
-        // Update stock in Firestore (allow negative stock)
         await docRef.update({
-          Stock: currentStock - item.qty,
+          Stock: currentStock - item.qty
         });
       } else {
-        // Product not found, add it to the "no data" collection
-        const noDataRef = db.collection('no data').doc(item.productName);
-        await noDataRef.set({
+        await db.collection('no data').doc(item.productName).set({
           productName: item.productName,
           qty: item.qty,
           pricePerUnit: item.price || null,
@@ -306,29 +313,24 @@ async function checkoutInvoice(invoiceNumber) {
       }
     }
 
-    // Get the current date as yyyy-mm-dd for the sales collection
-    const currentDate = new Date().toISOString().split('T')[0];
-
-    // Copy the invoice into the date-named sales collection
-    const salesRef = db.collection(currentDate).doc(invoiceNumber);
+    // Step 3: Save sale to daily collection
     await salesRef.set({
       items: validItems,
       grandTotal: validItems.reduce((total, item) => total + (item.price * item.qty), 0),
-      carType: invoiceData.carType || 'N/A', // Save car type
-      policeNumber: invoiceData.policeNumber || 'N/A', // Save police number
-      timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+      carType: invoiceData.carType || 'N/A',
+      policeNumber: invoiceData.policeNumber || 'N/A',
+      timestamp: firebase.firestore.FieldValue.serverTimestamp()
     });
 
-    // Mark the invoice as checked out in the invoices collection
-    await db.collection('invoices').doc(invoiceNumber).update({
-      status: 'checked_out',
+    // Step 4: Update invoice status
+    await invoiceRef.update({
+      items: validItems,
+      status: 'checked_out'
     });
 
-    // Preserve localStorage for checkout.html to fetch data for printing
     localStorage.setItem('currentInvoiceNumber', invoiceNumber);
-
-    // Redirect to checkout.html
     window.location.href = 'checkout.html';
+
   } catch (error) {
     console.error('Error during checkout:', error);
     alert(`Checkout failed! ${error.message}`);
@@ -385,6 +387,66 @@ async function autoDeleteOldCheckedOutInvoices() {
     console.log('Previous day checked out invoices successfully deleted.');
   } catch (error) {
     console.error('Error auto-deleting old checked out invoices:', error);
+  }
+}
+// Function to load orders and add missing timestamps
+async function loadOrders() {
+  try {
+    const querySnapshot = await db.collection('invoices').get();
+    const ordersTableBody = document.querySelector('#ordersTable tbody');
+    ordersTableBody.innerHTML = '';
+
+    querySnapshot.forEach(async (doc) => {
+      const data = doc.data();
+      const invoiceNumber = doc.id;
+
+      // If createdTimestamp is missing, add it
+      if (!data.createdTimestamp) {
+        await db.collection('invoices').doc(invoiceNumber).update({
+          createdTimestamp: firebase.firestore.FieldValue.serverTimestamp()
+        });
+      }
+      
+      const grandTotal = data.grandTotal ? formatPrice(data.grandTotal) : 'N/A';
+      const status = data.status === 'checked_out' ? 'LUNAS' : 'OPEN';
+
+      if (!showCheckedOutOrders && data.status === 'checked_out') {
+        return;
+      }
+
+      if (grandTotal === 'N/A' || !data.items || data.items.length === 0) {
+        await deleteInvoice(invoiceNumber);
+        return;
+      }
+
+      let productDetails = data.items ? data.items.map(item => `${item.productName} (Qty: ${item.qty}, Price: ${formatPrice(item.price)})`).join('<br>') : 'No items found';
+      const carType = data.carType || 'N/A';
+      const policeNumber = data.policeNumber || 'N/A';
+
+      const row = document.createElement('tr');
+      row.innerHTML = `
+        <td>${invoiceNumber}</td>
+        <td>${carType}</td>
+        <td>${policeNumber}</td>
+        <td>${productDetails}</td>
+        <td>${grandTotal}</td>
+        <td class="status-column">
+          <select class="status-dropdown admin-button" data-invoice="${invoiceNumber}">
+            <option value="open" ${data.status === 'OPEN' ? 'selected' : ''}>OPEN</option>
+            <option value="checked_out" ${data.status === 'checked_out' ? 'selected' : ''}>LUNAS</option>
+          </select>
+        </td>
+        <td>
+          <button onclick="redirectToCart('${invoiceNumber}')">Edit</button>
+          <button class="admin-button" onclick="checkoutInvoice('${invoiceNumber}')">Checkout</button>
+          <button class="delete-btn admin-button" onclick="deleteInvoice('${invoiceNumber}')" style="display: ${deleteMode ? 'inline-block' : 'none'};">Delete</button>
+        </td>
+      `;
+      ordersTableBody.appendChild(row);
+    });
+  } catch (error) {
+    console.error('Error loading orders:', error);
+    alert('Failed to load orders. Please try again.');
   }
 }
 
