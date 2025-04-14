@@ -272,9 +272,14 @@ function setupAutocomplete(input, suggestionsBox) {
         }
 
         // Filter inventory cache for matching products
-        const suggestions = inventoryCache.filter(item =>
-            item.id.toUpperCase().includes(query)
-        );
+        const keywords = query.toUpperCase().split(/\s+/).filter(Boolean);
+ // split by spaces
+const suggestions = inventoryCache.filter(item => {
+  const name = item.id.toUpperCase();
+  return keywords.every(keyword => name.includes(keyword));
+});
+
+        
         
         suggestionsBox.innerHTML = ''; // Clear previous suggestions
         suggestions.forEach(item => {
@@ -386,109 +391,93 @@ function debounce(func, delay) {
 // Checkout button logic
 document.getElementById('checkoutButton').addEventListener('click', async () => {
     const invoiceNumber = document.getElementById('invoiceNumber').value.trim();
-    const carType = document.getElementById('carType').value.trim().toUpperCase(); // Ensure uppercase
-    const policeNumber = document.getElementById('policeNumber').value.trim().toUpperCase(); // Ensure uppercase
-
-    if (!invoiceNumber) {
-        alert("Invoice number is required.");
-        return;
-    }
-
+    const carType = document.getElementById('carType').value.trim().toUpperCase();
+    const policeNumber = document.getElementById('policeNumber').value.trim().toUpperCase();
+  
+    if (!invoiceNumber) return alert("Invoice number is required.");
+  
     try {
-        // Fetch invoice data from Firestore
-        const invoiceDoc = await db.collection('invoices').doc(invoiceNumber).get();
-        if (!invoiceDoc.exists) {
-            alert("Invoice not found!");
-            return;
-        }
-
-        const invoiceData = invoiceDoc.data();
-        if (!Array.isArray(invoiceData.items) || invoiceData.items.length === 0) {
-            alert("The invoice is empty or invalid!");
-            return;
-        }
-
-        const updatedItems = [];
-        let productNotFound = false;
-
-        // Process each item in the invoice
-        for (const item of invoiceData.items) {
-            if (!item.productName || item.qty === undefined) {
-                alert(`Invalid item in invoice: ${JSON.stringify(item)}`);
-                return;
-            }
-
+      const invoiceRef = db.collection('invoices').doc(invoiceNumber);
+      const invoiceDoc = await invoiceRef.get();
+      if (!invoiceDoc.exists) return alert("Invoice not found!");
+  
+      const invoiceData = invoiceDoc.data();
+      if (!Array.isArray(invoiceData.items) || invoiceData.items.length === 0) {
+        return alert("Invoice is empty or invalid.");
+      }
+  
+      const updatedItems = [];
+      const today = new Date().toISOString().split('T')[0];
+      const salesRef = db.collection(today).doc(invoiceNumber);
+      const salesDoc = await salesRef.get();
+  
+      // 🔁 Step 1: Restore inventory from previous sale
+      if (invoiceData.status === "checked_out" && salesDoc.exists) {
+        console.log("Restoring stock from previous checkout...");
+        const oldItems = salesDoc.data().items || [];
+  
+        for (const item of oldItems) {
+          try {
             const productRef = db.collection('Inventory').doc(item.productName);
             const productDoc = await productRef.get();
-
-            if (productDoc.exists) {
-                const currentStock = productDoc.data().Stock || 0;
-
-                // Update stock (allow negative stock)
-                await productRef.update({
-                    Stock: currentStock - item.qty,
-                });
-
-                console.log(
-                    `Stock for ${item.productName} updated: ${currentStock} -> ${currentStock - item.qty}`
-                );
-            } else {
-                // Add product to "no data" collection
-                await db.collection('no data').doc(item.productName).set({
-                    productName: item.productName,
-                    qty: item.qty,
-                    pricePerUnit: item.price || null,
-                    reason: "Product not found in inventory during checkout",
-                });
-
-                console.log(
-                    `Product ${item.productName} added to 'no data' collection with price info.`
-                );
-
-                productNotFound = true;
-            }
-
-            updatedItems.push({
-                productName: item.productName,
-                qty: item.qty,
-                price: item.price || 0,
-                buyingPrice: Number(item.buyingPrice) || 0, // Ensure Buying Price is saved as a number
-                category: item.category || 'Uncategorized', // Ensure Category is saved
-                totalPrice: item.qty * (item.price || 0),
-            });
+            const stock = productDoc.exists ? productDoc.data().Stock || 0 : 0;
+            await productRef.update({ Stock: stock + item.qty });
+            console.log(`[✓] Restored: ${item.productName} +${item.qty}`);
+          } catch (err) {
+            console.error(`[X] Failed to restore stock for ${item.productName}`, err);
+          }
         }
-
-        // Calculate the grand total
-        const grandTotal = updatedItems.reduce((sum, item) => sum + item.totalPrice, 0);
-
-        // Save the invoice to the sales collection
-        const today = new Date().toISOString().split('T')[0]; // Format: YYYY-MM-DD
-        await db.collection(today).doc(invoiceNumber).set({
-            items: updatedItems,
-            grandTotal,
-            carType, // Include carType in sales collection
-            policeNumber, // Include policeNumber in sales collection
-            timestamp: firebase.firestore.FieldValue.serverTimestamp(),
+      }
+  
+      // ➖ Step 2: Subtract inventory from current items
+      for (const item of invoiceData.items) {
+        try {
+          if (!item.productName || item.qty === undefined) {
+            alert(`Invalid item in invoice: ${JSON.stringify(item)}`);
+            return;
+          }
+  
+          const productRef = db.collection('Inventory').doc(item.productName);
+          const productDoc = await productRef.get();
+          const stock = productDoc.exists ? productDoc.data().Stock || 0 : 0;
+          await productRef.update({ Stock: stock - item.qty });
+          console.log(`[✓] Updated: ${item.productName} -${item.qty}`);
+        } catch (err) {
+          console.error(`[X] Failed to subtract stock for ${item.productName}`, err);
+        }
+  
+        updatedItems.push({
+          productName: item.productName,
+          qty: item.qty,
+          price: item.price || 0,
+          buyingPrice: Number(item.buyingPrice) || 0,
+          category: item.category || 'Uncategorized',
+          totalPrice: item.qty * (item.price || 0)
         });
-
-        console.log(`Invoice ${invoiceNumber} saved to sales collection (${today}).`);
-
-        // Update the invoice status
-        await db.collection('invoices').doc(invoiceNumber).update({
-            status: "checked_out",
-        });
-
-        console.log(`Invoice ${invoiceNumber} marked as 'checked_out' in invoices collection.`);
-
-        // Store invoice number in localStorage
-        localStorage.setItem('currentInvoiceNumber', invoiceNumber);
-
-        // Notify user and redirect
-        alert("Checkout successful!");
-        window.location.href = 'checkout.html';
+      }
+  
+      // 💾 Step 3: Save to sales
+      const grandTotal = updatedItems.reduce((sum, item) => sum + item.totalPrice, 0);
+      await salesRef.set({
+        items: updatedItems,
+        grandTotal,
+        carType,
+        policeNumber,
+        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+      });
+      console.log(`[✓] Saved to sales/${today}/${invoiceNumber}`);
+  
+      // ✅ Step 4: Update invoice status once
+      await invoiceRef.update({ status: "checked_out" });
+  
+      // Store for printing
+      localStorage.setItem('currentInvoiceNumber', invoiceNumber);
+  
+      alert("Checkout successful!");
+      window.location.href = 'checkout.html';
     } catch (error) {
-        console.error("Error during checkout:", error);
-        alert(`Checkout failed! ${error.message}`);
+      console.error("Checkout failed:", error);
+      alert(`Checkout failed! ${error.message}`);
     }
-});
-
+  });
+  
