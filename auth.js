@@ -61,11 +61,20 @@ document.addEventListener("DOMContentLoaded", function () {
 
         auth.signInWithEmailAndPassword(email, password)
             .then((userCredential) => {
+                const now = new Date().getTime();
+                const lastLogin = parseInt(localStorage.getItem("lastLoginTime"), 10);
+
+                if (lastLogin && now - lastLogin > MAX_SESSION_AGE_MS) {
+                    alert("Session expired. Please log in again.");
+                    clearCacheAndStorage();
+                    auth.signOut();
+                    return;
+                }
+
                 clearCacheAndStorage();
                 document.getElementById("loginStatus").textContent = "Login successful!";
                 console.log("User logged in:", userCredential.user);
 
-                const now = new Date().getTime();
                 localStorage.setItem("lastLoginTime", now);
                 sessionStorage.setItem("userLoggedIn", "true");
 
@@ -104,15 +113,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
     auth.onAuthStateChanged((user) => {
         if (user) {
-            const lastLogin = parseInt(localStorage.getItem("lastLoginTime"), 10);
-            const now = new Date().getTime();
-
-            if (!lastLogin || now - lastLogin > MAX_SESSION_AGE_MS) {
-                alert("Session expired. Logging out.");
-                logout();
-                return;
-            }
-
             document.getElementById("loginStatus").textContent = `Logged in as ${user.email}`;
 
             if (sessionStorage.getItem("userLoggedIn")) {
