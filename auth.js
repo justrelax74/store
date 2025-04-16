@@ -20,12 +20,15 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const WORK_HOURS_START = 8;
     const WORK_HOURS_END = 19;
-    const MAX_SESSION_AGE_MS = 20 * 60 * 60 * 1000; // 24 hours
     const ADMIN_EMAILS = ["biyanaprillamailoa@gmail.com"];
 
     function getCurrentHourWITA() {
         const now = new Date();
         return now.getUTCHours() + 8;
+    }
+
+    function getTodayDateString() {
+        return new Date().toISOString().split("T")[0];
     }
 
     function isAdminEmail(email) {
@@ -61,23 +64,11 @@ document.addEventListener("DOMContentLoaded", function () {
 
         auth.signInWithEmailAndPassword(email, password)
             .then((userCredential) => {
-                const now = new Date().getTime();
-                const lastLogin = parseInt(localStorage.getItem("lastLoginTime"), 10);
-
-                if (lastLogin && now - lastLogin > MAX_SESSION_AGE_MS) {
-                    alert("Session expired. Please log in again.");
-                    clearCacheAndStorage();
-                    auth.signOut();
-                    return;
-                }
-
                 clearCacheAndStorage();
                 document.getElementById("loginStatus").textContent = "Login successful!";
                 console.log("User logged in:", userCredential.user);
 
-                localStorage.setItem("lastLoginTime", now);
                 sessionStorage.setItem("userLoggedIn", "true");
-
                 window.location.href = "orders.html";
             })
             .catch((error) => {
@@ -113,6 +104,17 @@ document.addEventListener("DOMContentLoaded", function () {
 
     auth.onAuthStateChanged((user) => {
         if (user) {
+            const lastSignIn = new Date(user.metadata.lastSignInTime);
+            const lastSignInDate = lastSignIn.toISOString().split("T")[0];
+            const todayDate = getTodayDateString();
+
+            if (lastSignInDate !== todayDate && !sessionStorage.getItem("sessionChecked")) {
+                alert("Your session has expired for the day. Please log in again.");
+                sessionStorage.setItem("sessionChecked", "true");
+                logout();
+                return;
+            }
+
             document.getElementById("loginStatus").textContent = `Logged in as ${user.email}`;
 
             if (sessionStorage.getItem("userLoggedIn")) {
@@ -121,6 +123,7 @@ document.addEventListener("DOMContentLoaded", function () {
             }
         } else {
             document.getElementById("loginStatus").textContent = "Not logged in.";
+            sessionStorage.removeItem("sessionChecked");
         }
     });
 
