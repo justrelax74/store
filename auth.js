@@ -11,14 +11,16 @@ document.addEventListener("DOMContentLoaded", function () {
         appId: "1:874673615212:web:7f0ecdeee47fed60aa0349",
         measurementId: "G-LF6NB7ZKLE"
     };
+
     if (!firebase.apps.length) {
         firebase.initializeApp(firebaseConfig);
     }
-    
+
     const auth = firebase.auth();
 
     const WORK_HOURS_START = 8;
     const WORK_HOURS_END = 19;
+    const MAX_SESSION_AGE_MS = 24 * 60 * 60 * 1000; // 24 hours
 
     function getCurrentHourWITA() {
         const now = new Date();
@@ -57,6 +59,8 @@ document.addEventListener("DOMContentLoaded", function () {
                 document.getElementById("loginStatus").textContent = "Login successful!";
                 console.log("User logged in:", userCredential.user);
 
+                const now = new Date().getTime();
+                localStorage.setItem("lastLoginTime", now);
                 sessionStorage.setItem("userLoggedIn", "true");
 
                 window.location.href = "orders.html";
@@ -89,10 +93,19 @@ document.addEventListener("DOMContentLoaded", function () {
         }
     }
 
-    setInterval(enforceWorkHours, 60);
+    setInterval(enforceWorkHours, 60000);
 
     auth.onAuthStateChanged((user) => {
         if (user) {
+            const lastLogin = parseInt(localStorage.getItem("lastLoginTime"), 10);
+            const now = new Date().getTime();
+
+            if (!lastLogin || now - lastLogin > MAX_SESSION_AGE_MS) {
+                alert("Session expired. Logging out.");
+                logout();
+                return;
+            }
+
             document.getElementById("loginStatus").textContent = `Logged in as ${user.email}`;
 
             if (sessionStorage.getItem("userLoggedIn")) {
