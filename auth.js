@@ -20,14 +20,20 @@ document.addEventListener("DOMContentLoaded", function () {
 
     const WORK_HOURS_START = 8;
     const WORK_HOURS_END = 19;
-    const MAX_SESSION_AGE_MS = 24 * 60 * 60 * 1000; // 24 hours
+    const MAX_SESSION_AGE_MS = 20 * 60 * 60 * 1000; // 24 hours
+    const ADMIN_EMAILS = ["biyanaprillamailoa@gmail.com"];
 
     function getCurrentHourWITA() {
         const now = new Date();
         return now.getUTCHours() + 8;
     }
 
-    function isLoginAllowed() {
+    function isAdminEmail(email) {
+        return ADMIN_EMAILS.includes(email);
+    }
+
+    function isLoginAllowed(email) {
+        if (isAdminEmail(email)) return true;
         const currentHour = getCurrentHourWITA();
         return currentHour >= WORK_HOURS_START && currentHour < WORK_HOURS_END;
     }
@@ -45,13 +51,13 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function login() {
-        if (!isLoginAllowed()) {
+        const email = document.getElementById("email").value;
+        const password = document.getElementById("password").value;
+
+        if (!isLoginAllowed(email)) {
             alert("Login only allowed between 08:00 - 19:00 WITA.");
             return;
         }
-
-        const email = document.getElementById("email").value;
-        const password = document.getElementById("password").value;
 
         auth.signInWithEmailAndPassword(email, password)
             .then((userCredential) => {
@@ -85,9 +91,10 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     function enforceWorkHours() {
-        const currentHour = getCurrentHourWITA();
+        const user = auth.currentUser;
+        if (!user) return;
 
-        if (!isLoginAllowed() && auth.currentUser) {
+        if (!isLoginAllowed(user.email)) {
             alert("Work hours have ended. You will be logged out.");
             logout();
         }
