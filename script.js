@@ -432,10 +432,11 @@ document.getElementById('checkoutButton').addEventListener('click', async () => 
       // ➖ Step 2: Subtract inventory from current items
       for (const item of invoiceData.items) {
         try {
-          if (!item.productName || item.qty === undefined) {
-            alert(`Invalid item in invoice: ${JSON.stringify(item)}`);
-            return;
-          }
+          if (!item.productName || item.qty === undefined || item.qty <= 0) {
+  alert(`Invalid item: Missing product name or zero/negative quantity.\nProduct: ${item.productName}, Qty: ${item.qty}`);
+  return;
+}
+
   
           const productRef = db.collection('Inventory').doc(item.productName);
           const productDoc = await productRef.get();
