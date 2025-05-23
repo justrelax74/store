@@ -13,6 +13,7 @@ const stockupCollection = db.collection("stockup");
 document.addEventListener("DOMContentLoaded", () => {
   loadInventory();
   setupSorting();
+   addSearchBar(); 
 });
 
 // ======================
@@ -207,3 +208,91 @@ function createSaveButton() {
   document.querySelector(".container").appendChild(button);
   return button;
 }
+
+// ======================
+// Fuzzy Search Function
+// ======================
+function fuzzySearch(text, query) {
+  if (!query) return true; // Show all if no search term
+  
+  const searchTerms = query.toLowerCase().split(/\s+/);
+  const textLower = text.toLowerCase();
+  
+  // Check if ALL search terms exist in the text (order doesn't matter)
+  return searchTerms.every(term => textLower.includes(term));
+}
+
+// ======================
+// Filter Inventory Table
+// ======================
+function filterInventory(searchQuery) {
+  const rows = inventoryTable.querySelectorAll("tr");
+  
+  rows.forEach(row => {
+    const productName = row.querySelector("td:nth-child(1)").textContent;
+    const category = row.querySelector("td:nth-child(2)").textContent;
+    
+    // Combine fields for searching
+    const searchText = `${productName} ${category}`;
+    const isMatch = fuzzySearch(searchText, searchQuery);
+    
+    row.style.display = isMatch ? "" : "none";
+    
+    // Highlight matching keywords (optional)
+    if (isMatch && searchQuery) {
+      highlightMatches(row, searchQuery);
+    }
+  });
+}
+
+// ======================
+// Highlight Search Matches
+// ======================
+function highlightMatches(row, query) {
+  const cells = row.querySelectorAll("td");
+  const searchTerms = query.toLowerCase().split(/\s+/);
+  
+  cells.forEach(cell => {
+    let text = cell.textContent;
+    searchTerms.forEach(term => {
+      const regex = new RegExp(`(${term})`, "gi");
+      text = text.replace(regex, '<span class="highlight">$1</span>');
+    });
+    cell.innerHTML = text;
+  });
+}
+
+// ======================
+// Add Search Bar to UI
+// ======================
+function addSearchBar() {
+  const container = document.querySelector(".container");
+  
+  const searchDiv = document.createElement("div");
+  searchDiv.className = "search-container";
+  
+  searchDiv.innerHTML = `
+    <input 
+      type="text" 
+      id="search-input" 
+      placeholder="Search by product or category (e.g. 'oil engine')" 
+      class="search-input"
+    >
+    <button id="clear-search" class="clear-search-btn">×</button>
+  `;
+  
+  container.insertBefore(searchDiv, container.firstChild);
+  
+  // Add event listeners
+  document.getElementById("search-input").addEventListener("input", (e) => {
+    filterInventory(e.target.value);
+  });
+  
+  document.getElementById("clear-search").addEventListener("click", () => {
+    const searchInput = document.getElementById("search-input");
+    searchInput.value = "";
+    filterInventory("");
+    removeHighlights();
+  });
+}
+
