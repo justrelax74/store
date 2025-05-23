@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Stock Up Summary</title>
+  <link rel="stylesheet" href="stockup.css">
+
+  <!-- Firebase SDK -->
+  <script src="https://www.gstatic.com/firebasejs/9.9.3/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.9.3/firebase-firestore-compat.js"></script>
+
+  <!-- Firebase Initialization -->
+  <script>
+    const firebaseConfig = {
+      apiKey: "AIzaSyANCk_iM4XtSX0VW6iETK-tJdWHGAWMbS0",
+      authDomain: "megamasmotor-4008c.firebaseapp.com",
+      projectId: "megamasmotor-4008c",
+      storageBucket: "megamasmotor-4008c.appspot.com",
+      messagingSenderId: "874673615212",
+      appId: "1:874673615212:web:7f0ecdeee47fed60aa0349",
+      measurementId: "G-LF6NB7ZKLE"
+    };
+
+    // Initialize Firebase
+    const app = firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+  </script>
+
+  <script src="stockupsummary.js" defer></script>
+</head>
+<body>
+  <div class="container">
+    <h1>Stock Up Summary</h1>
+    <table id="stockup-table">
+      <thead>
+        <tr>
+          <th>Product Name</th>
+          <th>Category</th>
+          <th>Stock</th>
+          <th>Threshold</th>
+          <th>Stock Up</th>
+        </tr>
+      </thead>
+      <tbody>
+        <!-- Stock up summary rows will be dynamically inserted here -->
+      </tbody>
+    </table>
+  </div>
+</body>
+</html>
