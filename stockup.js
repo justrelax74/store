@@ -224,8 +224,18 @@ async function saveUpdates() {
 // ======================
 // 6. Sorting
 // ======================
+// ======================
+// Sorting Implementation (Final Fix)
+// ======================
 function setupSorting() {
   document.querySelectorAll(".sortable").forEach((header) => {
+    // Add arrow elements
+    header.innerHTML = `
+      ${header.textContent}
+      <span class="sort-arrow asc">↑</span>
+      <span class="sort-arrow desc">↓</span>
+    `;
+    
     header.addEventListener("click", () => sortTable(header));
   });
 }
@@ -234,34 +244,38 @@ function sortTable(header) {
   const columnIndex = Array.from(header.parentNode.children).indexOf(header);
   const rows = Array.from(inventoryTable.querySelectorAll("tr"));
   const isNumeric = header.classList.contains("numeric");
-  const sortDirection = header.getAttribute("data-sort") || "asc";
-
+  const currentDirection = header.getAttribute("data-sort-direction");
+  
+  // Determine new direction
+  const newDirection = currentDirection === "asc" ? "desc" : "asc";
+  
+  // Reset all headers
+  document.querySelectorAll(".sortable").forEach(h => {
+    h.removeAttribute("data-sort-direction");
+  });
+  
+  // Set new direction
+  header.setAttribute("data-sort-direction", newDirection);
+  
+  // Sort the rows
   rows.sort((a, b) => {
-    const aValue = a.querySelector(`td:nth-child(${columnIndex + 1})`).getAttribute("data-original");
-    const bValue = b.querySelector(`td:nth-child(${columnIndex + 1})`).getAttribute("data-original");
+    const aValue = a.querySelector(`td:nth-child(${columnIndex + 1})`).textContent;
+    const bValue = b.querySelector(`td:nth-child(${columnIndex + 1})`).textContent;
     
-    return sortDirection === "asc" 
-      ? compareValues(aValue, bValue, isNumeric) 
-      : compareValues(bValue, aValue, isNumeric);
+    if (isNumeric) {
+      return newDirection === "asc" 
+        ? (parseInt(aValue) - parseInt(bValue))
+        : (parseInt(bValue) - parseInt(aValue));
+    }
+    return newDirection === "asc"
+      ? aValue.localeCompare(bValue)
+      : bValue.localeCompare(aValue);
   });
 
+  // Update the table
   inventoryTable.innerHTML = "";
   rows.forEach(row => inventoryTable.appendChild(row));
-  
-  header.setAttribute("data-sort", sortDirection === "asc" ? "desc" : "asc");
-  updateSortArrow(header);
 }
-
-function compareValues(a, b, isNumeric) {
-  if (isNumeric) return (parseInt(a) || 0) - (parseInt(b) || 0);
-  return a.localeCompare(b);
-}
-
-function updateSortArrow(header) {
-  document.querySelectorAll(".sortable").forEach(h => h.innerHTML = h.textContent);
-  header.innerHTML += header.getAttribute("data-sort") === "asc" ? " ↑" : " ↓";
-}
-
 // ======================
 // Helper Functions
 // ======================
