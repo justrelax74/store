@@ -181,3 +181,72 @@ tr.low-stock {
   background-color: yellow !important;
   font-weight: bold !important;
 }
+
+
+/* Navbar */
+.navbar {
+  background-color: #333;
+  color: white;
+  padding: 15px;
+}
+
+.navbar-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.navbar-logo h1 {
+  font-size: 24px;
+  font-weight: bold;
+}
+/* Make sure the MEGA MAS MOTOR link doesn't look like a hyperlink */
+.navbar-logo {
+  text-decoration: none;   /* Remove underline */
+  color: inherit;          /* Use the inherited text color */
+  cursor: pointer;         /* Keep the pointer cursor for clickable feel */
+}
+
+/* Prevent visited links from turning purple */
+.navbar-logo:visited {
+  color: inherit;          /* Keep the inherited color even when visited */
+}
+
+
+.navbar-toggle {
+  display: none;
+  font-size: 24px;
+  background: none;
+  border: none;
+  color: white;
+}
+
+.navbar-menu {
+  display: flex;
+  list-style: none;
+}
+
+.navbar-item {
+  margin-right: 20px;
+}
+
+.navbar-item a {
+  color: white;
+  text-decoration: none;
+  font-size: 16px;
+}
+
+.navbar-item a:hover {
+  text-decoration: underline;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .navbar-menu {
+      display: none;
+  }
+
+  .navbar-toggle {
+      display: block;
+  }
+}
