@@ -154,3 +154,7 @@ tr.low-stock {
 .clear-search-btn:hover {
   color: #333;
 }
+
+.highlight .highlight {
+  background-color: inherit; /* Prevents double-highlighting */
+}
