@@ -246,22 +246,41 @@ function filterInventory(searchQuery) {
 }
 
 // ======================
-// Highlight Search Matches
+// Highlight Matches (Fixed)
 // ======================
 function highlightMatches(row, query) {
   const cells = row.querySelectorAll("td");
   const searchTerms = query.toLowerCase().split(/\s+/);
-  
+
   cells.forEach(cell => {
-    let text = cell.textContent;
+    // First remove any existing highlights
+    const originalText = cell.textContent;
+    cell.innerHTML = originalText;
+    
+    // Then apply new highlights
+    let text = originalText;
     searchTerms.forEach(term => {
-      const regex = new RegExp(`(${term})`, "gi");
+      const regex = new RegExp(`(${escapeRegExp(term)})`, "gi");
       text = text.replace(regex, '<span class="highlight">$1</span>');
     });
     cell.innerHTML = text;
   });
 }
 
+// Helper to escape special regex characters
+function escapeRegExp(string) {
+  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+// ======================
+// Remove Highlights (Fixed)
+// ======================
+function removeHighlights() {
+  document.querySelectorAll(".highlight").forEach(highlight => {
+    const parent = highlight.parentNode;
+    parent.textContent = parent.textContent; // Strips all HTML
+  });
+}
 // ======================
 // Add Search Bar to UI
 // ======================
@@ -295,5 +314,4 @@ function addSearchBar() {
     removeHighlights();
   });
 }
-
 
