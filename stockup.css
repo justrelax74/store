@@ -88,9 +88,24 @@ tr.low-stock {
 /* Sortable headers */
 .sortable {
   cursor: pointer;
-  user-select: none;
+  position: relative;
+  padding-right: 20px; /* Make space for arrow */
+  user-select: none; /* Prevent text selection */
 }
 
+.sort-arrow {
+  position: absolute;
+  right: 5px;
+}
+
+.sortable .sort-arrow {
+  display: none; /* Hide by default */
+}
+
+.sortable[data-sort-direction="asc"] .sort-arrow.asc,
+.sortable[data-sort-direction="desc"] .sort-arrow.desc {
+  display: inline; /* Only show active arrow */
+}
 /* Save button styling */
 .save-button {
   margin-top: 20px;
@@ -166,5 +181,3 @@ tr.low-stock {
   background-color: yellow !important;
   font-weight: bold !important;
 }
-
-
