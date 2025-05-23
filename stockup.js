@@ -13,7 +13,7 @@ const stockupCollection = db.collection("stockup");
 document.addEventListener("DOMContentLoaded", () => {
   loadInventory();
   setupSorting();
-   addSearchBar(); 
+  addSearchBar();
 });
 
 // ======================
@@ -22,9 +22,8 @@ document.addEventListener("DOMContentLoaded", () => {
 function loadInventory() {
   showLoading(true);
   
-  // Real-time listener for changes
   inventoryCollection.onSnapshot((snapshot) => {
-    inventoryTable.innerHTML = ""; // Clear table
+    inventoryTable.innerHTML = "";
     
     snapshot.forEach((doc) => {
       const data = doc.data();
@@ -42,7 +41,7 @@ function loadInventory() {
 }
 
 // ======================
-// 2. Create Inventory Row (with Low-Stock Highlighting)
+// 2. Create Inventory Row
 // ======================
 function createInventoryRow(productName, data) {
   const row = document.createElement("tr");
@@ -50,12 +49,11 @@ function createInventoryRow(productName, data) {
   const threshold = data.Threshold || 0;
   const stockup = Math.max(0, threshold - stock);
   
-  // Highlight row if stock is below threshold
   if (stock < threshold) row.classList.add("low-stock");
   
   row.innerHTML = `
-    <td>${productName}</td>
-    <td>${data.Category || "Uncategorized"}</td>
+    <td data-original="${productName}">${productName}</td>
+    <td data-original="${data.Category || "Uncategorized"}">${data.Category || "Uncategorized"}</td>
     <td><input type="number" min="0" class="stock-input" value="${stock}" data-id="${productName}"></td>
     <td><input type="number" min="0" class="threshold-input" value="${threshold}" data-id="${productName}"></td>
     <td><input type="number" class="stockup-input" value="${stockup}" data-id="${productName}" readonly></td>
@@ -65,7 +63,92 @@ function createInventoryRow(productName, data) {
 }
 
 // ======================
-// 3. Input Handling (Live Updates)
+// 3. Search Functionality
+// ======================
+function addSearchBar() {
+  const container = document.querySelector(".container");
+  const searchDiv = document.createElement("div");
+  searchDiv.className = "search-container";
+  
+  searchDiv.innerHTML = `
+    <input 
+      type="text" 
+      id="search-input" 
+      placeholder="Search products or categories..." 
+      class="search-input"
+    >
+    <button id="clear-search" class="clear-search-btn">×</button>
+  `;
+  
+  container.insertBefore(searchDiv, container.firstChild);
+  
+  // Debounced search
+  let searchTimeout;
+  const searchInput = document.getElementById("search-input");
+  
+  searchInput.addEventListener("input", (e) => {
+    clearTimeout(searchTimeout);
+    searchTimeout = setTimeout(() => {
+      filterInventory(e.target.value);
+    }, 300);
+  });
+  
+  document.getElementById("clear-search").addEventListener("click", () => {
+    searchInput.value = "";
+    filterInventory("");
+  });
+}
+
+function filterInventory(query) {
+  const rows = inventoryTable.querySelectorAll("tr");
+  const searchTerms = query.toLowerCase().split(/\s+/).filter(term => term.length > 0);
+  
+  rows.forEach(row => {
+    const productCell = row.querySelector("td:nth-child(1)");
+    const categoryCell = row.querySelector("td:nth-child(2)");
+    const productName = productCell.getAttribute("data-original").toLowerCase();
+    const category = categoryCell.getAttribute("data-original").toLowerCase();
+    
+    const isMatch = searchTerms.length === 0 || 
+                   searchTerms.every(term => 
+                     productName.includes(term) || 
+                     category.includes(term)
+                   );
+    
+    row.style.display = isMatch ? "" : "none";
+    
+    if (isMatch && searchTerms.length > 0) {
+      highlightMatches(productCell, searchTerms);
+      highlightMatches(categoryCell, searchTerms);
+    } else {
+      restoreOriginalText(productCell);
+      restoreOriginalText(categoryCell);
+    }
+  });
+}
+
+function highlightMatches(cell, searchTerms) {
+  const originalText = cell.getAttribute("data-original");
+  let highlightedText = originalText;
+  
+  searchTerms.forEach(term => {
+    const regex = new RegExp(`(${escapeRegExp(term)})`, "gi");
+    highlightedText = highlightedText.replace(regex, '<span class="highlight">$1</span>');
+  });
+  
+  cell.innerHTML = highlightedText;
+}
+
+function restoreOriginalText(cell) {
+  cell.textContent = cell.getAttribute("data-original");
+}
+
+function escapeRegExp(string) {
+  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
+// ======================
+// 4. Input Handling
 // ======================
 function attachInputListeners() {
   document.querySelectorAll(".stock-input, .threshold-input").forEach((input) => {
@@ -84,13 +167,11 @@ function handleInputChange(event) {
   const stockup = Math.max(0, threshold - stock);
 
   stockupInput.value = stockup;
-  
-  // Update row highlighting
   row.classList.toggle("low-stock", stock < threshold);
 }
 
 // ======================
-// 4. Save Updates (Batch Write + Error Handling)
+// 5. Save Updates
 // ======================
 async function saveUpdates() {
   showLoading(true);
@@ -100,16 +181,13 @@ async function saveUpdates() {
     const batch = db.batch();
     const stockupBatch = db.batch();
     const rows = inventoryTable.querySelectorAll("tr");
-    const updates = [];
-
-    // Prepare all updates
+    
     for (const row of rows) {
       const docId = row.querySelector(".stock-input").dataset.id;
       const stock = parseInt(row.querySelector(".stock-input").value) || 0;
       const threshold = parseInt(row.querySelector(".threshold-input").value) || 0;
       const stockup = parseInt(row.querySelector(".stockup-input").value) || 0;
 
-      // Update Inventory
       const inventoryRef = inventoryCollection.doc(docId);
       batch.update(inventoryRef, {
         Stock: stock,
@@ -118,12 +196,11 @@ async function saveUpdates() {
         lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
       });
 
-      // Prepare stockup data (if needed)
       if (stockup > 0) {
         const stockupRef = stockupCollection.doc(docId);
         stockupBatch.set(stockupRef, {
           ProductName: docId,
-          Category: row.querySelector("td:nth-child(2)").innerText,
+          Category: row.querySelector("td:nth-child(2)").getAttribute("data-original"),
           Stock: stock,
           Threshold: threshold,
           Stockup: stockup,
@@ -132,7 +209,6 @@ async function saveUpdates() {
       }
     }
 
-    // Execute batches
     await Promise.all([batch.commit(), stockupBatch.commit()]);
     window.location.href = "stockupsummary.html";
     
@@ -146,7 +222,7 @@ async function saveUpdates() {
 }
 
 // ======================
-// 5. Sorting (All Columns)
+// 6. Sorting
 // ======================
 function setupSorting() {
   document.querySelectorAll(".sortable").forEach((header) => {
@@ -161,19 +237,17 @@ function sortTable(header) {
   const sortDirection = header.getAttribute("data-sort") || "asc";
 
   rows.sort((a, b) => {
-    const aValue = a.querySelector(`td:nth-child(${columnIndex + 1})`).innerText;
-    const bValue = b.querySelector(`td:nth-child(${columnIndex + 1})`).innerText;
+    const aValue = a.querySelector(`td:nth-child(${columnIndex + 1})`).getAttribute("data-original");
+    const bValue = b.querySelector(`td:nth-child(${columnIndex + 1})`).getAttribute("data-original");
     
     return sortDirection === "asc" 
       ? compareValues(aValue, bValue, isNumeric) 
       : compareValues(bValue, aValue, isNumeric);
   });
 
-  // Update UI
   inventoryTable.innerHTML = "";
   rows.forEach(row => inventoryTable.appendChild(row));
   
-  // Toggle sort direction
   header.setAttribute("data-sort", sortDirection === "asc" ? "desc" : "asc");
   updateSortArrow(header);
 }
@@ -184,7 +258,7 @@ function compareValues(a, b, isNumeric) {
 }
 
 function updateSortArrow(header) {
-  document.querySelectorAll(".sortable").forEach(h => h.innerHTML = h.innerHTML.replace(/↑|↓/, ""));
+  document.querySelectorAll(".sortable").forEach(h => h.innerHTML = h.textContent);
   header.innerHTML += header.getAttribute("data-sort") === "asc" ? " ↑" : " ↓";
 }
 
@@ -208,110 +282,3 @@ function createSaveButton() {
   document.querySelector(".container").appendChild(button);
   return button;
 }
-
-// ======================
-// Fuzzy Search Function
-// ======================
-function fuzzySearch(text, query) {
-  if (!query) return true; // Show all if no search term
-  
-  const searchTerms = query.toLowerCase().split(/\s+/);
-  const textLower = text.toLowerCase();
-  
-  // Check if ALL search terms exist in the text (order doesn't matter)
-  return searchTerms.every(term => textLower.includes(term));
-}
-
-// ======================
-// Filter Inventory Table
-// ======================
-function filterInventory(searchQuery) {
-  const rows = inventoryTable.querySelectorAll("tr");
-  
-  rows.forEach(row => {
-    const productName = row.querySelector("td:nth-child(1)").textContent;
-    const category = row.querySelector("td:nth-child(2)").textContent;
-    
-    // Combine fields for searching
-    const searchText = `${productName} ${category}`;
-    const isMatch = fuzzySearch(searchText, searchQuery);
-    
-    row.style.display = isMatch ? "" : "none";
-    
-    // Highlight matching keywords (optional)
-    if (isMatch && searchQuery) {
-      highlightMatches(row, searchQuery);
-    }
-  });
-}
-
-// ======================
-// Highlight Matches (Fixed)
-// ======================
-function highlightMatches(row, query) {
-  const cells = row.querySelectorAll("td");
-  const searchTerms = query.toLowerCase().split(/\s+/);
-
-  cells.forEach(cell => {
-    // First remove any existing highlights
-    const originalText = cell.textContent;
-    cell.innerHTML = originalText;
-    
-    // Then apply new highlights
-    let text = originalText;
-    searchTerms.forEach(term => {
-      const regex = new RegExp(`(${escapeRegExp(term)})`, "gi");
-      text = text.replace(regex, '<span class="highlight">$1</span>');
-    });
-    cell.innerHTML = text;
-  });
-}
-
-// Helper to escape special regex characters
-function escapeRegExp(string) {
-  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
-
-// ======================
-// Remove Highlights (Fixed)
-// ======================
-function removeHighlights() {
-  document.querySelectorAll(".highlight").forEach(highlight => {
-    const parent = highlight.parentNode;
-    parent.textContent = parent.textContent; // Strips all HTML
-  });
-}
-// ======================
-// Add Search Bar to UI
-// ======================
-function addSearchBar() {
-  const container = document.querySelector(".container");
-  
-  const searchDiv = document.createElement("div");
-  searchDiv.className = "search-container";
-  
-  searchDiv.innerHTML = `
-    <input 
-      type="text" 
-      id="search-input" 
-      placeholder="Search by product or category (e.g. 'oil engine')" 
-      class="search-input"
-    >
-    <button id="clear-search" class="clear-search-btn">×</button>
-  `;
-  
-  container.insertBefore(searchDiv, container.firstChild);
-  
-  // Add event listeners
-  document.getElementById("search-input").addEventListener("input", (e) => {
-    filterInventory(e.target.value);
-  });
-  
-  document.getElementById("clear-search").addEventListener("click", () => {
-    const searchInput = document.getElementById("search-input");
-    searchInput.value = "";
-    filterInventory("");
-    removeHighlights();
-  });
-}
-
