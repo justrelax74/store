@@ -7,6 +7,7 @@ const loadingSpinner = document.getElementById("loading-spinner");
 const inventoryCollection = db.collection("Inventory");
 const stockupCollection = db.collection("stockup");
 let categories = []; // To store all available categories
+let isDirty = false;
 
 // ======================
 // Initialize
@@ -16,6 +17,17 @@ document.addEventListener("DOMContentLoaded", () => {
   loadInventory();
   setupSorting();
 });
+
+window.addEventListener("beforeunload", (e) => {
+  if (isDirty) {
+    e.preventDefault();
+    e.returnValue = "You have unsaved changes. Are you sure you want to leave?";
+  }
+});
+
+function markDirty() {
+  isDirty = true;
+}
 
 // ======================
 // Combined Search and Category Filter
@@ -107,24 +119,21 @@ function loadCategories() {
 }
 
 // ======================
-// Inventory Functions (REVISED)
+// Inventory Functions (One-time fetch)
 // ======================
 function loadInventory() {
   showLoading(true);
-  
-  inventoryCollection.onSnapshot((snapshot) => {
+  inventoryCollection.get().then((snapshot) => {
     inventoryTable.innerHTML = "";
-    
     snapshot.forEach((doc) => {
       const data = doc.data();
       const row = createInventoryRow(doc.id, data);
       inventoryTable.appendChild(row);
     });
-    
     attachInputListeners();
-    showLoading(false);
-  }, (error) => {
+  }).catch((error) => {
     console.error("Error loading inventory:", error);
+  }).finally(() => {
     showLoading(false);
   });
 }
@@ -135,23 +144,20 @@ function createInventoryRow(productName, data) {
   const threshold = data.Threshold !== undefined && data.Threshold !== null ? parseInt(data.Threshold) : null;
   const category = data.Category || "Uncategorized";
   
-  // Initialize stockup from data (regardless of threshold)
   let stockup = data.Stockup !== undefined && data.Stockup !== null ? parseInt(data.Stockup) : "";
   let isAutofilled = false;
-  
-  // Only autofill if threshold exists and is > 0, and stock is below threshold
+
   if (threshold !== null && threshold > 0 && stock < threshold) {
     if (!data.wasManuallyEdited && stockup === "") {
-      stockup = threshold - stock; // Auto-calculate only if not manually set
+      stockup = threshold - stock;
       isAutofilled = true;
     }
   }
-  
-  // Highlight row if low stock
+
   if (threshold !== null && threshold > 0 && stock < threshold) {
     row.classList.add("low-stock");
   }
-  
+
   row.innerHTML = `
     <td data-original="${productName}">${productName}</td>
     <td data-original="${category}">${category}</td>
@@ -168,10 +174,9 @@ function createInventoryRow(productName, data) {
       >
     </td>
   `;
-  
+
   return row;
 }
-
 
 // ======================
 // Filtering Functions
@@ -180,24 +185,18 @@ function filterInventory(query) {
   const rows = inventoryTable.querySelectorAll("tr");
   const selectedCategory = document.getElementById("category-filter").value;
   const searchTerms = query.toLowerCase().split(/\s+/).filter(term => term.length > 0);
-  
+
   rows.forEach(row => {
     const productCell = row.querySelector("td:nth-child(1)");
     const categoryCell = row.querySelector("td:nth-child(2)");
     const productName = productCell.getAttribute("data-original").toLowerCase();
     const category = categoryCell.getAttribute("data-original").toLowerCase();
-    
-    const categoryMatch = selectedCategory === "all" || 
-                         categoryCell.getAttribute("data-original") === selectedCategory;
-    
-    const searchMatch = searchTerms.length === 0 || 
-                       searchTerms.every(term => 
-                         productName.includes(term) || 
-                         category.includes(term)
-                       );
-    
+
+    const categoryMatch = selectedCategory === "all" || categoryCell.getAttribute("data-original") === selectedCategory;
+    const searchMatch = searchTerms.length === 0 || searchTerms.every(term => productName.includes(term) || category.includes(term));
+
     row.style.display = (categoryMatch && searchMatch) ? "" : "none";
-    
+
     if (searchMatch && searchTerms.length > 0) {
       highlightMatches(productCell, searchTerms);
       highlightMatches(categoryCell, searchTerms);
@@ -211,12 +210,12 @@ function filterInventory(query) {
 function highlightMatches(cell, searchTerms) {
   const originalText = cell.getAttribute("data-original");
   let highlightedText = originalText;
-  
+
   searchTerms.forEach(term => {
     const regex = new RegExp(`(${escapeRegExp(term)})`, "gi");
     highlightedText = highlightedText.replace(regex, '<span class="highlight">$1</span>');
   });
-  
+
   cell.innerHTML = highlightedText;
 }
 
@@ -229,7 +228,7 @@ function escapeRegExp(string) {
 }
 
 // ======================
-// Input Handling (REVISED)
+// Input Handling
 // ======================
 function handleInputChange(event) {
   const row = event.target.closest("tr");
@@ -241,7 +240,6 @@ function handleInputChange(event) {
   const threshold = thresholdInput.value === "" ? null : parseInt(thresholdInput.value);
   const isStockupAutofilled = stockupInput.hasAttribute("data-autofilled");
 
-  // Only autofill if threshold exists and is > 0, and stock is below threshold
   if (threshold !== null && threshold > 0 && stock < threshold) {
     if (isStockupAutofilled || stockupInput.value === "") {
       const stockup = threshold - stock;
@@ -251,7 +249,6 @@ function handleInputChange(event) {
       row.classList.add("low-stock");
     }
   } else {
-    // Only clear if it was autofilled (keep manual entries)
     if (isStockupAutofilled) {
       stockupInput.value = "";
       stockupInput.style.color = "";
@@ -261,27 +258,30 @@ function handleInputChange(event) {
   }
 }
 
-
 function attachInputListeners() {
   document.querySelectorAll(".stock-input, .threshold-input").forEach((input) => {
-    input.addEventListener("input", handleInputChange);
+    input.addEventListener("input", (e) => {
+      handleInputChange(e);
+      markDirty();
+    });
   });
-  
+
   document.querySelectorAll(".stockup-input").forEach((input) => {
     input.addEventListener("input", (e) => {
-      e.target.style.color = ""; // Remove red
-      e.target.removeAttribute("data-autofilled"); // Mark as manual
+      e.target.style.color = "";
+      e.target.removeAttribute("data-autofilled");
+      markDirty();
     });
   });
 }
 
 // ======================
-// Save Updates (REVISED)
+// Save Updates
 // ======================
 async function saveUpdates() {
   showLoading(true);
   disableSaveButton(true);
-  
+
   try {
     const batch = db.batch();
     const stockupBatch = db.batch();
@@ -300,7 +300,6 @@ async function saveUpdates() {
       const stockup = stockupValue === "" ? null : parseInt(stockupValue);
       const isStockupAutofilled = stockupInput.hasAttribute("data-autofilled");
 
-      // Always save the stockup value if it exists, regardless of threshold
       const updateData = {
         Stock: stock,
         Threshold: threshold,
@@ -308,15 +307,10 @@ async function saveUpdates() {
         lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
       };
 
-      if (stockup !== null) {
-        updateData.Stockup = stockup;
-      } else {
-        updateData.Stockup = null;
-      }
+      updateData.Stockup = stockup !== null ? stockup : null;
 
       batch.update(inventoryCollection.doc(docId), updateData);
 
-      // Add to stockup collection if manually edited or has value
       if ((!isStockupAutofilled || threshold === null) && stockup !== null && stockup > 0) {
         stockupBatch.set(stockupCollection.doc(docId), {
           ProductName: docId,
@@ -334,6 +328,7 @@ async function saveUpdates() {
 
     if (hasEdits) {
       await Promise.all([batch.commit(), stockupBatch.commit()]);
+      isDirty = false;
       window.location.href = "stockupsummary.html";
     } else {
       alert("No changes detected.");
@@ -357,7 +352,7 @@ function setupSorting() {
       <span class="sort-arrow asc">↑</span>
       <span class="sort-arrow desc">↓</span>
     `;
-    
+
     header.addEventListener("click", () => sortTable(header));
   });
 }
@@ -367,19 +362,19 @@ function sortTable(header) {
   const rows = Array.from(inventoryTable.querySelectorAll("tr"));
   const isNumeric = header.classList.contains("numeric");
   const currentDirection = header.getAttribute("data-sort-direction");
-  
+
   const newDirection = currentDirection === "asc" ? "desc" : "asc";
-  
+
   document.querySelectorAll(".sortable").forEach(h => {
     h.removeAttribute("data-sort-direction");
   });
-  
+
   header.setAttribute("data-sort-direction", newDirection);
-  
+
   rows.sort((a, b) => {
     const aValue = a.querySelector(`td:nth-child(${columnIndex + 1})`).textContent;
     const bValue = b.querySelector(`td:nth-child(${columnIndex + 1})`).textContent;
-    
+
     if (isNumeric) {
       return newDirection === "asc" 
         ? (parseInt(aValue) - parseInt(bValue))
