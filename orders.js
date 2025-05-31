@@ -1,3 +1,6 @@
+let currentUserIsAdmin = false;
+
+
 // Check if Firebase is already initialized
 if (!firebase.apps.length) {
   const firebaseConfig = {
