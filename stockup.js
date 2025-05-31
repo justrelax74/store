@@ -8,7 +8,7 @@ const inventoryCollection = db.collection("Inventory");
 const stockupCollection = db.collection("stockup");
 let categories = []; // To store all available categories
 
-// ======================
+// ====================== 
 // Initialize
 // ======================
 document.addEventListener("DOMContentLoaded", () => {
