@@ -8,11 +8,10 @@
 </head>
 <body>
 
-    
 
 
 
-<!-- Main Contents -->
+<!-- Main Content -->
 
 <!-- Navigation Bar -->
 <nav class="navbar">
@@ -27,6 +26,7 @@
         
             <li class="navbar-item"><a href="stockup.html">Inventory</a></li>
             <li class="navbar-item"><a href="orders.html">Order</a></li>
+            <li class="navbar-item"><a href="sales.html">Sales</a></li>
 
         </ul>
     </div>
@@ -41,8 +41,8 @@
     <div class="container">
         <div class="invoice-box">
             <h2>
-                    Order: # <input type="text" id="invoiceNumber" placeholder="Nomor kuitansi" list="invoiceNumbers" readonly>
-                    <datalist id="invoiceNumbers"></datalist>
+                Order: # <input type="text" id="invoiceNumber" placeholder="Nomor kuitansi" list="invoiceNumbers" onchange="loadInvoiceDetails()">
+                <datalist id="invoiceNumbers"></datalist>
             </h2>
             <span id="invoiceDate"></span>
 
@@ -74,8 +74,9 @@
             </table>
             <button id="addRowButton" class="add-row-btn">+ Add Item</button>
         </div>
-
-        
+        <div class="checkout-container">
+            <button id="checkoutButton" class="checkout-btn">Checkout</button>
+        </div>
     </div>
 
 <!-- Firebase SDK and Initialization -->
