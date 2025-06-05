@@ -56,7 +56,7 @@ function setDate() {
     const formattedDate = now.toLocaleDateString('id-ID', { year: 'numeric', month: 'short', day: '2-digit' });
     const formattedTime = now.toTimeString().slice(0, 8);
     document.getElementById('invoiceDate').textContent = `${formattedDate}, ${formattedTime}`;
-} 
+}
 
 // Fetch and display invoice numbers
 function fetchInvoiceNumbers() {
