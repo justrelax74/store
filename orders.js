@@ -280,43 +280,45 @@ async function checkoutInvoice(invoiceNumber) {
     const salesRef = db.collection(currentDate).doc(invoiceNumber);
     const salesDoc = await salesRef.get();
 
-    // Step 1: If re-checkout, restore previous stock
+    // If re-checkout, restore previous stock
     if (invoiceData.status === 'checked_out' && salesDoc.exists) {
       const oldItems = salesDoc.data().items || [];
       for (const item of oldItems) {
         const invRef = db.collection('Inventory').doc(item.productName);
         const invDoc = await invRef.get();
-        const currentStock = invDoc.exists ? invDoc.data().Stock || 0 : 0;
-        await invRef.update({
-          Stock: currentStock + item.qty
-        });
+        if (invDoc.exists) {
+          const currentStock = invDoc.data().Stock || 0;
+          await invRef.update({
+            Stock: currentStock + item.qty
+          });
+        }
       }
     }
 
-    let productNotFound = false;
-
-    // Step 2: Subtract stock for new items
+    // Process each item - add to "no data" if not found, subtract stock if found
     for (const item of validItems) {
-      const docRef = db.collection('Inventory').doc(item.productName);
-      const doc = await docRef.get();
+      const invRef = db.collection('Inventory').doc(item.productName);
+      const invDoc = await invRef.get();
 
-      if (doc.exists) {
-        const currentStock = doc.data().Stock || 0;
-        await docRef.update({
-          Stock: currentStock - item.qty
-        });
-      } else {
+      if (!invDoc.exists) {
+        // Add to "no data" collection
         await db.collection('no data').doc(item.productName).set({
           productName: item.productName,
           qty: item.qty,
           pricePerUnit: item.price || null,
           reason: 'Product not found in inventory during checkout',
+          timestamp: firebase.firestore.FieldValue.serverTimestamp()
         });
-        productNotFound = true;
+      } else {
+        // Subtract from inventory
+        const currentStock = invDoc.data().Stock || 0;
+        await invRef.update({
+          Stock: currentStock - item.qty
+        });
       }
     }
 
-    // Step 3: Save sale to daily collection
+    // Save sale to daily collection
     await salesRef.set({
       items: validItems,
       grandTotal: validItems.reduce((total, item) => total + (item.price * item.qty), 0),
@@ -325,7 +327,7 @@ async function checkoutInvoice(invoiceNumber) {
       timestamp: firebase.firestore.FieldValue.serverTimestamp()
     });
 
-    // Step 4: Update invoice status
+    // Update invoice status
     await invoiceRef.update({
       items: validItems,
       status: 'checked_out'

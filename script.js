@@ -397,88 +397,105 @@ document.getElementById('checkoutButton').addEventListener('click', async () => 
     if (!invoiceNumber) return alert("Invoice number is required.");
   
     try {
-      const invoiceRef = db.collection('invoices').doc(invoiceNumber);
-      const invoiceDoc = await invoiceRef.get();
-      if (!invoiceDoc.exists) return alert("Invoice not found!");
-  
-      const invoiceData = invoiceDoc.data();
-      if (!Array.isArray(invoiceData.items) || invoiceData.items.length === 0) {
-        return alert("Invoice is empty or invalid.");
-      }
-  
-      const updatedItems = [];
-      const today = new Date().toISOString().split('T')[0];
-      const salesRef = db.collection(today).doc(invoiceNumber);
-      const salesDoc = await salesRef.get();
-  
-      // 🔁 Step 1: Restore inventory from previous sale
-      if (invoiceData.status === "checked_out" && salesDoc.exists) {
-        console.log("Restoring stock from previous checkout...");
-        const oldItems = salesDoc.data().items || [];
-  
-        for (const item of oldItems) {
-          try {
-            const productRef = db.collection('Inventory').doc(item.productName);
-            const productDoc = await productRef.get();
-            const stock = productDoc.exists ? productDoc.data().Stock || 0 : 0;
-            await productRef.update({ Stock: stock + item.qty });
-            console.log(`[✓] Restored: ${item.productName} +${item.qty}`);
-          } catch (err) {
-            console.error(`[X] Failed to restore stock for ${item.productName}`, err);
-          }
-        }
-      }
-  
-      // ➖ Step 2: Subtract inventory from current items
-      for (const item of invoiceData.items) {
-        try {
-          if (!item.productName || item.qty === undefined || item.qty <= 0) {
-  alert(`Invalid item: Missing product name or zero/negative quantity.\nProduct: ${item.productName}, Qty: ${item.qty}`);
-  return;
-}
+        const invoiceRef = db.collection('invoices').doc(invoiceNumber);
+        const invoiceDoc = await invoiceRef.get();
+        if (!invoiceDoc.exists) return alert("Invoice not found!");
 
-  
-          const productRef = db.collection('Inventory').doc(item.productName);
-          const productDoc = await productRef.get();
-          const stock = productDoc.exists ? productDoc.data().Stock || 0 : 0;
-          await productRef.update({ Stock: stock - item.qty });
-          console.log(`[✓] Updated: ${item.productName} -${item.qty}`);
-        } catch (err) {
-          console.error(`[X] Failed to subtract stock for ${item.productName}`, err);
+        const invoiceData = invoiceDoc.data();
+        if (!Array.isArray(invoiceData.items) || invoiceData.items.length === 0) {
+            return alert("Invoice is empty or invalid.");
         }
-  
-        updatedItems.push({
-          productName: item.productName,
-          qty: item.qty,
-          price: item.price || 0,
-          buyingPrice: Number(item.buyingPrice) || 0,
-          category: item.category || 'Uncategorized',
-          totalPrice: item.qty * (item.price || 0)
+
+        const updatedItems = [];
+        const today = new Date().toISOString().split('T')[0];
+        const salesRef = db.collection(today).doc(invoiceNumber);
+        const salesDoc = await salesRef.get();
+
+        // 🔁 Step 1: Restore inventory from previous sale
+        if (invoiceData.status === "checked_out" && salesDoc.exists) {
+            console.log("Restoring stock from previous checkout...");
+            const oldItems = salesDoc.data().items || [];
+
+            for (const item of oldItems) {
+                try {
+                    const productRef = db.collection('Inventory').doc(item.productName);
+                    const productDoc = await productRef.get();
+                    if (productDoc.exists) {
+                        const stock = productDoc.data().Stock || 0;
+                        await productRef.update({ Stock: stock + item.qty });
+                        console.log(`[✓] Restored: ${item.productName} +${item.qty}`);
+                    }
+                } catch (err) {
+                    console.error(`[X] Failed to restore stock for ${item.productName}`, err);
+                }
+            }
+        }
+
+        // ➖ Step 2: Process current items
+        for (const item of invoiceData.items) {
+            if (!item.productName || item.qty === undefined || item.qty <= 0) {
+                alert(`Invalid item: Missing product name or zero/negative quantity.\nProduct: ${item.productName}, Qty: ${item.qty}`);
+                return;
+            }
+
+            try {
+                const productRef = db.collection('Inventory').doc(item.productName);
+                const productDoc = await productRef.get();
+
+                if (!productDoc.exists) {
+                    // Add to "no data" collection
+                    await db.collection('no data').doc(item.productName).set({
+                        productName: item.productName,
+                        qty: item.qty,
+                        pricePerUnit: item.price || null,
+                        buyingPrice: Number(item.buyingPrice) || 0,
+                        category: item.category || 'Uncategorized',
+                        reason: 'Product not found in inventory during checkout',
+                        timestamp: firebase.firestore.FieldValue.serverTimestamp()
+                    });
+                    console.log(`[!] Added to no data: ${item.productName}`);
+                } else {
+                    // Subtract from inventory if product exists
+                    const stock = productDoc.data().Stock || 0;
+                    await productRef.update({ Stock: stock - item.qty });
+                    console.log(`[✓] Updated: ${item.productName} -${item.qty}`);
+                }
+            } catch (err) {
+                console.error(`[X] Failed to process ${item.productName}`, err);
+            }
+
+            updatedItems.push({
+                productName: item.productName,
+                qty: item.qty,
+                price: item.price || 0,
+                buyingPrice: Number(item.buyingPrice) || 0,
+                category: item.category || 'Uncategorized',
+                totalPrice: item.qty * (item.price || 0)
+            });
+        }
+
+        // 💾 Step 3: Save to sales
+        const grandTotal = updatedItems.reduce((sum, item) => sum + item.totalPrice, 0);
+        await salesRef.set({
+            items: updatedItems,
+            grandTotal,
+            carType,
+            policeNumber,
+            timestamp: firebase.firestore.FieldValue.serverTimestamp()
         });
-      }
-  
-      // 💾 Step 3: Save to sales
-      const grandTotal = updatedItems.reduce((sum, item) => sum + item.totalPrice, 0);
-      await salesRef.set({
-        items: updatedItems,
-        grandTotal,
-        carType,
-        policeNumber,
-        timestamp: firebase.firestore.FieldValue.serverTimestamp()
-      });
-      console.log(`[✓] Saved to sales/${today}/${invoiceNumber}`);
-  
-      // ✅ Step 4: Update invoice status once
-      await invoiceRef.update({ status: "checked_out" });
-  
-      // Store for printing
-      localStorage.setItem('currentInvoiceNumber', invoiceNumber);
-  
-      alert("Checkout successful!");
-      window.location.href = 'checkout.html';
+        console.log(`[✓] Saved to sales/${today}/${invoiceNumber}`);
+
+        // ✅ Step 4: Update invoice status
+        await invoiceRef.update({ status: "checked_out" });
+
+        // Store for printing
+        localStorage.setItem('currentInvoiceNumber', invoiceNumber);
+
+        alert("Checkout successful!");
+        window.location.href = 'checkout.html';
     } catch (error) {
-      console.error("Checkout failed:", error);
-      alert(`Checkout failed! ${error.message}`);
+        console.error("Checkout failed:", error);
+        alert(`Checkout failed! ${error.message}`);
     }
-  });
+});
   
