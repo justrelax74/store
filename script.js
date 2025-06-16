@@ -433,8 +433,8 @@ document.getElementById('checkoutButton').addEventListener('click', async () => 
 
         // ➖ Step 2: Process current items
         for (const item of invoiceData.items) {
-            if (!item.productName || item.qty === undefined || item.qty <= 0) {
-                alert(`Invalid item: Missing product name or zero/negative quantity.\nProduct: ${item.productName}, Qty: ${item.qty}`);
+            if (!item.productName || item.qty === undefined || item.qty === 0) {
+                alert(`Invalid item: Missing product name or zero quantity.\nProduct: ${item.productName}, Qty: ${item.qty}`);
                 return;
             }
 
@@ -498,4 +498,4 @@ document.getElementById('checkoutButton').addEventListener('click', async () => 
         alert(`Checkout failed! ${error.message}`);
     }
 });
-  
+   
