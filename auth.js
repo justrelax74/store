@@ -31,6 +31,14 @@ document.addEventListener("DOMContentLoaded", function () {
         return new Date().toISOString().split("T")[0];
     }
 
+    function hasSessionBeenCheckedToday() {
+        return sessionStorage.getItem("sessionChecked") === "true";
+    }
+
+    function markSessionChecked() {
+        sessionStorage.setItem("sessionChecked", "true");
+    }
+
     function isAdminEmail(email) {
         return ADMIN_EMAILS.includes(email);
     }
@@ -108,9 +116,9 @@ document.addEventListener("DOMContentLoaded", function () {
             const lastSignInDate = lastSignIn.toISOString().split("T")[0];
             const todayDate = getTodayDateString();
 
-            if (lastSignInDate !== todayDate && !sessionStorage.getItem("sessionChecked")) {
+            if (lastSignInDate !== todayDate && !hasSessionBeenCheckedToday()) {
                 alert("Your session has expired for the day. Please log in again.");
-                sessionStorage.setItem("sessionChecked", "true");
+                markSessionChecked();
                 logout();
                 return;
             }
