@@ -13,7 +13,7 @@ document.getElementById('getSalesDataButton').addEventListener('click', async ()
     const totalProfitElement = document.getElementById('totalProfit');
     const roiElement = document.getElementById('roi');
     const categorySalesTableBody = document.getElementById('categorySalesTableBody');
-    
+
     let totalSales = 0;
     let totalCustomers = 0;
     let totalProfit = 0;
@@ -48,6 +48,8 @@ document.getElementById('getSalesDataButton').addEventListener('click', async ()
                 snapshot.forEach(doc => {
                     const data = doc.data();
                     const invoiceNumber = doc.id;
+                    if (invoiceNumber.startsWith("BON")) return;
+
                     const items = data.items || [];
                     const carType = data.carType || "Unknown";
                     const policeNumber = data.policeNumber || "N/A";
