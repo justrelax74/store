@@ -71,9 +71,15 @@ async function startNewOrder() {
     let lastInvoiceNumber = "00";
 
     if (!querySnapshot.empty) {
-      const invoiceNumbers = querySnapshot.docs.map(doc => doc.id);
-      invoiceNumbers.sort((a, b) => parseInt(a) - parseInt(b));
-      lastInvoiceNumber = invoiceNumbers[invoiceNumbers.length - 1];
+      const invoiceNumbers = querySnapshot.docs
+        .map(doc => doc.id)
+        .filter(id => /^\d+$/.test(id)) // Keep only numeric IDs
+        .map(id => parseInt(id, 10));
+
+      if (invoiceNumbers.length > 0) {
+        invoiceNumbers.sort((a, b) => a - b);
+        lastInvoiceNumber = invoiceNumbers[invoiceNumbers.length - 1];
+      }
     }
 
     const newInvoiceNumber = String(parseInt(lastInvoiceNumber) + 1).padStart(2, '0');
@@ -81,16 +87,18 @@ async function startNewOrder() {
       grandTotal: 0,
       status: 'OPEN',
       items: [],
-      createdTimestamp: firebase.firestore.FieldValue.serverTimestamp() // Add timestamp here
+      createdTimestamp: firebase.firestore.FieldValue.serverTimestamp()
     });
 
     localStorage.setItem('currentInvoiceNumber', newInvoiceNumber);
     window.location.href = 'kuitansi.html';
+
   } catch (error) {
     console.error('Error starting new order:', error);
     alert('Failed to start a new order. Please try again.');
   }
 }
+
 
 
 // Attach the function to the "Start New Order" button click event
@@ -460,3 +468,46 @@ document.addEventListener('DOMContentLoaded', () => {
   loadOrders();
   autoDeleteOldCheckedOutInvoices(); // Trigger the auto-delete function on page load
 });
+
+
+// Attach event listener for Add Bonds button
+// Make sure your HTML has: <button id="addBonds">Add Bond</button>
+document.getElementById('addBonds').addEventListener('click', startNewBond);
+
+// Function to start a new Bond invoice
+async function startNewBond() {
+  try {
+    const querySnapshot = await db.collection('invoices').get();
+    let lastBondNumber = 0;
+
+    if (!querySnapshot.empty) {
+      const bondNumbers = querySnapshot.docs
+        .map(doc => doc.id)
+        .filter(id => id.startsWith('BON '))
+        .map(id => parseInt(id.replace('BON ', '')))
+        .filter(num => !isNaN(num));
+
+      if (bondNumbers.length > 0) {
+        bondNumbers.sort((a, b) => a - b);
+        lastBondNumber = bondNumbers[bondNumbers.length - 1];
+      }
+    }
+
+    const newBondNumber = lastBondNumber + 1;
+    const newInvoiceId = `BON ${newBondNumber}`;
+
+    await db.collection('invoices').doc(newInvoiceId).set({
+      grandTotal: 0,
+      status: 'OPEN',
+      items: [],
+      createdTimestamp: firebase.firestore.FieldValue.serverTimestamp()
+    });
+
+    localStorage.setItem('currentInvoiceNumber', newInvoiceId);
+    window.location.href = 'kuitansi.html';
+
+  } catch (error) {
+    console.error('Error starting new bond:', error);
+    alert('Failed to start a new bond. Please try again.');
+  }
+}
