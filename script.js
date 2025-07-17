@@ -502,67 +502,58 @@ document.getElementById('checkoutButton').addEventListener('click', async () => 
 
 
 
-// Add this to your existing code
+// Create and add the download button to the page
 function createDownloadButton() {
-    // Create the button element
-    const downloadBtn = document.createElement('button');
-    downloadBtn.id = 'downloadStorageBtn';
-    downloadBtn.textContent = 'Download Data';
-    downloadBtn.className = 'download-btn'; // Add a class for styling
-    
-    // Style the button (you can also use CSS)
-    downloadBtn.style.position = 'fixed';
-    downloadBtn.style.bottom = '20px';
-    downloadBtn.style.right = '20px';
-    downloadBtn.style.padding = '10px 15px';
-    downloadBtn.style.backgroundColor = '#4285f4';
-    downloadBtn.style.color = 'white';
-    downloadBtn.style.border = 'none';
-    downloadBtn.style.borderRadius = '4px';
-    downloadBtn.style.cursor = 'pointer';
-    downloadBtn.style.zIndex = '1000';
-    downloadBtn.style.boxShadow = '0 2px 5px rgba(0,0,0,0.2)';
-    
-    // Add click handler
-    downloadBtn.addEventListener('click', downloadLocalStorage);
-    
-    // Add to page
-    document.body.appendChild(downloadBtn);
+  // Create button element
+  const downloadBtn = document.createElement('button');
+  downloadBtn.textContent = 'Download Backup';
+  downloadBtn.id = 'downloadBackupBtn';
+  
+  // Add some basic styling
+  downloadBtn.style.position = 'fixed';
+  downloadBtn.style.bottom = '20px';
+  downloadBtn.style.right = '20px';
+  downloadBtn.style.padding = '10px 15px';
+  downloadBtn.style.backgroundColor = '#4CAF50';
+  downloadBtn.style.color = 'white';
+  downloadBtn.style.border = 'none';
+  downloadBtn.style.borderRadius = '5px';
+  downloadBtn.style.cursor = 'pointer';
+  downloadBtn.style.zIndex = '1000';
+
+  // Add click handler
+  downloadBtn.addEventListener('click', downloadLocalStorage);
+
+  // Add button to page
+  document.body.appendChild(downloadBtn);
 }
 
+// The download function you provided (improved)
 function downloadLocalStorage() {
-    // Collect all localStorage data
-    const storageData = {};
-    for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        try {
-            storageData[key] = JSON.parse(localStorage.getItem(key));
-        } catch {
-            storageData[key] = localStorage.getItem(key);
-        }
-    }
+  try {
+    // Convert localStorage to JSON with nice formatting
+    const data = JSON.stringify(localStorage, null, 2);
+    const blob = new Blob([data], { type: "application/json" });
     
-    // Create download file
-    const dataStr = JSON.stringify(storageData, null, 2);
-    const blob = new Blob([dataStr], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
+    // Create download link
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `localStorageBackup_${new Date().toISOString().split('T')[0]}.json`;
     
     // Trigger download
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `localstorage_backup_${new Date().toISOString().slice(0,10)}.json`;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
-    URL.revokeObjectURL(url);
     
-    // Optional: Show confirmation
-    alert('LocalStorage data downloaded!');
+    // Free up memory
+    URL.revokeObjectURL(a.href);
+    
+    console.log('LocalStorage backup downloaded');
+  } catch (error) {
+    console.error('Error downloading localStorage:', error);
+    alert('Failed to create backup. See console for details.');
+  }
 }
 
-// Add this to your DOMContentLoaded or initialization
-document.addEventListener('DOMContentLoaded', function() {
-    createDownloadButton();
-    
-    // Your existing initialization code...
-});
+// Initialize the button when page loads
+document.addEventListener('DOMContentLoaded', createDownloadButton);
