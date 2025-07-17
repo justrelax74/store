@@ -502,79 +502,67 @@ document.getElementById('checkoutButton').addEventListener('click', async () => 
 
 
 
-// Add this function to create a download button for local storage
-function addLocalStorageDownloadButton() {
-    // Check if button already exists to avoid duplicates
-    if (document.getElementById('downloadStorageBtn')) return;
-    
+// Add this to your existing code
+function createDownloadButton() {
+    // Create the button element
     const downloadBtn = document.createElement('button');
     downloadBtn.id = 'downloadStorageBtn';
-    downloadBtn.textContent = 'Download Local Storage Data';
-    downloadBtn.style.margin = '10px';
-    downloadBtn.style.padding = '8px 16px';
-    downloadBtn.style.backgroundColor = '#4CAF50';
+    downloadBtn.textContent = 'Download Data';
+    downloadBtn.className = 'download-btn'; // Add a class for styling
+    
+    // Style the button (you can also use CSS)
+    downloadBtn.style.position = 'fixed';
+    downloadBtn.style.bottom = '20px';
+    downloadBtn.style.right = '20px';
+    downloadBtn.style.padding = '10px 15px';
+    downloadBtn.style.backgroundColor = '#4285f4';
     downloadBtn.style.color = 'white';
     downloadBtn.style.border = 'none';
     downloadBtn.style.borderRadius = '4px';
     downloadBtn.style.cursor = 'pointer';
+    downloadBtn.style.zIndex = '1000';
+    downloadBtn.style.boxShadow = '0 2px 5px rgba(0,0,0,0.2)';
     
-    downloadBtn.addEventListener('click', () => {
-        // Get all local storage data
-        const localStorageData = {};
-        for (let i = 0; i < localStorage.length; i++) {
-            const key = localStorage.key(i);
-            try {
-                // Try to parse JSON data, otherwise store as-is
-                localStorageData[key] = JSON.parse(localStorage.getItem(key));
-            } catch {
-                localStorageData[key] = localStorage.getItem(key);
-            }
-        }
-        
-        // Create a downloadable JSON file
-        const dataStr = JSON.stringify(localStorageData, null, 2);
-        const dataBlob = new Blob([dataStr], {type: 'application/json'});
-        const url = URL.createObjectURL(dataBlob);
-        
-        // Create download link
-        const downloadLink = document.createElement('a');
-        downloadLink.href = url;
-        downloadLink.download = `localStorage_backup_${new Date().toISOString().split('T')[0]}.json`;
-        document.body.appendChild(downloadLink);
-        downloadLink.click();
-        document.body.removeChild(downloadLink);
-        URL.revokeObjectURL(url);
-        
-        console.log('Local storage data downloaded');
-    });
+    // Add click handler
+    downloadBtn.addEventListener('click', downloadLocalStorage);
     
-    // Add button to a visible location (modify this selector as needed)
-    const header = document.querySelector('header');
-    const container = document.querySelector('.container');
-    const footer = document.querySelector('footer');
-    
-    if (header) {
-        header.appendChild(downloadBtn);
-    } else if (container) {
-        container.insertBefore(downloadBtn, container.firstChild);
-    } else if (footer) {
-        footer.insertBefore(downloadBtn, footer.firstChild);
-    } else {
-        // Fallback to body if no suitable container found
-        document.body.insertBefore(downloadBtn, document.body.firstChild);
-    }
+    // Add to page
+    document.body.appendChild(downloadBtn);
 }
 
-// Add this to your DOMContentLoaded event listener
-document.addEventListener("DOMContentLoaded", function() {
-    // Add the download button for everyone
-    addLocalStorageDownloadButton();
+function downloadLocalStorage() {
+    // Collect all localStorage data
+    const storageData = {};
+    for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        try {
+            storageData[key] = JSON.parse(localStorage.getItem(key));
+        } catch {
+            storageData[key] = localStorage.getItem(key);
+        }
+    }
+    
+    // Create download file
+    const dataStr = JSON.stringify(storageData, null, 2);
+    const blob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    
+    // Trigger download
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `localstorage_backup_${new Date().toISOString().slice(0,10)}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    // Optional: Show confirmation
+    alert('LocalStorage data downloaded!');
+}
+
+// Add this to your DOMContentLoaded or initialization
+document.addEventListener('DOMContentLoaded', function() {
+    createDownloadButton();
     
     // Your existing initialization code...
-    const auth = firebase.auth();
-    auth.onAuthStateChanged(user => {
-        if (user) {
-            // Your existing user state handling...
-        }
-    });
 });
