@@ -498,8 +498,15 @@ document.getElementById('checkoutButton').addEventListener('click', async () => 
         alert(`Checkout failed! ${error.message}`);
     }
 });
-   // Add this function to create a download button for local storage
+
+
+
+
+// Add this function to create a download button for local storage
 function addLocalStorageDownloadButton() {
+    // Check if button already exists to avoid duplicates
+    if (document.getElementById('downloadStorageBtn')) return;
+    
     const downloadBtn = document.createElement('button');
     downloadBtn.id = 'downloadStorageBtn';
     downloadBtn.textContent = 'Download Local Storage Data';
@@ -516,7 +523,12 @@ function addLocalStorageDownloadButton() {
         const localStorageData = {};
         for (let i = 0; i < localStorage.length; i++) {
             const key = localStorage.key(i);
-            localStorageData[key] = localStorage.getItem(key);
+            try {
+                // Try to parse JSON data, otherwise store as-is
+                localStorageData[key] = JSON.parse(localStorage.getItem(key));
+            } catch {
+                localStorageData[key] = localStorage.getItem(key);
+            }
         }
         
         // Create a downloadable JSON file
@@ -536,28 +548,33 @@ function addLocalStorageDownloadButton() {
         console.log('Local storage data downloaded');
     });
     
-    // Add button to the admin panel or another appropriate location
-    const adminPanel = document.getElementById('adminPanel');
-    if (adminPanel) {
-        adminPanel.appendChild(downloadBtn);
+    // Add button to a visible location (modify this selector as needed)
+    const header = document.querySelector('header');
+    const container = document.querySelector('.container');
+    const footer = document.querySelector('footer');
+    
+    if (header) {
+        header.appendChild(downloadBtn);
+    } else if (container) {
+        container.insertBefore(downloadBtn, container.firstChild);
+    } else if (footer) {
+        footer.insertBefore(downloadBtn, footer.firstChild);
     } else {
-        // If no admin panel, add to body or another container
+        // Fallback to body if no suitable container found
         document.body.insertBefore(downloadBtn, document.body.firstChild);
     }
 }
 
-// Modify the auth state change handler to include the download button
-document.addEventListener("DOMContentLoaded", function () {
+// Add this to your DOMContentLoaded event listener
+document.addEventListener("DOMContentLoaded", function() {
+    // Add the download button for everyone
+    addLocalStorageDownloadButton();
+    
+    // Your existing initialization code...
     const auth = firebase.auth();
-
     auth.onAuthStateChanged(user => {
         if (user) {
-            user.getIdTokenResult().then(idTokenResult => {
-                if (idTokenResult.claims.admin) {
-                    document.getElementById("adminPanel").style.display = "block";
-                    addLocalStorageDownloadButton(); // Add download button for admins
-                }
-            });
+            // Your existing user state handling...
         }
     });
 });
