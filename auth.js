@@ -10,7 +10,7 @@ document.addEventListener("DOMContentLoaded", function () {
         messagingSenderId: "874673615212",
         appId: "1:874673615212:web:7f0ecdeee47fed60aa0349",
         measurementId: "G-LF6NB7ZKLE"
-    };
+    }; 
 
     if (!firebase.apps.length) {
         firebase.initializeApp(firebaseConfig);
