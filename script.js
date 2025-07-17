@@ -498,4 +498,66 @@ document.getElementById('checkoutButton').addEventListener('click', async () => 
         alert(`Checkout failed! ${error.message}`);
     }
 });
-   
+   // Add this function to create a download button for local storage
+function addLocalStorageDownloadButton() {
+    const downloadBtn = document.createElement('button');
+    downloadBtn.id = 'downloadStorageBtn';
+    downloadBtn.textContent = 'Download Local Storage Data';
+    downloadBtn.style.margin = '10px';
+    downloadBtn.style.padding = '8px 16px';
+    downloadBtn.style.backgroundColor = '#4CAF50';
+    downloadBtn.style.color = 'white';
+    downloadBtn.style.border = 'none';
+    downloadBtn.style.borderRadius = '4px';
+    downloadBtn.style.cursor = 'pointer';
+    
+    downloadBtn.addEventListener('click', () => {
+        // Get all local storage data
+        const localStorageData = {};
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            localStorageData[key] = localStorage.getItem(key);
+        }
+        
+        // Create a downloadable JSON file
+        const dataStr = JSON.stringify(localStorageData, null, 2);
+        const dataBlob = new Blob([dataStr], {type: 'application/json'});
+        const url = URL.createObjectURL(dataBlob);
+        
+        // Create download link
+        const downloadLink = document.createElement('a');
+        downloadLink.href = url;
+        downloadLink.download = `localStorage_backup_${new Date().toISOString().split('T')[0]}.json`;
+        document.body.appendChild(downloadLink);
+        downloadLink.click();
+        document.body.removeChild(downloadLink);
+        URL.revokeObjectURL(url);
+        
+        console.log('Local storage data downloaded');
+    });
+    
+    // Add button to the admin panel or another appropriate location
+    const adminPanel = document.getElementById('adminPanel');
+    if (adminPanel) {
+        adminPanel.appendChild(downloadBtn);
+    } else {
+        // If no admin panel, add to body or another container
+        document.body.insertBefore(downloadBtn, document.body.firstChild);
+    }
+}
+
+// Modify the auth state change handler to include the download button
+document.addEventListener("DOMContentLoaded", function () {
+    const auth = firebase.auth();
+
+    auth.onAuthStateChanged(user => {
+        if (user) {
+            user.getIdTokenResult().then(idTokenResult => {
+                if (idTokenResult.claims.admin) {
+                    document.getElementById("adminPanel").style.display = "block";
+                    addLocalStorageDownloadButton(); // Add download button for admins
+                }
+            });
+        }
+    });
+});
