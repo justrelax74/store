@@ -16,7 +16,7 @@ document.addEventListener("DOMContentLoaded", function () {
                   document.getElementById("adminPanel").style.display = "block";
               }
           });
-      }
+      } 
   });
 });
 
